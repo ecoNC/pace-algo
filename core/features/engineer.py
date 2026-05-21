@@ -230,6 +230,13 @@ def attach_macro(features: pd.DataFrame, macro_daily: pd.DataFrame) -> pd.DataFr
     if "tnx_level" in macro.columns:
         macro["tnx_chg_5d"] = macro["tnx_level"].pct_change(5, fill_method=None)
 
+    # CRITICAL: prevent look-ahead leakage. yfinance daily close is the
+    # END-of-day value, not available during the trading day. A 5M bar
+    # at 10:00 UTC cannot see today's macro close. Shift by 1 day so
+    # today's row uses YESTERDAY's macro close (and chg_5d uses past 5
+    # closed days vs today, exactly as it would be in live trading).
+    macro = macro.shift(1)
+
     # Forward-fill onto intraday index
     macro_ff = macro.reindex(features.index.union(macro.index)).sort_index().ffill()
     macro_ff = macro_ff.reindex(features.index)
@@ -261,7 +268,17 @@ def attach_htf_context(features: pd.DataFrame, htf_1h: pd.DataFrame,
     htf_4h_sub = htf_4h[[c for c in cols_to_propagate if c in htf_4h.columns]].copy()
     htf_4h_sub.columns = [f"htf_4h_{c}" for c in htf_4h_sub.columns]
 
-    # Forward-fill onto lower-TF index (ensures no look-ahead: only past HTF bars used)
+    # CRITICAL no-look-ahead shift: A 1H bar indexed at 12:00 UTC contains
+    # OHLCV from 12:00-13:00 — its close is only known after 13:00. Without
+    # this shift, ffill would let a 5M bar at 12:35 "see" the 13:00 1H close,
+    # creating massive look-ahead leakage (inflated backtest PF, useless in
+    # live trading). shift(1) makes the 12:00 1H values only available from
+    # the 13:00 row onward, matching how Pine Script with lookahead_off would
+    # see HTF data in production.
+    htf_1h_sub = htf_1h_sub.shift(1)
+    htf_4h_sub = htf_4h_sub.shift(1)
+
+    # Forward-fill onto lower-TF index
     htf_1h_ff = htf_1h_sub.reindex(features.index.union(htf_1h_sub.index)).sort_index().ffill()
     htf_1h_ff = htf_1h_ff.reindex(features.index)
     htf_4h_ff = htf_4h_sub.reindex(features.index.union(htf_4h_sub.index)).sort_index().ffill()
