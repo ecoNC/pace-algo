@@ -1,15 +1,15 @@
-# CRUX ML — Quantitative ML Pipeline for TradingView Indicator
+# PaceAlgo ML — Quantitative ML Pipeline for TradingView Indicator
 
 Machine Learning pipeline that trains LightGBM / XGBoost / Logistic Regression models on multi-asset OHLCV data, validates them out-of-sample, and exports the trained model as a Pine Script v6 indicator for TradingView.
 
-**Product target:** CRUX — Invite-Only TradingView indicator ($39-49/mo subscription).
+**Product target:** PaceAlgo — Invite-Only TradingView indicator ($39-49/mo subscription).
 
 ---
 
 ## Architecture
 
 ```
-crux-ml/
+pace-algo/
 ├── core/                    # Platform-agnostic Python ML code
 │   ├── data/                # Multi-source OHLCV fetchers
 │   ├── features/            # Feature engineering (30+ features, ATR-normalized)
@@ -42,7 +42,7 @@ The pipeline is designed for monthly retraining in Google Colab. Each notebook i
 | 6 | `06_train_xgb.ipynb` | ~15 min | XGBoost model + SHAP |
 | 7 | `07_train_logreg.ipynb` | ~3 min | LogReg baseline |
 | 8 | `08_evaluate_ensemble.ipynb` | ~10 min | Multi-dimensional report |
-| 9 | `09_export_pine.ipynb` | ~2 min | `crux_v[X.Y].pine` file |
+| 9 | `09_export_pine.ipynb` | ~2 min | `pace_algo_v[X.Y].pine` file |
 
 **Total monthly effort:** ~1 hour click-through in Colab.
 
@@ -92,8 +92,8 @@ The pipeline is designed for monthly retraining in Google Colab. Each notebook i
 
 This repo is designed to be opened in Google Colab. No local Python install required.
 
-1. Repo is at `github.com/ecoNC/crux-ml` (private)
-2. In Colab: `File → Open Notebook → GitHub → ecoNC/crux-ml → notebooks/01_fetch_data.ipynb`
+1. Repo is at `github.com/ecoNC/pace-algo` (private)
+2. In Colab: `File → Open Notebook → GitHub → ecoNC/pace-algo → notebooks/01_fetch_data.ipynb`
 3. Notebook auto-installs dependencies, fetches data, saves results to Google Drive
 
 ---

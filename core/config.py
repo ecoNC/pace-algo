@@ -1,5 +1,5 @@
 """
-Central configuration for CRUX ML pipeline.
+Central configuration for PaceAlgo ML pipeline.
 
 All hard-coded magic numbers, symbol lists, and budget constraints live here so they
 can be reasoned about in one place.

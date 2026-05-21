@@ -1,7 +1,7 @@
 [project]
-name = "crux-ml"
+name = "pace-algo"
 version = "0.1.0"
-description = "Quantitative ML pipeline for CRUX TradingView indicator"
+description = "Quantitative ML pipeline for PaceAlgo TradingView indicator"
 authors = [{name = "Nico Flotz"}]
 requires-python = ">=3.10"
 readme = "README.md"
