@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# Data cache — too large for git
+data_cache/raw/
+data_cache/processed/
+*.parquet
+*.csv
+*.feather
+
+# Model artifacts — too large for git
+artifacts/models/*.pkl
+artifacts/models/*.joblib
+
+# Secrets
+.env
+.env.local
+credentials.json
+*.key
+api_keys.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Keep directory structure but ignore content
+!data_cache/raw/.gitkeep
+!data_cache/processed/.gitkeep
+!artifacts/models/.gitkeep
