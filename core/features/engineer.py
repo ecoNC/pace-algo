@@ -211,13 +211,13 @@ def attach_macro(features: pd.DataFrame, macro_daily: pd.DataFrame) -> pd.DataFr
             rename[col] = f"{col[:-6].lower()}_level"
     macro = macro.rename(columns=rename)
 
-    # Add derivative features
+    # Add derivative features (fill_method=None silences pandas 2.x FutureWarning)
     if "vix_level" in macro.columns:
-        macro["vix_chg_5d"] = macro["vix_level"].pct_change(5)
+        macro["vix_chg_5d"] = macro["vix_level"].pct_change(5, fill_method=None)
     if "dxy_level" in macro.columns:
-        macro["dxy_chg_5d"] = macro["dxy_level"].pct_change(5)
+        macro["dxy_chg_5d"] = macro["dxy_level"].pct_change(5, fill_method=None)
     if "tnx_level" in macro.columns:
-        macro["tnx_chg_5d"] = macro["tnx_level"].pct_change(5)
+        macro["tnx_chg_5d"] = macro["tnx_level"].pct_change(5, fill_method=None)
 
     # Forward-fill onto intraday index
     macro_ff = macro.reindex(features.index.union(macro.index)).sort_index().ffill()
