@@ -211,7 +211,18 @@ def attach_macro(features: pd.DataFrame, macro_daily: pd.DataFrame) -> pd.DataFr
             rename[col] = f"{col[:-6].lower()}_level"
     macro = macro.rename(columns=rename)
 
-    # Add derivative features (fill_method=None silences pandas 2.x FutureWarning)
+    # CRITICAL: VIX/DXY/TNX from yfinance have slightly different timestamps
+    # (different market hours / timezones) which creates internal NaN gaps
+    # after pd.concat. We collapse to one row per calendar day and ffill each
+    # series independently BEFORE computing pct_change — otherwise pct_change
+    # cascades the gaps and we lose ~80% of intraday bars to NaN.
+    macro.index = macro.index.normalize()  # Round all timestamps to midnight UTC
+    macro = macro.groupby(macro.index).last()  # Collapse duplicates per day
+    macro = macro.sort_index()
+    # Now ffill each series — no more inter-ticker NaN gaps
+    macro = macro.ffill()
+
+    # Now safe to compute change features (fill_method=None silences pandas 2.x FutureWarning)
     if "vix_level" in macro.columns:
         macro["vix_chg_5d"] = macro["vix_level"].pct_change(5, fill_method=None)
     if "dxy_level" in macro.columns:
