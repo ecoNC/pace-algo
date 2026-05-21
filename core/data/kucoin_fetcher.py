@@ -64,15 +64,18 @@ def _ts_sec(dt: datetime) -> int:
 
 
 def fetch_klines(symbol: str, timeframe: str, start: datetime, end: datetime,
-                  pause_sec: float = 0.15) -> pd.DataFrame:
+                  pause_sec: float = 0.4, max_retries: int = 5) -> pd.DataFrame:
     """
-    Fetch OHLCV from KuCoin.
+    Fetch OHLCV from KuCoin with rate-limit retry.
 
     Args:
         symbol: internal Binance-style name like 'BTCUSDT' (will be translated)
         timeframe: '5m', '15m', '1h', '4h', '1d'
         start, end: UTC datetime
-        pause_sec: politeness delay between requests
+        pause_sec: base politeness delay between requests (0.4s = 2.5 req/s,
+                   safely under KuCoin's public limit of ~3 req/s sustained)
+        max_retries: how many times to retry on 429 (Too Many Requests)
+                     with exponential backoff (2s, 4s, 8s, 16s, 32s)
 
     Returns:
         DataFrame indexed by open_time (UTC) with columns
@@ -103,12 +106,31 @@ def fetch_klines(symbol: str, timeframe: str, start: datetime, end: datetime,
             "startAt": window_start,
             "endAt": cursor_end,
         }
-        r = requests.get(f"{KUCOIN_REST}/api/v1/market/candles", params=params, timeout=30)
-        r.raise_for_status()
-        payload = r.json()
-        if payload.get("code") != "200000":
-            raise RuntimeError(f"KuCoin error: {payload}")
-        batch = payload.get("data", [])
+        # Request with exponential backoff on 429
+        batch = None
+        for attempt in range(max_retries):
+            try:
+                r = requests.get(f"{KUCOIN_REST}/api/v1/market/candles",
+                                  params=params, timeout=30)
+                if r.status_code == 429:
+                    backoff = 2 ** (attempt + 1)
+                    print(f"    429 rate limit — backoff {backoff}s (attempt {attempt+1}/{max_retries})")
+                    time.sleep(backoff)
+                    continue
+                r.raise_for_status()
+                payload = r.json()
+                if payload.get("code") != "200000":
+                    raise RuntimeError(f"KuCoin error: {payload}")
+                batch = payload.get("data", [])
+                break
+            except requests.exceptions.RequestException as exc:
+                if attempt == max_retries - 1:
+                    raise
+                backoff = 2 ** (attempt + 1)
+                print(f"    request error {exc} — backoff {backoff}s")
+                time.sleep(backoff)
+        if batch is None:
+            raise RuntimeError(f"KuCoin: max retries exhausted for {symbol} {timeframe}")
         if not batch:
             break
         all_rows.extend(batch)
