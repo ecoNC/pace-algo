@@ -166,7 +166,8 @@ def sweep_threshold(
     operating point that balances trade frequency vs profit factor.
     """
     if thresholds is None:
-        thresholds = [0.50, 0.52, 0.55, 0.58, 0.60, 0.62, 0.65, 0.68, 0.70, 0.75, 0.80]
+        thresholds = [0.30, 0.35, 0.40, 0.42, 0.44, 0.46, 0.48, 0.50, 0.52, 0.55,
+                       0.58, 0.60, 0.62, 0.65, 0.68, 0.70, 0.75, 0.80]
     rows = []
     for t in thresholds:
         m = trading_metrics_from_predictions(y_triple, proba, t, tp_R, sl_atr_mult)
