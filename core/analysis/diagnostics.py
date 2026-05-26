@@ -75,26 +75,34 @@ def performance_by_regime(
 
     Args:
         df: DataFrame WITH regime columns already tagged (use regime_buckets first)
-        proba: model probabilities aligned to df rows
+        proba: model probabilities aligned to df rows (same length, same order)
         threshold: minimum probability to trade
         regime_col: which regime grouping to use
         min_n: skip regimes with fewer than this many bars
 
     Returns:
         DataFrame with regime, n, WR, PF, ER, trade_rate (one row per regime)
+
+    Note: works correctly with duplicate timestamps in df.index (stacked
+    multi-symbol DataFrames) — uses positional indexing throughout.
     """
-    mask = proba >= threshold
+    mask = proba >= threshold  # numpy bool array
+    # Sequential positional index so we can map regime groups back to mask
+    df_pos = df.reset_index(drop=True).copy()
+    df_pos['_pos'] = np.arange(len(df_pos))
+
     rows = []
-    for regime, sub in df.groupby(regime_col):
-        idx = sub.index
-        sub_proba_mask = mask[df.index.get_indexer(idx)]
-        traded_labels = sub['label'].iloc[sub_proba_mask.nonzero()[0]] if sub_proba_mask.any() else pd.Series(dtype=int)
-        if len(traded_labels) < min_n:
+    for regime, sub in df_pos.groupby(regime_col):
+        positions = sub['_pos'].to_numpy()
+        sub_mask = mask[positions]
+        n_traded = int(sub_mask.sum())
+        if n_traded < min_n:
             continue
+        traded_labels = sub.iloc[sub_mask.nonzero()[0]]['label']
         m = _pf_wr(traded_labels, tp_R, sl_atr_mult)
-        m['regime'] = regime
+        m['regime'] = str(regime)
         m['regime_bars_total'] = len(sub)
-        m['trade_rate'] = len(traded_labels) / len(sub) if len(sub) > 0 else 0.0
+        m['trade_rate'] = n_traded / len(sub) if len(sub) > 0 else 0.0
         rows.append(m)
     out = pd.DataFrame(rows)
     if not out.empty:
