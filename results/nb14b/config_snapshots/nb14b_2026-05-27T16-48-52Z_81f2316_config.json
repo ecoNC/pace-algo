@@ -1,0 +1,33 @@
+{
+  "experiment_id": "nb14b_2026-05-27T16-48-52Z_81f2316",
+  "tf": "5m",
+  "constraints": {
+    "pf_aggressive_min": 1.3,
+    "pf_balanced_min": 1.5,
+    "pf_conservative_min": 1.8,
+    "sigs_aggressive_range": [
+      15,
+      30
+    ],
+    "sigs_balanced_range": [
+      5,
+      10
+    ],
+    "sigs_conservative_range": [
+      1,
+      4
+    ],
+    "min_cutoff_separation": 0.005,
+    "cross_asset_tolerance": 0.2
+  },
+  "density_targets": {
+    "aggressive": 22.5,
+    "balanced": 7.5,
+    "conservative": 2.5
+  },
+  "strategies": [
+    "linear",
+    "logit",
+    "density"
+  ]
+}

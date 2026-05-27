@@ -1,0 +1,420 @@
+{
+  "experiment_id": "nb14b_2026-05-27T16-48-52Z_81f2316",
+  "run_date": "2026-05-27",
+  "git_commit": "81f2316",
+  "tf": "5m",
+  "train_symbols": [
+    "EURUSD",
+    "USDJPY"
+  ],
+  "holdout_symbols": [
+    "GBPUSD",
+    "AUDUSD",
+    "USDCHF"
+  ],
+  "feature_cols": [
+    "hour_sin",
+    "dist_to_swing_low_atr",
+    "htf_1h_rsi_14",
+    "realized_vol_20",
+    "atr_percentile_100",
+    "atr_pct",
+    "dist_to_swing_high_atr",
+    "volume_z_score",
+    "ema_20_slope_atr",
+    "hour_cos",
+    "momentum_composite",
+    "rvol_20",
+    "adx_14",
+    "ema_20_dist_atr",
+    "htf_1h_atr_percentile_100",
+    "htf_ltf_agree_bull",
+    "htf_ltf_agree_bear",
+    "htf_ltf_counter_trend",
+    "htf_ltf_alignment_score",
+    "ltf_rsi_minus_htf_rsi",
+    "both_rsi_oversold",
+    "both_rsi_overbought",
+    "vol_pct_diff_htf",
+    "both_high_vol",
+    "both_low_vol",
+    "pullback_in_bull",
+    "pullback_in_bear"
+  ],
+  "constraints": {
+    "pf_aggressive_min": 1.3,
+    "pf_balanced_min": 1.5,
+    "pf_conservative_min": 1.8,
+    "sigs_aggressive_range": [
+      15,
+      30
+    ],
+    "sigs_balanced_range": [
+      5,
+      10
+    ],
+    "sigs_conservative_range": [
+      1,
+      4
+    ],
+    "min_cutoff_separation": 0.005,
+    "cross_asset_tolerance": 0.2
+  },
+  "density_targets": {
+    "aggressive": 22.5,
+    "balanced": 7.5,
+    "conservative": 2.5
+  },
+  "all_strategy_cutoffs": {
+    "linear": {
+      "aggressive": 0.40669208766775994,
+      "balanced": 0.40669208766775994,
+      "conservative": 0.4096275800747894
+    },
+    "logit": {
+      "aggressive": 0.40669208766775994,
+      "balanced": 0.40669208766775994,
+      "conservative": 0.4096275800747894
+    },
+    "density": {
+      "aggressive": 0.40669208766775994,
+      "balanced": 0.40669208766775994,
+      "conservative": 0.4202865693635808
+    }
+  },
+  "strategy_results": {
+    "linear": {
+      "verdict": "failed",
+      "n_pass": 5,
+      "n_total": 11,
+      "checks": {
+        "pf_aggressive": "False",
+        "pf_balanced": "False",
+        "pf_conservative": "True",
+        "sigs_aggressive": "False",
+        "sigs_balanced": "False",
+        "sigs_conservative": "True",
+        "separation_aggressive_balanced": false,
+        "separation_balanced_conservative": false,
+        "cross_asset_aggressive": true,
+        "cross_asset_balanced": true,
+        "cross_asset_conservative": true
+      },
+      "details": {
+        "pf": {
+          "aggressive": 1.1332,
+          "balanced": 1.1332,
+          "conservative": 2.0025
+        },
+        "sigs_per_day": {
+          "aggressive": 37.4834,
+          "balanced": 37.4834,
+          "conservative": 3.5267
+        },
+        "cutoff_gaps": {
+          "agg\u2192bal": 0.0,
+          "bal\u2192con": 0.0029354924070294497
+        },
+        "cross_asset": {
+          "aggressive": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "balanced": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "conservative": {
+            "mean_pf": 2.388866666666667,
+            "max_dev_pct": 0.11146150196746032
+          }
+        }
+      },
+      "cutoffs": {
+        "aggressive": 0.40669208766775994,
+        "balanced": 0.40669208766775994,
+        "conservative": 0.4096275800747894
+      }
+    },
+    "logit": {
+      "verdict": "failed",
+      "n_pass": 5,
+      "n_total": 11,
+      "checks": {
+        "pf_aggressive": "False",
+        "pf_balanced": "False",
+        "pf_conservative": "True",
+        "sigs_aggressive": "False",
+        "sigs_balanced": "False",
+        "sigs_conservative": "True",
+        "separation_aggressive_balanced": false,
+        "separation_balanced_conservative": false,
+        "cross_asset_aggressive": true,
+        "cross_asset_balanced": true,
+        "cross_asset_conservative": true
+      },
+      "details": {
+        "pf": {
+          "aggressive": 1.1332,
+          "balanced": 1.1332,
+          "conservative": 2.0025
+        },
+        "sigs_per_day": {
+          "aggressive": 37.4834,
+          "balanced": 37.4834,
+          "conservative": 3.5267
+        },
+        "cutoff_gaps": {
+          "agg\u2192bal": 0.0,
+          "bal\u2192con": 0.0029354924070294497
+        },
+        "cross_asset": {
+          "aggressive": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "balanced": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "conservative": {
+            "mean_pf": 2.388866666666667,
+            "max_dev_pct": 0.11146150196746032
+          }
+        }
+      },
+      "cutoffs": {
+        "aggressive": 0.40669208766775994,
+        "balanced": 0.40669208766775994,
+        "conservative": 0.4096275800747894
+      }
+    },
+    "density": {
+      "verdict": "failed",
+      "n_pass": 6,
+      "n_total": 11,
+      "checks": {
+        "pf_aggressive": "False",
+        "pf_balanced": "False",
+        "pf_conservative": "True",
+        "sigs_aggressive": "False",
+        "sigs_balanced": "False",
+        "sigs_conservative": "True",
+        "separation_aggressive_balanced": false,
+        "separation_balanced_conservative": true,
+        "cross_asset_aggressive": true,
+        "cross_asset_balanced": true,
+        "cross_asset_conservative": true
+      },
+      "details": {
+        "pf": {
+          "aggressive": 1.1332,
+          "balanced": 1.1332,
+          "conservative": 2.0602
+        },
+        "sigs_per_day": {
+          "aggressive": 37.4834,
+          "balanced": 37.4834,
+          "conservative": 3.3584
+        },
+        "cutoff_gaps": {
+          "agg\u2192bal": 0.0,
+          "bal\u2192con": 0.013594481695820837
+        },
+        "cross_asset": {
+          "aggressive": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "balanced": {
+            "mean_pf": 1.1571,
+            "max_dev_pct": 0.023852735286492153
+          },
+          "conservative": {
+            "mean_pf": 2.467766666666667,
+            "max_dev_pct": 0.09955020058622506
+          }
+        }
+      },
+      "cutoffs": {
+        "aggressive": 0.40669208766775994,
+        "balanced": 0.40669208766775994,
+        "conservative": 0.4202865693635808
+      }
+    }
+  },
+  "winner": "density",
+  "winner_verdict": "failed",
+  "winner_cutoffs": {
+    "aggressive": 0.40669208766775994,
+    "balanced": 0.40669208766775994,
+    "conservative": 0.4202865693635808
+  },
+  "per_symbol_metrics": [
+    {
+      "symbol": "EURUSD",
+      "tier": "aggressive",
+      "n_trades": 17004,
+      "wins": 7399,
+      "losses": 9484,
+      "pf": 1.1702,
+      "wr": 0.4383,
+      "sigs_per_day": 35.7574,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "EURUSD",
+      "tier": "balanced",
+      "n_trades": 17004,
+      "wins": 7399,
+      "losses": 9484,
+      "pf": 1.1702,
+      "wr": 0.4383,
+      "sigs_per_day": 35.7574,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "EURUSD",
+      "tier": "conservative",
+      "n_trades": 17004,
+      "wins": 7399,
+      "losses": 9484,
+      "pf": 1.1702,
+      "wr": 0.4383,
+      "sigs_per_day": 35.7574,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDJPY",
+      "tier": "aggressive",
+      "n_trades": 18644,
+      "wins": 7852,
+      "losses": 10703,
+      "pf": 1.1004,
+      "wr": 0.4232,
+      "sigs_per_day": 39.2095,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDJPY",
+      "tier": "balanced",
+      "n_trades": 18644,
+      "wins": 7852,
+      "losses": 10703,
+      "pf": 1.1004,
+      "wr": 0.4232,
+      "sigs_per_day": 39.2095,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDJPY",
+      "tier": "conservative",
+      "n_trades": 2158,
+      "wins": 1184,
+      "losses": 964,
+      "pf": 1.8423,
+      "wr": 0.5512,
+      "sigs_per_day": 4.5384,
+      "cutoff": 0.4203
+    },
+    {
+      "symbol": "GBPUSD",
+      "tier": "aggressive",
+      "n_trades": 17608,
+      "wins": 7594,
+      "losses": 9891,
+      "pf": 1.1517,
+      "wr": 0.4343,
+      "sigs_per_day": 37.0397,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "GBPUSD",
+      "tier": "balanced",
+      "n_trades": 17608,
+      "wins": 7594,
+      "losses": 9891,
+      "pf": 1.1517,
+      "wr": 0.4343,
+      "sigs_per_day": 37.0397,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "GBPUSD",
+      "tier": "conservative",
+      "n_trades": 1843,
+      "wins": 1155,
+      "losses": 647,
+      "pf": 2.6777,
+      "wr": 0.641,
+      "sigs_per_day": 3.8769,
+      "cutoff": 0.4203
+    },
+    {
+      "symbol": "AUDUSD",
+      "tier": "aggressive",
+      "n_trades": 16863,
+      "wins": 7395,
+      "losses": 9363,
+      "pf": 1.1847,
+      "wr": 0.4413,
+      "sigs_per_day": 35.4764,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "AUDUSD",
+      "tier": "balanced",
+      "n_trades": 16863,
+      "wins": 7395,
+      "losses": 9363,
+      "pf": 1.1847,
+      "wr": 0.4413,
+      "sigs_per_day": 35.4764,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "AUDUSD",
+      "tier": "conservative",
+      "n_trades": 16863,
+      "wins": 7395,
+      "losses": 9363,
+      "pf": 1.1847,
+      "wr": 0.4413,
+      "sigs_per_day": 35.4764,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDCHF",
+      "tier": "aggressive",
+      "n_trades": 17894,
+      "wins": 7648,
+      "losses": 10108,
+      "pf": 1.1349,
+      "wr": 0.4307,
+      "sigs_per_day": 37.6485,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDCHF",
+      "tier": "balanced",
+      "n_trades": 17894,
+      "wins": 7648,
+      "losses": 10108,
+      "pf": 1.1349,
+      "wr": 0.4307,
+      "sigs_per_day": 37.6485,
+      "cutoff": 0.4067
+    },
+    {
+      "symbol": "USDCHF",
+      "tier": "conservative",
+      "n_trades": 1710,
+      "wins": 997,
+      "losses": 673,
+      "pf": 2.2221,
+      "wr": 0.597,
+      "sigs_per_day": 3.5978,
+      "cutoff": 0.4203
+    }
+  ]
+}
