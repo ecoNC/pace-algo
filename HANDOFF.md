@@ -1373,23 +1373,22 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 
 ### Immediate next actions
 
-1. **EINMALIGES Setup: GitHub PAT in Colab Secrets ablegen** (vor erstem Auto-Push-Run). Anleitung in [/docs/colab_auto_push.md](docs/colab_auto_push.md). Token-Name in Colab: `GITHUB_TOKEN`. Permissions: nur `Contents: Read+Write` auf `ecoNC/pace-algo`.
+1. ✅ **NB12 Colab-Run ABGESCHLOSSEN 2026-05-27.** Auto-Push funktionierte (commit `58e2c27`). **Verdict: LightGBM bleibt V1-Modell** — kein Pine-fähiges Modell schlägt LGBM um ≥ +0.05 PF auf in-sample TEST. **Strategische Erkenntnis:** Consensus-Filter (alle 3 Modelle) liefert PF 2.93 auf GBPUSD-Hold-Out vs LGBM-Alone 2.54 — reserviert für V1.5-Backend. Volle Analyse in [research/model_battery_results.md](research/model_battery_results.md).
 
-2. **Nico runnt NB 12 in Colab.** Notebook gepatcht: `RANDOM_SEED=42`, Auto-Export Section 10 → `/results/`, **Auto-Push Section 11 → GitHub** (committed automatisch als ecoNC). Nach Run sind die `/results/`-Files direkt im Repo sichtbar — kein manueller Drive-Download nötig.
+2. ❗ **CSV-Sync-Bug:** Section 10 schreibt 4 CSVs + 1 JSON, aber nur die JSON ist im Commit. Nico's Section-10-Print-Output ([1/5]..[5/5]) brauchen wir zum Debuggen. Nicht blockierend — JSON enthält alle Daten.
 
-2. **Claude analysiert NB 12 Output** und füllt `research/model_battery_results.md` mit echten Zahlen + Verdict. Entscheidung: bleibt LightGBM oder Wechsel?
+3. ⏭️ **Refactor `core/colab_push.py`** — Auto-Push-Logik als Funktion auslagern, damit NB13+ nur 3 Zeilen brauchen statt 80. Erst nach Bestätigung, dass aktuelle Implementation stabil.
 
-3. **Polygon.io-Aktivierung** ($29/Monat) — separate Nico-Entscheidung, wird relevant für Phase B (NB13 Cross-Asset). Kann noch aufgeschoben werden bis Phase A abgeschlossen.
+4. ⏭️ **NB 13 (Cross-Asset Generalization) bauen** — Plan in [research/asset_generalization.md](research/asset_generalization.md). **Verschärfte Forschungsfragen durch NB12:** Hält XGBoost-Marginal-Lift (+0.135 PF auf GBPUSD) über mehrere Asset-Klassen? Funktioniert Consensus-Filter auch jenseits FX?
 
-4. **NB 13 (Cross-Asset Generalization) bauen** — nach Phase A Abschluss. Plan steht in `research/asset_generalization.md`. Vorbedingung: Polygon-Daten oder zumindest Crypto-Pool (KuCoin) bereit.
+5. **Polygon.io-Aktivierung** ($29/Monat) — separate Nico-Entscheidung, wird relevant für NB13 (Indices SPY/QQQ). Crypto via KuCoin ist frei verfügbar.
 
-5. **NICHT** NB 09 (Pine Generator) bauen vor Phase D Abschluss. Locked rule.
+6. **NICHT** NB 09 (Pine Generator) bauen vor Phase D Abschluss. Locked rule.
 
 ### Open decisions
 
-- Nach NB 12: welches Modell für V1? (siehe Decision-Tree in `research/model_battery_results.md`)
-- Phase B Start: Polygon kaufen oder zuerst nur mit Crypto-Erweiterung arbeiten?
-- Phase D Variante: Universal (A) vs Per-Cluster-Kalibrierung (B) vs Multi-Modell-Router (C)?
+- ⏳ Polygon-Aktivierung jetzt für NB13 oder erst nach Crypto-Cross-Asset-Test?
+- ⏳ Phase D Variante: Universal (A) vs Per-Cluster-Kalibrierung (B) vs Multi-Modell-Router (C)? — entschieden in NB15 mit echten Daten.
 
 ---
 
@@ -1651,4 +1650,6 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-27 | arbeits-pc | work | Added Section 0.0 — **Standard Boot Prompt**. Nico now has one fixed copy-paste prompt to start any new chat on any machine. Claude's response protocol on boot is mechanically defined (git pull → read HANDOFF → 2-sentence status). | (next commit) | Nico starts new chat (context refresh). Use the boot prompt. Next substantive work: NB 12 debug cycle. |
 | 2026-05-27 | arbeits-pc | work | **Strategischer Refactor + Doku-Struktur eingeführt.** (1) Strategie reaffirmiert: Robustheit/Cross-Asset/Multi-TF > Single-Asset-PF/Speed. (2) Neue Ordner: `/docs/` (7 Files: roadmap, architecture, feature_registry, model_registry, pine_constraints, backtesting_vision, deployment_plan), `/research/` (6 Files: README, phase1_findings, feature_experiments, shap_analysis, model_battery_results, asset_generalization, timeframe_comparisons), `/results/` (5 Unterordner: json_exports, benchmark_tables, walk_forward_summaries, per_symbol_metrics, yearly_stability_tables). (3) README.md komplett neu geschrieben (Universal-Vision, Phase A-E Roadmap, aktueller Stand). (4) NB12 gepatcht: `RANDOM_SEED=42` für LGBM/XGB/CatBoost, Section 10 mit Auto-Export aller Ergebnisse nach `/results/`. (5) HANDOFF.md Section 16 aktualisiert. | `0cc55a4` | **Nico startet NB12 in Colab** (mit `git pull` vorher in Drive-Project, damit gepatchter Code da ist). Nach Run: Outputs an Claude + `/results/`-Files in Repo committen. Dann analysiert Claude und füllt `research/model_battery_results.md`. |
 | 2026-05-27 | arbeits-pc | work | **Colab→GitHub Auto-Push-Pattern.** NB12 Section 11 hinzugefügt: nach Section 10 Export pusht das Notebook die `/results/`-Files direkt zu GitHub (commit als ecoNC via Fine-grained PAT aus Colab Secrets). Damit entfällt der manuelle Drive-Download. Wiederverwendbares Pattern in [/docs/colab_auto_push.md](docs/colab_auto_push.md) — Code-Snippet + Setup-Anleitung für NB13/14/15. HANDOFF Section 16 angepasst (Step 1: einmaliges PAT-Setup). | `af58158` | **Nico:** einmal PAT in Colab Secrets ablegen (siehe docs/colab_auto_push.md), dann NB12 mit Section 10 + Section 11 laufen lassen. Sibling-Claude sieht die Results dann direkt im Repo. |
+| 2026-05-27 | colab (heim-account oder arbeits-account) | — | **NB12 Run 1 abgeschlossen.** Auto-Push funktionierte (nur JSON gepusht, CSVs fehlen — Bug zu untersuchen). Verdict: LightGBM bleibt V1-Modell. Consensus-Filter (alle 3 Modelle) liefert auf GBPUSD-Hold-Out PF 2.93 (+0.39 über LGBM-Alone) — strategischer V1.5-Backend-Edge. NB12-Stability sehr gut (CV 0.145 für LGBM, alle Modelle CV < 0.20). XGBoost-Lift auf Hold-Out +0.135 PF — interessant aber nicht robust (nur 1 Symbol). | `58e2c27` (auto-push) | **Claude:** model_battery_results.md gefüllt, model_registry/roadmap/deployment_plan aktualisiert. CSV-Bug debuggen. NB13 (Cross-Asset) planen mit verschärften Fragen aus NB12-Erkenntnissen. |
+| 2026-05-27 | arbeits-pc | work | **NB12-Analyse + Doku-Sync nach Run 1.** research/model_battery_results.md komplett mit echten Zahlen befüllt, Verdict + CTO-Empfehlung dokumentiert. docs/model_registry.md erweitert mit Stand 2026-05-27. docs/roadmap.md Phase A auf ABGESCHLOSSEN gesetzt, Phase B (NB13) als ACTIVE markiert. docs/deployment_plan.md V1.5-Sektion um Consensus-Filter-Plan erweitert. HANDOFF Section 16 + 19 updated. | (next commit) | Nico bestätigt LGBM-V1-Entscheidung oder Pushback. Dann: CSV-Bug debuggen + NB13 starten + core/colab_push.py refactoren. |
 

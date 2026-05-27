@@ -37,19 +37,20 @@ Alle trainierten Modelle mit Hyperparams + OOS-Metriken. Quelle der Wahrheit fü
 
 NB12 vergleicht **identische Hyperparameter** (30 trees, depth 3, lr=0.05, RANDOM_SEED=42) über 4 Modelle:
 
-| Modell | Pine-export? | NB12 Status | Wartet auf |
-|---|---|---|---|
-| LightGBM | ✅ | Baseline für Lift-Threshold | Colab-Run |
-| XGBoost | ✅ | Trainiert auf gleichen Splits | Colab-Run |
-| CatBoost | ❌ research-only | Trainiert für Vergleich | Colab-Run |
-| Voting (LGBM+XGB+Cat avg) | ⚠️ Cat-abhängig | — | Colab-Run |
-| Consensus (alle 3 stimmen) | ⚠️ Cat-abhängig | Filter, kein Modell | Colab-Run |
+| Modell | Pine-export? | In-Sample Premium PF | GBPUSD Hold-Out PF | Stability CV | Verdict |
+|---|---|---:|---:|---:|---|
+| **LightGBM** | ✅ | 1.952 | 2.537 | 0.145 | **V1-Sieger** |
+| XGBoost | ✅ | 1.945 | 2.672 | 0.188 | Marginal, Stability schwächer |
+| CatBoost | ❌ research-only | 1.921 | 2.559 | 0.112 | Research-Komponente für Consensus |
+| Voting (avg LGBM+XGB+Cat) | ⚠️ Cat-abhängig | 1.968 | 2.613 | 0.162 | Lift +0.016 — nicht signifikant |
+| **Consensus (alle 3 stimmen)** | ⚠️ Cat-abhängig | 1.973 | **2.929** 🔥 | — | **V1.5-Backend-Gold** |
 
-**Entscheidungslogik:** Anderes Modell wird LightGBM nur ersetzen, wenn:
-- `Premium-PF-Lift ≥ +0.05` UND
-- Pine-exportierbar (oder explizite Backend-V1-Akzeptanz)
+**Entscheidung:** LightGBM bleibt V1-Modell. Lift kein anderer Pine-fähiger Modell ≥ +0.05 auf in-sample TEST. Auf GBPUSD-Hold-Out hat XGBoost marginal +0.135 PF, aber nur 1 Symbol, kein robustes Signal — Phase B (NB13) muss das auf mehrere Asset-Klassen bestätigen.
 
-Ergebnisse landen in `/results/json_exports/nb12_model_battery_{date}.json` und werden in `/research/model_battery_results.md` interpretiert.
+**Strategische Reservierung:** Consensus-Filter (alle 3 Modelle) liefert auf GBPUSD-Hold-Out PF 2.93 (+0.39 über LightGBM-Alone). Das ist die größte Edge-Steigerung seit Phase 1 — aber erfordert CatBoost, also NICHT Pine-fähig. Reserviert für **V1.5 Hybrid-Backend**.
+
+Volle Analyse: [research/model_battery_results.md](../research/model_battery_results.md).
+Run-Snapshot: [results/json_exports/nb12_model_battery_2026-05-27.json](../results/json_exports/nb12_model_battery_2026-05-27.json).
 
 ---
 

@@ -7,7 +7,7 @@ Jede Phase muss abgeschlossen sein, bevor die nächste startet. Phasen-Ergebniss
 
 ---
 
-## Phase A — Model Battery (NB12) 🟡 IN PROGRESS
+## Phase A — Model Battery (NB12) ✅ ABGESCHLOSSEN 2026-05-27
 
 **Frage:** Welches Modell generalisiert am besten unter identischen Walk-Forward-Splits?
 
@@ -30,11 +30,13 @@ Jede Phase muss abgeschlossen sein, bevor die nächste startet. Phasen-Ergebniss
 - `/results/json_exports/nb12_model_battery_{date}.json`
 - `/research/model_battery_results.md` (Interpretation der Zahlen)
 
-**Status:** Notebook gepatcht mit `RANDOM_SEED=42` + Auto-Export nach `/results/`. Wartet auf Nico's Colab-Run.
+**Status:** ✅ Run abgeschlossen 2026-05-27. **Verdict: LightGBM bleibt V1-Modell.** Kein Pine-fähiges Modell schlägt LGBM um ≥ +0.05 PF. **Strategische Erkenntnis:** Consensus-Filter (alle 3 Modelle stimmen zu) liefert PF 2.93 auf GBPUSD-Hold-Out vs LGBM-Alone 2.54 — reserviert für V1.5-Backend.
+
+Volle Analyse: [/research/model_battery_results.md](../research/model_battery_results.md).
 
 ---
 
-## Phase B — Cross-Asset Generalization (NB13) ⚪ NEXT
+## Phase B — Cross-Asset Generalization (NB13) 🟡 NEXT — ACTIVE
 
 **Frage:** Welche Features generalisieren über Asset-Klassen, welche sind asset-spezifisch?
 

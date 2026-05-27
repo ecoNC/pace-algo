@@ -37,10 +37,11 @@
 ## V1.5: Hybrid (Post-Launch, 3–6 Monate nach V1)
 
 **Was sich ändert:**
-- Pine läuft weiterhin ML-Modell lokal (kein Inferenz-Lag, kein Webhook-Risiko)
+- Pine läuft weiterhin LightGBM-Modell lokal (kein Inferenz-Lag, kein Webhook-Risiko)
 - Backend (in `deploy_server/`) wird aktiviert für Continuous Retraining
 - Backend trainiert monatlich automatisch auf neuen Daten + Drift-Detection
 - Neue Pine-Version wird auto-generated und an User über Update-Channel ausgeliefert
+- **Consensus-Filter (LGBM + XGB + CatBoost)** läuft im Backend — Pine fragt Backend an, ob Premium-Signal "Consensus-validated" ist. Datenbasis: NB12 zeigt PF-Lift 2.54 → 2.93 auf GBPUSD-Hold-Out wenn alle 3 zustimmen.
 
 **Komponenten:**
 - `deploy_server/retrain_pipeline/` — Cron-job (Cloud-Run oder ähnliches)
