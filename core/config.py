@@ -174,3 +174,91 @@ PHASE_B_THRESHOLDS = {
     # Stability guardrails
     "max_stability_cv":            0.25,
 }
+
+# ---------------------------------------------------------------------------
+# PHASE C THRESHOLDS — NB14 Multi-TF Deep Dive (FX-Modell, V1)
+# ---------------------------------------------------------------------------
+# Reference: /research/timeframe_comparisons.md hypotheses H1–H5.
+# Produktorientierte Schwellen — Stability/Konsistenz/UX > Peak-PF.
+# Per Nico-Direktive 2026-05-27.
+PHASE_C_THRESHOLDS = {
+    # H1 — 5m als V1-Default-TF
+    "h1_min_premium_pf_holdout":   2.0,
+    "h1_max_stability_cv":         0.20,
+    "h1_max_drawdown":             0.18,
+    "h1_min_trades_per_day":       3.0,   # premium tier, pro Symbol
+
+    # H2 — 15m als "Conservative"-Profil
+    "h2_min_premium_pf":           1.5,
+    "h2_max_stability_cv":         0.15,
+    "h2_min_trades_per_day":       1.0,
+
+    # H3 — 30m/1h von V1 ausschließen
+    "h3_exclude_threshold_pf":     1.5,   # OOS unter diesem PF → out
+
+    # H4 — Pooled-Modell besser als Single-TF-Modell
+    "h4_min_pooled_lift":          0.0,   # nicht schlechter
+    "h4_required_tf_count":        3,     # in mind. 3 von 4 TFs gewinnen
+
+    # H5 — Top-3%-Cutoff auf 1h reanimiert die Edge
+    "h5_relaxed_cutoff_premium":   0.97,  # top 3% statt top 1%
+    "h5_min_trades_per_year":      30,
+}
+
+# ---------------------------------------------------------------------------
+# PRODUCT METRIC THRESHOLDS — NB14 (und alle folgenden Produkt-Notebooks)
+# ---------------------------------------------------------------------------
+# Nicht-Quant-Schwellen die Produktqualität (UX, Alert-Verhalten, Chart-Sauberkeit)
+# bewerten. Hier gilt: lieber wenige aussagekräftige Signale als ein Alert-Sturm.
+PRODUCT_METRIC_THRESHOLDS = {
+    # Signal-Frequenz pro Tier — Erwartung "frequent enough to feel active,
+    # selective enough to feel premium"
+    "signals_per_day_premium_min":      1.0,    # min/symbol/Tag für Premium
+    "signals_per_day_premium_max":      8.0,    # max — sonst Alert-Müdigkeit
+    "signals_per_day_high_min":         3.0,
+    "signals_per_day_high_max":         20.0,
+    "signals_per_day_standard_max":     80.0,   # absolute Obergrenze gesamt
+
+    # Trade Duration — wie lange läuft ein offener Trade?
+    "trade_duration_min_bars":          3,      # < 3 = "scalp-spam", Pine-Boxes überladen
+    "trade_duration_max_bars":          24,     # > 24 = Trade läuft zu lang, User verliert Fokus
+
+    # Premium Signal Density — Anteil aller Bars die Premium-Signal sind
+    "premium_density_max":              0.015,  # 1.5% — sonst nicht mehr "Premium"
+
+    # Chart Cleanliness — wie viele aktive Boxes im sichtbaren 200-Bar-Fenster
+    "max_boxes_visible_window":         8,      # Pine box-budget realistisch nutzen
+    "max_overlapping_signals":          2,      # nicht mehr als 2 Signale gleichzeitig offen
+
+    # Session Dependency — Edge sollte nicht in 1 Session konzentriert sein
+    "max_signal_share_single_session":  0.65,   # max 65% aller Signale in einer Session
+
+    # Pine UX Practicality — Pine-Budget für diesen TF
+    "max_pine_ops_per_bar":             5000,   # hard Pine-Limit-Sicherheitspuffer
+    "max_request_security_calls":       12,
+}
+
+# ---------------------------------------------------------------------------
+# QUALITY ANCHOR (ANN-010) — Multi-Model-Gating
+# ---------------------------------------------------------------------------
+# Reference: docs/decisions/ANN-010-quality-anchor.md
+# Jedes neue Modell (FX-V1, Crypto-V2, Indices-V2, Commodity-V2) MUSS diesen Check passieren.
+QUALITY_ANCHOR = {
+    "strict": {
+        "min_premium_pf_oos":          1.5,
+        "min_premium_pf_holdout":      1.4,
+        "min_pf_per_symbol":           1.3,
+        "max_stability_cv":            0.25,
+        "min_pf_per_year":             1.2,
+        "min_trades_per_year_tier":    30,
+    },
+    "soft_reference": {
+        "fx_premium_pf_anchor":        2.0,
+        "premium_wr_target":           0.60,
+    },
+    "deployment_action": {
+        "all_strict_passed":  "auto-deploy candidate",
+        "missing_1_strict":   "requires Nico explicit override",
+        "missing_2plus":      "deployment blocked — re-research required",
+    },
+}
