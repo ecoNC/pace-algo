@@ -1,6 +1,6 @@
 # Timeframe Comparisons — Phase C (NB14)
 
-**Status:** 🟡 NEXT — Plan + Hypothesen für NB14, verfeinert nach NB13-Verdict (Crypto-Pivot)
+**Status:** ✅ ABGESCHLOSSEN — NB14 Run 1 am 2026-05-27, Verdict in [ANN-011](../docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md)
 **Decision-Framework:** [/docs/_phase_decision_template.md](../docs/_phase_decision_template.md)
 **Architektur-Lock:** [ANN-009 Multi-Model Router](../docs/decisions/ANN-009-multi-model-router-architecture.md) — NB14 fokussiert auf **FX-Modell** (V1-Scope), Crypto/Indices/Commodity separat
 **Quality-Anchor:** [ANN-010](../docs/decisions/ANN-010-quality-anchor.md) — Premium PF ~2.0 ist Vergleichspunkt
@@ -108,82 +108,162 @@ NB13: 5m 4323 Premium-Trades insgesamt, 1h nur ~110. Vielleicht bringt Tier-Cuto
 
 ---
 
-## 3. Resultat (wird nach NB14-Run gefüllt)
+## 3. Resultat (NB14 Run 1, 2026-05-27, commit `81f2316`)
 
-⏳ TBD nach Colab-Run.
+**Datenquelle:** `results/nb14/summaries/nb14_full_snapshot_2026-05-27.json`
+**Run-ID:** `nb14_2026-05-27T16-15-44Z_81f2316`
 
-Wird folgende Sections enthalten:
+### A. Per-TF Premium Metrics (in-sample TEST)
 
-**A. Per-TF Premium Metrics (in-sample TEST):**
+| TF | PF | WR | ExpR | MDD | Stability CV | Trades/Tag/Symbol | n_trades |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **5m** | **2.00** | **57.2%** | +0.424 | **2.9%** | **0.145** | **3.53** | 3,354 |
+| 15m | 1.23 | 45.1% | +0.140 | 34.3% | 0.070 | 1.00 | 954 |
+| 30m | 1.04 | 40.9% | +0.020 | 134% | 0.051 | 1.57 | 1,495 |
+| 1h | 0.98 | 39.5% | -0.011 | 150% | 0.108 | 4.65 | 4,414 |
 
-| TF | PF | WR | ExpR | MDD | Stability CV | Trades/Tag/Symbol |
-|---|---:|---:|---:|---:|---:|---:|
-| 5m | ? | ? | ? | ? | ? | ? |
-| 15m | ? | ? | ? | ? | ? | ? |
-| ... | ... | ... | ... | ... | ... | ... |
+→ Nur 5m erreicht produktwürdige PF. 30m/1h haben Kapital-Wipeouts in der Equity-Kurve (MDD > 100%).
 
-**B. Per-TF Hold-Out (GBPUSD/AUDUSD/USDCHF gemittelt):**
+### B. Per-TF Hold-Out (GBPUSD/AUDUSD/USDCHF gemittelt)
 
-| TF | Hold-Out Premium PF | Hold-Out WR | Trades-Drop vs in-sample |
+| TF | Hold-Out Premium PF | Mean WR | Min PF | Max PF |
+|---|---:|---:|---:|---:|
+| **5m** | **2.39** | **60.9%** | 2.12 (USDCHF) | 2.57 (GBPUSD) |
+| 15m | 1.83 | — | 1.67 | — |
+| 30m | 1.28 | — | 1.17 | — |
+| 1h | 0.90 | — | 0.84 | — |
+
+**5m Hold-Out per Symbol:**
+
+| Symbol | PF | WR | n_trades |
 |---|---:|---:|---:|
-| 5m | ? | ? | ? |
-| ... | ... | ... | ... |
+| GBPUSD | **2.57** | **63.2%** | 1,951 |
+| AUDUSD | **2.47** | **62.2%** | 1,182 |
+| USDCHF | **2.12** | 58.6% | 1,778 |
 
-**C. Per-TF SHAP-Top-5:**
+→ 5m Hold-Out outperformt in-sample (WR 60.9% vs 57.2%, PF 2.39 vs 2.00). **Generalisierung ist real**, kein Overfit-Verdacht.
+
+### C. Per-TF SHAP-Top-5
 
 | TF | Top-1 | Top-2 | Top-3 | Top-4 | Top-5 |
 |---|---|---|---|---|---|
-| 5m | hour_sin | ema_20_dist_atr | dist_to_swing_low | ... | ... |
-| ... | ... | ... | ... | ... | ... |
+| 5m | hour_sin (0.0053) | ema_20_dist_atr (0.0037) | hour_cos (0.0012) | rvol_20 (0.0009) | dist_to_swing_low_atr (0.0) |
+| 15m | hour_sin (0.0062) | ema_20_dist_atr (0.0017) | htf_ltf_agree_bull (0.0008) | atr_percentile_100 (0.0008) | rvol_20 (0.0006) |
+| 30m | hour_sin (0.0031) | htf_ltf_agree_bull (0.0010) | rvol_20 (0.0010) | dist_to_swing_low_atr (0.0008) | realized_vol_20 (0.0005) |
+| 1h | **adx_14** (0.0042) | atr_pct (0.0022) | realized_vol_20 (0.0013) | ltf_rsi_minus_htf_rsi (0.0011) | atr_percentile_100 (0.0008) |
 
-**D. Pooled vs Single-TF (H4):**
+→ **Edge-Paradigma-Wechsel zwischen 30m und 1h:** `hour_sin` (Time-of-Day Edge) ist auf 5m/15m/30m Top-1, verschwindet auf 1h komplett. Auf 1h dominiert `adx_14` (Trendstärke). Andere Marktstruktur, anderes Modell-Paradigma nötig.
 
-| TF | Single-TF PF | Pooled-Modell PF auf gleichem TF | Lift |
-|---|---:|---:|---:|
-| 5m | ? | ? | ? |
-| ... | ... | ... | ... |
+### D. Pooled vs Single-TF (H4)
+
+| TF | Single-TF PF | Pooled-Modell PF auf gleichem TF | Lift | Pooled n |
+|---|---:|---:|---:|---:|
+| 5m | 2.00 | 2.08 | +0.08 | 3,161 |
+| 15m | 1.23 | 1.42 | +0.19 | 1,327 |
+| 30m | 1.04 | 1.24 | +0.20 | 1,036 |
+| 1h | 0.98 | 1.13 | +0.15 | 439 |
+
+→ Pooled-Modell ist auf 4/4 TFs besser. Lift +0.08 bis +0.20 PF. **H4 wäre PASS** (lift ≥ 0 auf ≥ 3 TFs), aber Pooled-PF auf 30m/1h liegt immer noch unter Quality-Anchor — Pooling rettet die schwachen TFs nicht zur Deploy-Qualität.
+
+### E. Produkt-Metriken (5m Premium-Tier)
+
+| Metrik | Wert | Threshold | Pass |
+|---|---:|---:|---|
+| Signals/Day/Symbol | 3.53 | [1.0 – 8.0] | ✓ |
+| Premium Density | 1.22% | ≤ 1.5% | ✓ |
+| Trade Duration (mean bars) | 6.2 | [3 – 24] | ✓ |
+| Chart Cleanliness (max overlapping) | 13 | ≤ 2 | ✗ |
+| Session Dependency (NY share) | **66.6%** | ≤ 65% | ✗ |
+
+→ 5m erreicht `product_grade_C` (3/5). Verbesserungspunkte sind klar identifiziert: NY-Konzentration + Chart-Überlappung. R-13 Research-Item.
+
+### F. Session-Verteilung (5m Premium)
+
+| Session | Share | Notes |
+|---|---:|---|
+| **NY (13–22 UTC)** | **66.6%** | überproportional konzentriert |
+| Asia | 5.0% | minimal |
+| London | 0.3% | nahezu null |
+| LDN/NY Killzone | 0.03% | nahezu null |
+
+→ Premium-Signal-Engine ist faktisch ein **NY-Session-Detector**. Großer Hinweis für Marketing + Product-Positioning.
+
+### G. Yearly Stability (5m Premium)
+
+| Year | PF |
+|---|---:|
+| 2024 | 1.79 |
+| 2025 | 2.04 |
+| 2026 | **2.52** |
+
+→ Edge wird mit der Zeit besser, nicht schlechter. CV 0.145 unter 0.20-Schwelle.
+
+### H. Quality-Anchor-Status (ANN-010)
+
+| TF | Severity | strict pass | soft pass |
+|---|---|---:|---:|
+| 5m | **SOFT_ONLY** ✓ | 7/7 | 1/2 (matches FX-anchor ✓, WR-target ✗) |
+| 15m | BLOCKED | 5/7 | 0/2 |
+| 30m | BLOCKED | 3/7 | 0/2 |
+| 1h | BLOCKED | 3/7 | 0/2 |
+
+→ Nur 5m ist deploy-fähig (mit Marketing-Transparenz wegen WR < 60% Soft-Target).
 
 ---
 
-## 4. Decision (wird nach NB14-Run gefüllt)
-
-⏳ TBD nach Colab-Run.
-
-Decision-Matrix-Skelett:
+## 4. Decision (gelockt in ANN-011)
 
 ```
 H1 (5m Sweet Spot)
-├── PASS → 5m bleibt V1-Default-TF, Profile "Balanced"
-└── FAIL → höhere TFs neu evaluieren
+  → ⚠️ TECHNISCH PASS (alle Schwellen erfüllt), aber product_grade_C statt A/B
+  → KONSEQUENZ: 5m wird V1-Default-TF, Marketing muss session-Konzentration kommunizieren
 
 H2 (15m als Conservative-Profil)
-├── PASS → 15m wird V1-Profile "Conservative"
-└── FAIL → User-Profile-Konzept wird ohne 15m gebaut
+  → ❌ FAIL (PF 1.23 < 1.5, MDD 34%, in-sample-Schwäche)
+  → KONSEQUENZ: Conservative-Profil wird KEIN TF-Switch, sondern Tier-Cutoff auf 5m
 
 H3 (30m/1h ausschließen)
-├── PASS → 30m+1h nicht in V1, vielleicht V1.5
-└── FAIL → mindestens einer der beiden bleibt drin
+  → ✅ PASS (beide PF < 1.5 in-sample, MDD > 100%)
+  → KONSEQUENZ: 30m/1h nicht in V1; auch nicht in V1.5 ohne Re-Research
 
 H4 (Pooled > Single-TF)
-├── PASS → V1-Pine embeds POOLED-Modell, Inferenz auf jeglichem TF
-└── FAIL → V1-Pine embeds Single-TF-Modell (5m), nur für 5m-Charts
+  → ✅ TECHNISCH PASS (Lift +0.08 bis +0.20 auf allen 4 TFs)
+  → KONSEQUENZ: Pooled-Approach wird in V1.5/V2 erwogen, NICHT in V1 (Single-Modell-Simplicity)
 
-H5 (Cutoff-Variation auf 1h)
-├── PASS → Per-TF-Cutoffs werden in V1 unterstützt
-└── FAIL → Single-Cutoff (top 1% VAL) bleibt für alle TFs
+H5 (1h Top-3%-Cutoff)
+  → ❌ FAIL (PF blieb 0.98, weit unter 1.5)
+  → KONSEQUENZ: 1h ist mit keinem Cutoff-Trick rettbar
 ```
+
+**FINAL V1-DECISION:**
+- **Default-TF:** 5m
+- **Supported TFs in V1:** nur 5m
+- **User-Profile-Mapping:** verschiedene Tier-Cutoffs auf 5m (NICHT verschiedene TFs)
+- **Aggressive** → Standard-Tier (Top 10%)
+- **Balanced** → High-Tier (Top 3%)
+- **Conservative** → Premium-Tier (Top 1%)
+
+→ Vollständige Konsequenzen in [ANN-011](../docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md).
 
 ---
 
-## 5. Konsequenz (vorbereitet, finalisiert nach NB14)
+## 5. Konsequenz (umgesetzt in diesem Commit-Batch)
 
-Wird folgende Files updaten:
+- ✅ `docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md` — V1 TF-Lock + Profile + User-Settings-Whitelist
+- ✅ `docs/roadmap.md` — Phase C ABGESCHLOSSEN, Phase D (NB15 Pine-Generator) ACTIVE
+- ✅ `docs/model_registry.md` — FX-Modell-Slot mit `tf: '5m'` und Quality-Anchor-Status gelocked
+- ✅ `docs/pine_router_design.md` — Single-TF-V1-Logic dokumentiert (Pine zeigt Warning auf nicht-5m-Charts)
+- ✅ `docs/decisions/README.md` — ANN-011 in Index aufgenommen
+- ✅ `HANDOFF.md` Section 16 + 16a + 19 aktualisiert
 
-- `docs/decisions/ANN-011-XX.md` (neu) — finale V1-TF-Wahl als ADR
-- `docs/roadmap.md` — Phase D (NB15) startet mit klarem TF-Mandat
-- `docs/model_registry.md` — V1 FX-Modell TF-Setup gelocked
-- `docs/pine_router_design.md` — TF-Handling in Pine-Code (single oder multi-TF Modell)
-- `research/shap_analysis.md` — Per-TF SHAP-Sektion mit Daten
+### Offene Research-Items (separat, NICHT V1-blockend)
+
+| ID | Item | Priorität |
+|---|---|---|
+| R-12 | 15m-Anomalie: In-Sample 1.23 vs Hold-Out 1.83 (verdient eigene Untersuchung) | mittel — V1.5-Kandidat |
+| R-13 | NY-Session-Konzentration: 66.6% — Feature-Bug oder echter Markt-Effekt? | hoch — Marketing-relevant |
+| R-14 | Tier-Cutoff-Konvergenz: Standard- und High-Tier kollabieren auf 5m | hoch — UX-blockend |
+| R-15 | WR-Boost-Suche: 57% → 60%+ ohne PF-Verlust? Optuna-Tuning | niedrig — V1.5 |
 
 ---
 

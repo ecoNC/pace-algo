@@ -8,14 +8,45 @@
 
 ## Modell-Slot-Status
 
-| Slot | V1 Status | Modell | Premium PF | Notiz |
-|---|---|---|---|---|
-| **fx_model** | ✅ Aktiv | LightGBM 30 trees | 2.49 (5m mean, 5 Symbole) | V1-Sieger, NB13 belegt |
-| **crypto_model** | ⏳ V2 — Stub | TBD (Crypto-Spezialmodell) | — | NB13c Test ausstehend |
-| **indices_model** | ⏳ V2 — Stub | TBD | — | braucht Polygon-Aktivierung |
-| **commodity_model** | ⏳ V2 — Stub | TBD (XAU + ggf. XAG + USO) | — | Gold Phase 1 = random (ANN-003) |
+| Slot | V1 Status | Modell | TF | Premium PF (OOS) | Hold-Out PF | Quality-Anchor | Notiz |
+|---|---|---|---|---:|---:|---|---|
+| **fx_model** | ✅ Aktiv | LightGBM 30×3 | **5m only** | 2.00 in-sample | **2.39 (3 sym)** | SOFT_ONLY ✓ | V1-Sieger, NB14-locked ([ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md)) |
+| **crypto_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | NB13c Test ausstehend |
+| **indices_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | braucht Polygon-Aktivierung |
+| **commodity_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | Gold Phase 1 = random (ANN-003) |
 
 In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Badge "🚧 V2 coming". Router-Skelett ist ready, kein Refactor-Bedarf für V2.
+
+### V1 FX-Modell — Gelockte Konfiguration (ANN-011)
+
+| Parameter | Wert |
+|---|---|
+| Algorithm | LightGBM (binary classification, sigmoid output) |
+| Trees | 30 |
+| Max Depth | 3 |
+| Features (27) | Phase-1-Winner-Set (Baseline 15 + HTF-Interaction 12) |
+| Training Symbols | EURUSD, USDJPY (Walk-Forward 2020-01 → 2024-01) |
+| Validation Window | 2024-01 → 2024-07 |
+| Test Window | 2024-07 → 2026-05 |
+| Hold-Out Symbols | GBPUSD, AUDUSD, USDCHF |
+| Primary TF | **5m only** |
+| HTF Context | 1h, 4h (mit `shift(1)` Anti-Look-Ahead) |
+| Tier Cutoffs (VAL-derived) | Standard top 10% / High top 3% / Premium top 1% |
+| Random Seed | 42 (deterministic=True) |
+
+### V1 FX-Modell — Performance Snapshot
+
+**5m TEST (in-sample, 596k train rows):**
+- Premium PF 2.00 · WR 57.2% · MDD 2.9% · n_trades 3,354
+
+**5m Hold-Out (nie trainiert):**
+- GBPUSD: PF 2.57 / WR 63.2%
+- AUDUSD: PF 2.47 / WR 62.2%
+- USDCHF: PF 2.12 / WR 58.6%
+- **Mean: PF 2.39 / WR 60.9%**
+
+**Yearly Stability:**
+- 2024 PF 1.79 / 2025 PF 2.04 / 2026 PF 2.52 (CV 0.145, Edge wird besser)
 
 ---
 

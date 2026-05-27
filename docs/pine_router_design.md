@@ -1,8 +1,82 @@
 # Pine Router Design
 
-**Lock-Basis:** [ANN-009 Multi-Model Router Architecture](decisions/ANN-009-multi-model-router-architecture.md)
+**Lock-Basis:**
+- [ANN-009 Multi-Model Router Architecture](decisions/ANN-009-multi-model-router-architecture.md) — Router-Skelett
+- [ANN-011 V1 Timeframe + Profile Setup](decisions/ANN-011-v1-timeframe-and-profile-setup.md) — V1 Single-TF-Lock (5m), Profile = Tier-Cutoffs
 
 Dieses Dokument beschreibt **wie der Router in Pine Script v6 funktioniert** — nicht ob (das ist in ANN-009 gelocked).
+
+---
+
+## 0. V1-Restriktion (gelockt durch ANN-011)
+
+**V1 Pine-Code unterstützt EXKLUSIV 5-Minuten-Charts.**
+
+```pine
+//@version=6
+indicator("PaceAlgo", overlay=true)
+
+// === V1 RESTRICTION: 5m only ===
+TF_OK = timeframe.in_seconds() == 300
+
+if not TF_OK
+    label.new(bar_index, high,
+              "PaceAlgo V1 supports 5-minute charts only.\n"
+              + "Please switch to the 5m timeframe.",
+              style=label.style_label_down,
+              color=color.orange, textcolor=color.white)
+    // Kein Signal-Code wird ausgeführt
+else
+    // Vollständiger Router + FX-Modell-Pfad (Sections 1–5 unten)
+```
+
+Begründung NB14: 15m PF 1.23 / MDD 34%, 30m und 1h MDD > 100% (Kapital-Wipeouts). 1h verliert die Time-of-Day-Edge komplett (SHAP-Top-1 wechselt zu `adx_14`). Erst V1.5+ kann ggf. zusätzliche TFs unterstützen wenn pro TF ein eigenes Modell trainiert wurde.
+
+---
+
+## 0b. V1 Profile-Mapping (gelockt durch ANN-011)
+
+**Profile = Tier-Cutoffs auf 5m**, NICHT verschiedene TFs:
+
+| Profile | Tier-Cutoff (VAL-derived) | erwartete Sigs/Tag/Symbol |
+|---|---|---:|
+| Aggressive | Standard (Top 10%) | ~35 |
+| Balanced | High (Top 3%) | ~10 |
+| Conservative | Premium (Top 1%) | ~3.5 |
+
+In Pine als Input:
+
+```pine
+profile = input.string("Balanced", "Signal-Profil",
+                        options=["Aggressive", "Balanced", "Conservative"])
+
+cutoff = profile == "Aggressive"  ? cutoff_standard
+       : profile == "Balanced"    ? cutoff_high
+       :                            cutoff_premium
+
+signal_active = probability >= cutoff
+```
+
+---
+
+## 0c. User-Settings-Whitelist (gelockt durch ANN-011)
+
+**ERLAUBT** in V1-Pine-Inputs:
+- Profile-Switch (3-Stufen-Dropdown)
+- Signal-Density-Tweak (discrete +/- step)
+- Session-Filter (Multi-Check Asia/London/NY)
+- HTF-Confirmation (Boolean)
+- Alert-Frequency-Cap (5/10/20)
+- Risk-Display-Mode (Pip vs %, UI-only)
+
+**VERBOTEN** in V1-Pine-Inputs:
+- freie ML-Probability-Thresholds
+- rohe Probability-Cutoffs
+- unbounded ATR / TP / SL Multiplier
+- Feature-Toggles
+- beliebige Optimierungsparameter
+
+Begründung: Anti-Curve-Fitting (locked per ANN-006 Mantra + ANN-011 Section 4.3).
 
 ---
 

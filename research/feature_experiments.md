@@ -152,10 +152,109 @@ Siehe [/docs/feature_registry.md](../docs/feature_registry.md) für vollständig
 
 | ID | Experiment | Wann | Erwartung |
 |---|---|---|---|
-| EXP-009 | Per-Asset-Klasse SHAP-Verteilung | NB13 (Phase B) | Manche Features generalisieren, andere asset-spezifisch |
-| EXP-010 | Per-TF SHAP-Verteilung | NB14 (Phase C) | Erwarte: Session-Features hoch auf 5M/15M, niedrig auf 4H |
+| EXP-009 | Per-Asset-Klasse SHAP-Verteilung | NB13 ✅ ABGESCHLOSSEN | ⇒ NB13 belegt: SMC-Features identisch verteilt aber semantisch nicht prädiktiv auf Crypto |
+| EXP-010 | Per-TF SHAP-Verteilung | NB14 ✅ ABGESCHLOSSEN | ⇒ `hour_sin` Top-1 auf 5m/15m/30m, verschwindet auf 1h (dort `adx_14` Top-1) |
 | EXP-011 | Order-Book-Imbalance (nur für Backend V2) | V2 | Erwarte signifikanter Lift wenn Daten verfügbar |
 | EXP-012 | Sentiment-Daten (Twitter/Reddit) | V2+ | Spekulativ — Datenqualität fragwürdig |
+| **R-12** | **15m-Anomalie: In-Sample 1.23 vs Hold-Out 1.83** | V1.5-Research | Mögliche Ursachen: Sampling-Bias, Asset-Mix, Trainings-Period — verdient eigene Untersuchung |
+| **R-13** | **NY-Session-Konzentration: 66.6% aller Premium-Signale** | hoch (Marketing-relevant) | Feature-Bug oder echter Markt-Effekt? Decomposition-Test pro Session |
+| **R-14** | **Tier-Cutoff-Konvergenz: Standard- und High-Tier kollabieren auf 5m** | hoch (V1 UX-blockend) | VAL-Verteilung-Analyse + Re-Stratifikation vor V1-Release |
+| **R-15** | **WR-Boost-Suche 57% → 60%+ ohne PF-Verlust** | V1.5 | Optuna-Tuning der Hyperparams im Pine-Budget |
+
+**Hinweis zur R-Nummerierung:** R-11 = Quality-Anchor SOFT_ONLY (WR-Marketing) ist in HANDOFF Section 16a getrackt, hier nicht als Forschungs-Item geführt (es ist Marketing-Operationalisierung, kein Research-Plan).
+
+---
+
+## Research-Items aus NB14 (detailliert)
+
+### R-12: 15m-Anomalie — In-Sample-Schwäche bei Hold-Out-Stärke
+
+**Beobachtung NB14 Run 1 (2026-05-27):**
+- 15m In-Sample-Premium-PF: **1.23** (BLOCKED durch Quality-Anchor strict)
+- 15m Hold-Out-Premium-PF (3 Symbole gemittelt): **1.83** (würde Hold-Out-Schwelle 1.4 erfüllen)
+- Min Hold-Out: 1.67
+
+**Atypisches Pattern:** Üblicherweise verschlechtert sich Performance auf Hold-Out (klassisches Overfit). Hier ist das **umgekehrt** — Hold-Out outperformt In-Sample um +0.60 PF.
+
+**Mögliche Ursachen (zu testen):**
+1. **Symbol-Mix in Training:** EURUSD + USDJPY haben evtl. spezifisch schwierige 15m-Phasen während 2024 H2 – 2026 H1
+2. **Periodischer Effekt:** Bestimmte Marktphasen (z.B. 2024 Q3 Yen-Intervention) verzerren EURUSD/USDJPY-Performance asymmetrisch
+3. **Sampling-Bias:** VAL-Cutoffs (Top 1%) treffen auf 15m anders als auf 5m wegen Verteilungs-Asymmetrie
+4. **Asset-Mix:** GBPUSD/AUDUSD/USDCHF könnten "saubere" 15m-Märkte sein, EUR/USD/JPY noisy
+
+**Test-Plan (für V1.5-Research-Block):**
+- Per-Symbol 15m Premium-PF auf EURUSD/USDJPY (In-Sample) — ist EINER der beiden der Underperformer?
+- Per-Periode Premium-PF in 6-Monats-Buckets — gibt es ein "schlechtes Jahr" das den Mittelwert drückt?
+- Cross-Validation auf 15m mit allen 5 FX-Symbolen rotierend — wenn Hold-Out konsistent besser ist, ist es echtes Pattern
+
+**Wichtig:** Nicht für V1 deployen. Hold-Out 1.83 ist verlockend aber wir kennen die Ursache nicht. Locked Rule per ANN-006 Mantra.
+
+---
+
+### R-13: NY-Session-Konzentration (66.6%)
+
+**Beobachtung NB14 (5m Premium):**
+- NY-Session (13–22 UTC): **66.6% aller Signale**
+- Asia: 5.0%
+- London: 0.3% (!)
+- LDN/NY-Killzone: 0.03%
+
+Premium-Edge ist faktisch ein **NY-Session-Detector**. London nahezu null trotz hoher Liquidität — das ist unerwartet.
+
+**Mögliche Erklärungen:**
+1. **Dukascopy-Daten sind Bid-Side:** Spread-Asymmetrien während LDN-Session unterdrücken Triple-Barrier-Hits
+2. **Echter Markt-Effekt:** USD-pairs reagieren am stärksten auf US-Daten (NY-Session)
+3. **Volatilitäts-Cluster:** ATR-normalisierte Features triggern in High-Vol-NY-Bars öfter
+4. **Feature-Bug:** `hour_sin` könnte mit anderen Features in NY-Hours kreuzkorrelieren
+
+**Test-Plan:**
+- Per-Session SHAP-Decomposition (welche Features dominieren in NY vs London?)
+- Per-Session Win-Rate-Analyse (ist die Edge in NY tatsächlich höher oder gibt's nur mehr Signal-Volumen?)
+- Dukascopy Ask-Side-Daten testen (gleicher Symbol, andere Side) — sollte den Bug-Verdacht ausschließen
+- Vergleich mit unabhängiger Datenquelle (OANDA-Tick-Daten falls verfügbar)
+
+**Marketing-Implikation falls echter Effekt:** "Optimiert für NY-Session" als ehrliche Positionierung, statt "All-Day Indicator" zu vermarkten.
+
+---
+
+### R-14: Tier-Cutoff-Konvergenz
+
+**Beobachtung NB14 (5m):**
+- Standard-Cutoff (Top 10% VAL): 0.4067
+- High-Cutoff (Top 3% VAL): 0.4067 ← identisch!
+- Premium-Cutoff (Top 1% VAL): 0.4096
+
+**Problem:** Profile "Aggressive" (Standard) und "Balanced" (High) hätten **identische** Signal-Mengen. Das macht das 3-Profile-Konzept löchrig — User-UX ist beschädigt.
+
+**Wahrscheinliche Ursache:** LightGBM-Probability-Output ist auf 5m bimodal/heavy-tailed verteilt. Die Top 10% und Top 3% haben fast denselben unteren Cut.
+
+**Lösungsansätze (vor V1-Release zu validieren):**
+1. **Logit-Transform vor Quantil:** Statt `np.quantile(proba, 0.9)` arbeiten wir auf `logit(proba)` — entzerrt die Verteilung
+2. **Manual Cutoff-Stratifikation:** Cutoffs basierend auf "Wir wollen ~35 / ~10 / ~3.5 sigs/day" fest definieren statt aus Quantilen ableiten
+3. **Re-Train mit `lambda_l1` regularization:** könnte die Probability-Verteilung glätten
+4. **Verschiedene Test-Period-Splits:** Re-Sampling der VAL-Periode
+
+**Sofortmaßnahme:** NB14b-Run nur für Cutoff-Recalibration. ~10 Minuten Aufwand, klärt R-14.
+
+---
+
+### R-15: WR-Boost-Suche
+
+**Beobachtung NB14 (5m Premium):**
+- In-Sample WR: 57.2%
+- Soft-Anchor-Target (ANN-010): 60.0%
+- Gap: -2.8pp
+
+Quality-Anchor SOFT_ONLY weil WR nicht erreicht. PF 2.0 + niedrige MDD + stabile CV gleichen das aus für die Strict-Schwellen — aber Marketing-Sprache muss WR ehrlich kommunizieren.
+
+**Anmerkung:** Hold-Out WR ist **60.9%** (über Target!). Das ist ein weiteres Indiz dass der WR-Wert maßgeblich vom Training-Symbol-Mix abhängt.
+
+**Test-Plan (V1.5-Research):**
+- Optuna-Hyperparameter-Search mit WR als Optimierungsziel, PF/MDD/CV als Constraints
+- Loss-Function-Variation: focal loss statt binary_logloss (klassen-imbalanced)
+- Feature-Engineering: zusätzliches Filtering vor LGBM-Stage (z.B. confidence-stratifiziertes Re-Sampling)
+
+**Wichtig:** Nicht V1-blockend. Marketing-Sprache "Win Rate 57% in-sample, 61% auf Hold-Out" ist ehrlich und stark genug.
 
 ---
 

@@ -43,49 +43,52 @@ Volle Analyse: [/research/model_battery_results.md](../research/model_battery_re
 
 ---
 
-## Phase C — Multi-Timeframe Comparison (NB14) 🟡 NEXT — ACTIVE
+## Phase C — Multi-Timeframe Comparison (NB14) ✅ ABGESCHLOSSEN 2026-05-27
 
-**Frage:** Welche Timeframes liefern die stabilsten OOS-Ergebnisse?
+**Verdict:** Nur 5m ist V1-deploybar. Quality-Anchor SOFT_ONLY ✓ (alle 7 strict bestanden, 1/2 soft). 15m BLOCKED (PF 1.23, MDD 34%), 30m + 1h BLOCKED (PF < 1.05, MDD > 100%).
 
-**Vergleich:** 5M, 15M, 30M, 1H, 4H als Primary-TF
+**5m Eckdaten:**
+- Premium PF 2.00 (in-sample), 2.39 (Hold-Out auf 3 nie trainierten FX-Symbolen)
+- WR 57.2% in-sample → **60.9% Hold-Out** (Hold-Out outperformt = kein Overfit)
+- MDD 2.9%, Stability CV 0.145
+- 3.5 Premium-Signale/Tag/Symbol
+- SHAP-Top-1: `hour_sin` (Time-of-Day Edge)
+- Yearly PF 2024=1.79 → 2025=2.04 → 2026=2.52 (Edge wird besser)
 
-**Forschungsfragen:**
-- Welche TFs generalisieren am besten?
-- Welche liefern die stabilsten OOS-Ergebnisse?
-- Wo ist Noise am geringsten?
-- Welche TF/Asset-Kombinationen sind dauerhaft tot?
+**Wichtige Befunde:**
+- 66.6% aller Premium-Signale fallen in die NY-Session (Research-Item R-13)
+- Auf 1h verschwindet die `hour_sin`-Edge komplett — `adx_14` wird Top-1 (anderes Edge-Paradigma)
+- Pooled-Modell schlägt Single-TF auf allen 4 TFs (+0.08 bis +0.20 PF) — Kandidat für V1.5+
 
-**Vorbedingung:** `core/config.py PRIMARY_TIMEFRAMES` muss 30M unterstützen (aktuell evtl. unvollständig).
+**User-Profile-Mapping REVIDIERT:** Profile sind NICHT verschiedene TFs sondern verschiedene Tier-Cutoffs auf 5m. Aggressive=Standard / Balanced=High / Conservative=Premium. Locked in [ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md).
 
-**Output:**
-- `/results/benchmark_tables/nb14_per_tf_{date}.csv`
-- `/research/timeframe_comparisons.md`
-
----
-
-## Phase D — Architecture Decision (NB15) ⚪ NEXT+2
-
-**Variante A:** Universal-Modell — ein Modell für alle Asset-Klassen × TFs
-**Variante B:** Core-Modell + per-Cluster Kalibrierung (VAL-derived cutoffs pro Asset-Klasse)
-**Variante C:** Mehrere Spezialmodelle + Pine-Router (basierend auf `syminfo.type`)
-
-**Entscheidungs-Matrix (Priorität von oben nach unten):**
-1. Mean PF über Asset-Klassen
-2. Min PF pro Asset-Klasse (Threshold: ≥ 1.3)
-3. Stability-CV (max 0.25)
-4. Pine-Code-Complexity (Linien, Ops/Bar)
-5. Maintenance-Burden (Anzahl zu retrainender Modelle pro Monat)
-
-**Output:**
-- `/results/json_exports/nb15_architecture_decision_{date}.json`
-- `/research/architecture_comparison.md` (wird angelegt wenn Phase D startet)
-- `/docs/architecture.md` Update mit gewählter Variante
+**Volle Analyse:** [/research/timeframe_comparisons.md](../research/timeframe_comparisons.md). **ADR:** [ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md).
 
 ---
 
-## Phase E — Pine Export + Backtest UI (NB09 / NB16 / NB17) ⚪ ZULETZT
+## Phase D — Architecture Decision (NB15) 🟡 NEXT — ACTIVE
 
-**Erst nach Phase A–D abgeschlossen.** Vorher kein Pine-Code-Generator.
+**Status nach NB13/NB14:** Architektur ist bereits gelockt via [ANN-009](decisions/ANN-009-multi-model-router-architecture.md) (Multi-Model Router). NB15 ist daher kein "A vs B vs C"-Entscheidung mehr, sondern **Architecture-Validation** für V1:
+
+**Frage NB15:** Funktioniert das Router-Skelett im Pine-Code-Stub korrekt mit dem 5m-FX-Modell als einzigem aktiven Branch?
+
+**Validation-Tasks:**
+1. `core/router/pine_router_codegen.py` V1-Stub auf konkretes FX-Modell anwenden
+2. Bit-exact Validation: Python-Probability == Pine-Probability (auf Test-Sample)
+3. Pine-Budget-Check: tree-cascade + features + router-overhead < 5000 ops/bar
+4. UI-Warning für nicht-5m-Charts korrekt eingebaut
+5. Asset-Detection-Stub für FX vs (Crypto/Indices/Commodity = "Coming Soon")
+
+**Output:**
+- `/results/nb15/pine_validation_{date}.json`
+- `/docs/architecture.md` Update mit V1-Pine-Architektur final
+- Pine-Code-Skelett in `deploy_pine/pace_algo_v1.pine` (Draft)
+
+---
+
+## Phase E — Pine Export + Backtest UI (NB09 / NB16 / NB17) ⚪ NEXT+1
+
+**Erst nach Phase D abgeschlossen.** Vorher kein vollständiger Pine-Code-Generator.
 
 **Deliverables:**
 - NB09: Tree-to-Pine Cascade-Generator (LightGBM/XGBoost)

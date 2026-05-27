@@ -36,6 +36,7 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-008](ANN-008-fx-features-do-not-generalize-to-crypto.md) | FX-Features generalisieren NICHT auf Crypto | Active | 2026-05-27 |
 | [ANN-009](ANN-009-multi-model-router-architecture.md) | **Multi-Model Router Architecture (Pivot-Lock)** | Active | 2026-05-27 |
 | [ANN-010](ANN-010-quality-anchor.md) | Quality Anchor (Premium PF ≥ 2.0) | Active | 2026-05-27 |
+| [ANN-011](ANN-011-v1-timeframe-and-profile-setup.md) | **V1 Timeframe Lock (5m only) + Profile Setup + User-Settings Whitelist** | Active | 2026-05-27 |
 
 ## Was hier NICHT hingehört
 
