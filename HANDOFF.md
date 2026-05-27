@@ -86,6 +86,38 @@ If `git pull` fails with merge conflict (both Claudes edited HANDOFF.md):
 2. Most likely correct resolution: keep BOTH session log entries (Section 19), merge by appending.
 3. After resolution: commit with message starting `MERGE:`.
 
+### 0.5 Mid-Session Checkpoint — commit immediately when something important happens
+
+Do NOT wait until end-of-session to commit. Commit a checkpoint whenever:
+- A research decision is made (even tentatively)
+- A notebook produces results worth preserving
+- A bug is found or fixed
+- A new direction is agreed on
+
+Checkpoint commits are lightweight — no full Section 19 log entry required. Just commit HANDOFF.md with a short note under the last Section 19 row (inline, not a new row):
+
+```
+> [CHECKPOINT 2026-05-27 14:32] Entscheidung: NB14 vor Polygon. Begründung: Kosten sparen bis Multi-TF-Ergebnis klar.
+```
+
+This ensures nothing is lost mid-session even if the chat context runs out or Nico closes the window.
+
+### 0.6 Workstation-Switch Protocol — triggered by Nico's explicit signal
+
+When Nico says anything like:
+- "ich wechsle zum Arbeits-PC / Heim-PC"
+- "mache am anderen PC weiter"
+- "bis später, wechsle jetzt"
+
+→ STOP all other work. Run the **full end-of-turn protocol** (Section 0.2) PLUS:
+
+1. Write a complete Section 19 log entry — include every decision, result, and open question from this session
+2. Set "Outstanding next step" to the EXACT next action the sibling Claude should take (notebook name, specific cell, specific decision to confirm)
+3. Commit message must start with `HANDOFF:` so it's easy to find in `git log`
+4. Confirm to Nico: "Bereit für Wechsel. Commit `xyz`. Drüben: `git pull` → direkt mit [next step] weitermachen."
+
+The sibling Claude should be able to pick up WITHOUT asking Nico to re-explain anything.
+
 ---
 
 ## 0a. Your Persona — Be This Claude
