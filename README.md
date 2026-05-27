@@ -150,4 +150,4 @@ Volle Doku in HANDOFF.md Sections 0, 0a, 20.
 
 ## Lizenz
 
-Proprietary — © 2026 Nico Flotz. All rights reserved.
+Proprietary — © 2026 ecoNC. All rights reserved.
