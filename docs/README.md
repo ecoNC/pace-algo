@@ -12,6 +12,8 @@ Langlebige Architektur- und Strategie-Dokumente. Im Gegensatz zu `/research/` (w
 | [backtesting_vision.md](backtesting_vision.md) | User-facing Backtest-Widget, Anti-Curve-Fitting-Design | Vor V1-Pine-Generator (NB09) |
 | [deployment_plan.md](deployment_plan.md) | Pine V1 → Hybrid V1.5 → Backend V2 Migrationspfad | Bei jeder Phasen-Entscheidung |
 | [colab_auto_push.md](colab_auto_push.md) | Colab→GitHub Auto-Push-Pattern für `/results/`-Files (Token-Setup + Code-Snippet) | Beim Bau jedes neuen Notebooks |
+| [_phase_decision_template.md](_phase_decision_template.md) | Pflicht-Template für jede Phase-Abschluss-Dokumentation (Hypothese→Experiment→Resultat→Decision→Konsequenz) | Bei Phase-Abschluss + neuer ADR |
+| [decisions/](decisions/) | Architecture Decision Records (ADRs) — fundamentale Entscheidungen mit langer Halbwertszeit | Bei jeder strategischen Entscheidung |
 
 ## Verhältnis zu HANDOFF.md
 

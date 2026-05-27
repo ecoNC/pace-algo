@@ -27,6 +27,13 @@ data_cache/processed/
 *.csv
 *.feather
 
+# Exception: small versioned outputs in /results/ ARE tracked.
+# Order matters — these unignore must come AFTER the *.csv/*.parquet rules above.
+!results/**/*.csv
+!results/**/*.parquet
+!results/**/*.feather
+!results/**/*.json
+
 # Model artifacts — too large for git
 artifacts/models/*.pkl
 artifacts/models/*.joblib

@@ -1373,17 +1373,30 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 
 ### Immediate next actions
 
-1. ✅ **NB12 Colab-Run ABGESCHLOSSEN 2026-05-27.** Auto-Push funktionierte (commit `58e2c27`). **Verdict: LightGBM bleibt V1-Modell** — kein Pine-fähiges Modell schlägt LGBM um ≥ +0.05 PF auf in-sample TEST. **Strategische Erkenntnis:** Consensus-Filter (alle 3 Modelle) liefert PF 2.93 auf GBPUSD-Hold-Out vs LGBM-Alone 2.54 — reserviert für V1.5-Backend. Volle Analyse in [research/model_battery_results.md](research/model_battery_results.md).
+1. ✅ **NB12 Verdict gelocked:** V1 = LightGBM (Nico bestätigt 2026-05-27). Begründung: stabilste yearly CV (0.145), Pine-kompatibel, kein signifikanter Nachteil im In-Sample, starke Hold-Out-Generalisation, geringe Pine-Export-Komplexität.
 
-2. ❗ **CSV-Sync-Bug:** Section 10 schreibt 4 CSVs + 1 JSON, aber nur die JSON ist im Commit. Nico's Section-10-Print-Output ([1/5]..[5/5]) brauchen wir zum Debuggen. Nicht blockierend — JSON enthält alle Daten.
+2. ✅ **Strategische Erkenntnis gelocked:** Consensus-Filter (LGBM+XGB+Cat) liefert PF 2.93 auf GBPUSD vs LGBM-Alone 2.54 — V1.5-Backend-Gold, NICHT V1-Pine. Siehe [ANN-004](docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md).
 
-3. ⏭️ **Refactor `core/colab_push.py`** — Auto-Push-Logik als Funktion auslagern, damit NB13+ nur 3 Zeilen brauchen statt 80. Erst nach Bestätigung, dass aktuelle Implementation stabil.
+3. ✅ **Ziel-Update:** Ab jetzt NICHT mehr "höchster FX-PF" sondern **"robusteste universelle Architektur"**. NB11-FX-only PF 2.015 = Research-Baseline, nicht Produktziel.
 
-4. ⏭️ **NB 13 (Cross-Asset Generalization) bauen** — Plan in [research/asset_generalization.md](research/asset_generalization.md). **Verschärfte Forschungsfragen durch NB12:** Hält XGBoost-Marginal-Lift (+0.135 PF auf GBPUSD) über mehrere Asset-Klassen? Funktioniert Consensus-Filter auch jenseits FX?
+4. ✅ **CSV-Sync-Bug ROOT-CAUSE gefunden:** `.gitignore` Zeile 27 `*.csv` blockte alle Outputs in `/results/`. Fix committed: Exception `!results/**/*.csv` (auch für `.parquet`, `.feather`, `.json`). **Nico's Action:** entweder Section 11 in Colab nochmal ausführen (Drive hat die CSVs noch) oder ich helfe ihm das nächste Mal automatisch beim NB13-Run.
 
-5. **Polygon.io-Aktivierung** ($29/Monat) — separate Nico-Entscheidung, wird relevant für NB13 (Indices SPY/QQQ). Crypto via KuCoin ist frei verfügbar.
+5. ⏭️ **NB 13 (Cross-Asset Generalization) bauen** — Plan in [research/asset_generalization.md](research/asset_generalization.md) mit **2 neuen Hypothesen aus NB12**: H5 "Consensus verallgemeinert" und H6 "XGBoost-Lift verallgemeinert". Vorbedingung: Polygon-Entscheidung.
 
-6. **NICHT** NB 09 (Pine Generator) bauen vor Phase D Abschluss. Locked rule.
+6. ⏭️ **Refactor `core/colab_push.py`** — Auto-Push-Logik als Funktion, NB-Cells schrumpfen auf 3 Zeilen.
+
+7. **Polygon.io-Aktivierung** ($29/Monat) — Nico-Entscheidung offen. NB13 läuft auch ohne Polygon (Crypto via KuCoin frei).
+
+8. **NICHT** NB 09 (Pine Generator) bauen vor Phase D Abschluss. Locked rule.
+
+### Decision-Framework (NEU ab 2026-05-27)
+
+Ab sofort wird jede Phase mit Pattern dokumentiert: **Hypothese → Experiment → Resultat → Decision → Konsequenz**. Template in [docs/_phase_decision_template.md](docs/_phase_decision_template.md), fundamentale Entscheidungen als ADRs in [docs/decisions/](docs/decisions/). Bereits geschrieben:
+- [ANN-001](docs/decisions/ANN-001-smc-features-deprecated.md) — SMC-Features verworfen
+- [ANN-002](docs/decisions/ANN-002-htf-interaction-features.md) — HTF-Interaction behalten
+- [ANN-003](docs/decisions/ANN-003-gold-removed-from-training.md) — Gold raus
+- [ANN-004](docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md) — Consensus = V1.5-only
+- [ANN-005](docs/decisions/ANN-005-v1-vs-v1.5-scope-split.md) — V1 vs V1.5 Scope-Split
 
 ### Open decisions
 
@@ -1651,5 +1664,6 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-27 | arbeits-pc | work | **Strategischer Refactor + Doku-Struktur eingeführt.** (1) Strategie reaffirmiert: Robustheit/Cross-Asset/Multi-TF > Single-Asset-PF/Speed. (2) Neue Ordner: `/docs/` (7 Files: roadmap, architecture, feature_registry, model_registry, pine_constraints, backtesting_vision, deployment_plan), `/research/` (6 Files: README, phase1_findings, feature_experiments, shap_analysis, model_battery_results, asset_generalization, timeframe_comparisons), `/results/` (5 Unterordner: json_exports, benchmark_tables, walk_forward_summaries, per_symbol_metrics, yearly_stability_tables). (3) README.md komplett neu geschrieben (Universal-Vision, Phase A-E Roadmap, aktueller Stand). (4) NB12 gepatcht: `RANDOM_SEED=42` für LGBM/XGB/CatBoost, Section 10 mit Auto-Export aller Ergebnisse nach `/results/`. (5) HANDOFF.md Section 16 aktualisiert. | `0cc55a4` | **Nico startet NB12 in Colab** (mit `git pull` vorher in Drive-Project, damit gepatchter Code da ist). Nach Run: Outputs an Claude + `/results/`-Files in Repo committen. Dann analysiert Claude und füllt `research/model_battery_results.md`. |
 | 2026-05-27 | arbeits-pc | work | **Colab→GitHub Auto-Push-Pattern.** NB12 Section 11 hinzugefügt: nach Section 10 Export pusht das Notebook die `/results/`-Files direkt zu GitHub (commit als ecoNC via Fine-grained PAT aus Colab Secrets). Damit entfällt der manuelle Drive-Download. Wiederverwendbares Pattern in [/docs/colab_auto_push.md](docs/colab_auto_push.md) — Code-Snippet + Setup-Anleitung für NB13/14/15. HANDOFF Section 16 angepasst (Step 1: einmaliges PAT-Setup). | `af58158` | **Nico:** einmal PAT in Colab Secrets ablegen (siehe docs/colab_auto_push.md), dann NB12 mit Section 10 + Section 11 laufen lassen. Sibling-Claude sieht die Results dann direkt im Repo. |
 | 2026-05-27 | colab (heim-account oder arbeits-account) | — | **NB12 Run 1 abgeschlossen.** Auto-Push funktionierte (nur JSON gepusht, CSVs fehlen — Bug zu untersuchen). Verdict: LightGBM bleibt V1-Modell. Consensus-Filter (alle 3 Modelle) liefert auf GBPUSD-Hold-Out PF 2.93 (+0.39 über LGBM-Alone) — strategischer V1.5-Backend-Edge. NB12-Stability sehr gut (CV 0.145 für LGBM, alle Modelle CV < 0.20). XGBoost-Lift auf Hold-Out +0.135 PF — interessant aber nicht robust (nur 1 Symbol). | `58e2c27` (auto-push) | **Claude:** model_battery_results.md gefüllt, model_registry/roadmap/deployment_plan aktualisiert. CSV-Bug debuggen. NB13 (Cross-Asset) planen mit verschärften Fragen aus NB12-Erkenntnissen. |
-| 2026-05-27 | arbeits-pc | work | **NB12-Analyse + Doku-Sync nach Run 1.** research/model_battery_results.md komplett mit echten Zahlen befüllt, Verdict + CTO-Empfehlung dokumentiert. docs/model_registry.md erweitert mit Stand 2026-05-27. docs/roadmap.md Phase A auf ABGESCHLOSSEN gesetzt, Phase B (NB13) als ACTIVE markiert. docs/deployment_plan.md V1.5-Sektion um Consensus-Filter-Plan erweitert. HANDOFF Section 16 + 19 updated. | (next commit) | Nico bestätigt LGBM-V1-Entscheidung oder Pushback. Dann: CSV-Bug debuggen + NB13 starten + core/colab_push.py refactoren. |
+| 2026-05-27 | arbeits-pc | work | **NB12-Analyse + Doku-Sync nach Run 1.** research/model_battery_results.md komplett mit echten Zahlen befüllt, Verdict + CTO-Empfehlung dokumentiert. docs/model_registry.md erweitert mit Stand 2026-05-27. docs/roadmap.md Phase A auf ABGESCHLOSSEN gesetzt, Phase B (NB13) als ACTIVE markiert. docs/deployment_plan.md V1.5-Sektion um Consensus-Filter-Plan erweitert. HANDOFF Section 16 + 19 updated. | `c30ceda` | Nico bestätigt LGBM-V1-Entscheidung oder Pushback. Dann: CSV-Bug debuggen + NB13 starten + core/colab_push.py refactoren. |
+| 2026-05-27 | arbeits-pc | work | **Decision-Framework + 5 ADRs + .gitignore-Fix.** Nico bestätigt LGBM-V1, lockt Strategie-Update (Robustheit > FX-PF), fordert Decision-Logic-Framework + Architektur-Dokumentation. Geschrieben: `/docs/_phase_decision_template.md`, `/docs/decisions/README.md`, `ANN-001` SMC, `ANN-002` HTF-Interaction, `ANN-003` Gold, `ANN-004` Consensus-V1.5, `ANN-005` V1-vs-V1.5-Scope-Split. CSV-Bug Root-Cause: `.gitignore *.csv` blockte alles, Exception `!results/**/*.csv` (+ parquet/feather/json) ergänzt. `research/asset_generalization.md` mit 2 neuen NB12-getriebenen Hypothesen (H5 Consensus-Generalisation, H6 XGBoost-Generalisation). HANDOFF Section 16 + 19 updated. | (next commit) | **Nico:** Section 11 in Colab nochmal runnen für CSV-Push (oder ignorieren — JSON enthält alle Daten). Dann **NB13 bauen + Polygon-Aktivierung entscheiden**. |
 
