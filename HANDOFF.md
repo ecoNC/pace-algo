@@ -1367,17 +1367,27 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 
 ## 16. Open Action Items for New Session
 
-1. **Resume debugging NB 12** — last status: label files missing in `/content/processed/`. Latest commit `33f68c4` should fix it. Need to verify by Nico running NB 12 end-to-end.
+**Strategic context (LOCKED 2026-05-27):** Optimieren auf Robustheit, Cross-Asset-Generalisierung, Multi-TF-Stabilität. NICHT auf besten Single-Asset-PF, NICHT auf schnellen Release. FX-only PF 2.015 = Research-Baseline, nicht Produktziel.
 
-2. **Get Nico's decision on Polygon.io activation** — $29/month for Indices data. Needed for Phase 2 cross-asset tests.
+**Doku-Refactor 2026-05-27:** Repo hat jetzt `/docs/` (Strategie), `/research/` (Erkenntnisse), `/results/` (versionierte Outputs). HANDOFF.md bleibt operativer Einstiegspunkt. README.md ist neu geschrieben.
 
-3. **Get Nico's decision on Phase 2 sequence:**
-   - Variant A: Complete NB 12 → Phase 2 (expand assets) → NB 13 → 14 → 15
-   - Variant B: Skip NB 12 completion → directly to Phase 2
+### Immediate next actions
 
-4. **Build NB 13 (Cross-Asset Generalization)** once direction confirmed.
+1. **Nico runnt NB 12 in Colab.** Notebook wurde gepatcht: `RANDOM_SEED=42` für alle 3 Modelle, Auto-Export aller Ergebnisse nach `/results/{json_exports,benchmark_tables,per_symbol_metrics,yearly_stability_tables}/`. Nach Run: Section 6, 7, 7.5, 7.7, 7.9, 9 Outputs an Claude + die generierten `/results/`-Files committen.
 
-5. **DO NOT build NB 09 (Pine Generator) yet** — model architecture isn't finalized. NB 09 should be the LAST notebook.
+2. **Claude analysiert NB 12 Output** und füllt `research/model_battery_results.md` mit echten Zahlen + Verdict. Entscheidung: bleibt LightGBM oder Wechsel?
+
+3. **Polygon.io-Aktivierung** ($29/Monat) — separate Nico-Entscheidung, wird relevant für Phase B (NB13 Cross-Asset). Kann noch aufgeschoben werden bis Phase A abgeschlossen.
+
+4. **NB 13 (Cross-Asset Generalization) bauen** — nach Phase A Abschluss. Plan steht in `research/asset_generalization.md`. Vorbedingung: Polygon-Daten oder zumindest Crypto-Pool (KuCoin) bereit.
+
+5. **NICHT** NB 09 (Pine Generator) bauen vor Phase D Abschluss. Locked rule.
+
+### Open decisions
+
+- Nach NB 12: welches Modell für V1? (siehe Decision-Tree in `research/model_battery_results.md`)
+- Phase B Start: Polygon kaufen oder zuerst nur mit Crypto-Erweiterung arbeiten?
+- Phase D Variante: Universal (A) vs Per-Cluster-Kalibrierung (B) vs Multi-Modell-Router (C)?
 
 ---
 
@@ -1637,4 +1647,5 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-27 | arbeits-pc | work | Context-window refresh, fresh session continuation. Verified content intact, updated date stamps, added Session Handoff Log section | `42fe4fb` | Resume NB 12 debug cycle (last commit `33f68c4`), then proceed to Phase 2 cross-asset work |
 | 2026-05-27 | arbeits-pc (NWILF026, intern\nico.flotz) | work | Multi-Workstation Sync Protocol added. Section 0 rewritten with mandatory boot/end-of-turn sequence. Section 0a embeds the full persona/communication rules so a "naked" Claude on the Heim-PC (without local memory files) agrees with the work-account Claude. Section 20 added with detailed git workflow + Heim-PC bootstrap script. Local MEMORY.md on Arbeits-PC updated with pointer header. | `51ee6c7` | **Heim-PC first run:** read this entire HANDOFF (especially Sections 0, 0a, 20), then run the bootstrap commands in Section 20.4 to write the pointer MEMORY.md on Heim-PC. Then resume NB 12 work. |
 | 2026-05-27 | arbeits-pc | work | Added Section 0.0 — **Standard Boot Prompt**. Nico now has one fixed copy-paste prompt to start any new chat on any machine. Claude's response protocol on boot is mechanically defined (git pull → read HANDOFF → 2-sentence status). | (next commit) | Nico starts new chat (context refresh). Use the boot prompt. Next substantive work: NB 12 debug cycle. |
+| 2026-05-27 | arbeits-pc | work | **Strategischer Refactor + Doku-Struktur eingeführt.** (1) Strategie reaffirmiert: Robustheit/Cross-Asset/Multi-TF > Single-Asset-PF/Speed. (2) Neue Ordner: `/docs/` (7 Files: roadmap, architecture, feature_registry, model_registry, pine_constraints, backtesting_vision, deployment_plan), `/research/` (6 Files: README, phase1_findings, feature_experiments, shap_analysis, model_battery_results, asset_generalization, timeframe_comparisons), `/results/` (5 Unterordner: json_exports, benchmark_tables, walk_forward_summaries, per_symbol_metrics, yearly_stability_tables). (3) README.md komplett neu geschrieben (Universal-Vision, Phase A-E Roadmap, aktueller Stand). (4) NB12 gepatcht: `RANDOM_SEED=42` für LGBM/XGB/CatBoost, Section 10 mit Auto-Export aller Ergebnisse nach `/results/`. (5) HANDOFF.md Section 16 aktualisiert. | (next commit) | **Nico startet NB12 in Colab** (mit `git pull` vorher in Drive-Project, damit gepatchter Code da ist). Nach Run: Outputs an Claude + `/results/`-Files in Repo committen. Dann analysiert Claude und füllt `research/model_battery_results.md`. |
 
