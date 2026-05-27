@@ -1,10 +1,14 @@
-# PaceAlgo — Universal AI-Powered TradingView Indicator
+# PaceAlgo — Multi-Model AI Trading Indicator
 
-**Was:** Premium ML-getriebener TradingView-Indikator, der auf **möglichst vielen Asset-Klassen und Timeframes** robust funktioniert.
+**Tagline:** *Universal UX + Specialized Intelligence* — ein Pine-Indikator, mehrere asset-spezialisierte AI-Modelle, eine konsistente User-Experience.
+
+**Was:** Premium ML-getriebener TradingView-Indikator. Asset-aware Router routet User-Charts zu spezialisierten Modellen (FX, Crypto, Indices, Commodity). V1 startet mit FX-Modell, V2 erweitert auf alle Asset-Klassen.
 **Wer:** Retail-Trader, die ML-Signale gegenüber Guru-Style "follow me" bevorzugen.
 **Preis (geplant):** $39–49/Monat oder $399–499 Lifetime, Invite-Only über Whop/Stripe.
 
-> **Strategische Prämisse (LOCKED 2026-05-27):** Wir optimieren auf Robustheit, Cross-Asset-Generalisierung und langfristige Produktqualität — NICHT auf den besten Single-Market-PF oder schnellen Release. FX-only PF 2.015 (NB11) ist Forschungs-Baseline, nicht Produktziel.
+> **Architektur-Lock 2026-05-27** ([ANN-009](docs/decisions/ANN-009-multi-model-router-architecture.md)): Multi-Model Router. NB13 hat empirisch widerlegt, dass ein Single-Universal-Modell funktionieren kann (FX-Edge 2.49 / Crypto-Edge 0.99 random). Stattdessen: 1 Pine-Indikator mit Router-Layer + 4 spezialisierte Modell-Subgraphs.
+>
+> **V1 Scope:** FX-Modell aktiv (EURUSD, USDJPY, GBPUSD, AUDUSD, USDCHF Premium-PF ~2.5). Crypto/Indices/Commodity = "Coming in V2"-UI-Badge.
 
 ## Strategy Locks (oberste Hierarchie)
 
@@ -35,11 +39,13 @@ Ein TradingView-Indikator, den der User auf **jedem Chart** öffnet — FX, Indi
 | Phase 0 — Pipeline-Bootstrap | NB01–NB04 | ✅ abgeschlossen |
 | Phase 1 — Feature & Modell-Iteration | NB05–NB08, NB10 | ✅ abgeschlossen |
 | Phase 1.5 — FX-only Best-Config-Finding | NB11 | ✅ Sieger: 27 Features, PF 2.015 |
-| **Phase A — Model Battery** | **NB12** | 🟡 **Code patched, wartet auf Colab-Run** |
-| Phase B — Cross-Asset | NB13 | ⚪ Vorbereitet, kommt nach Phase A |
-| Phase C — Multi-Timeframe | NB14 | ⚪ Geplant |
-| Phase D — Architecture Decision | NB15 | ⚪ Geplant |
-| Phase E — Pine Export + Backtest UI | NB09, NB16, NB17 | ⚪ ZULETZT |
+| Phase A — Model Battery | NB12 | ✅ LightGBM gewinnt, Consensus für V1.5 |
+| Phase B — Cross-Asset Generalization | NB13 | ✅ **Verdict: Router-Architektur (ANN-009)** |
+| **Phase C — Multi-Timeframe** | **NB14** | 🟡 **NEXT — Multi-TF Deep-Dive für FX** |
+| Phase D — Architecture Decision Validation | NB15 | ⚪ nach NB14, finale V1-Architektur-Wahl |
+| Phase E — Pine Router + Backtest UI | NB09, NB16, NB17 | ⚪ ZULETZT — Router-Skelett für V1, V2-ready |
+| Phase F — V1.5 Hybrid Backend | — | ⚪ post-launch (Consensus + Continuous Retraining) |
+| Phase G — V2 Multi-Model aktiv | — | ⚪ post-V1.5 (alle 4 Modelle live) |
 
 Siehe [docs/roadmap.md](docs/roadmap.md) für Details pro Phase.
 

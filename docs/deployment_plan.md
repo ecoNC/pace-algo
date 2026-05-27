@@ -1,10 +1,14 @@
-# Deployment Plan — V1 → V1.5 → V2 Migration
+# Deployment Plan — V1 → V1.5 → V2 → V3 Migration
 
-## V1: Pine-Only (Target Q3–Q4 2026)
+**Architektur-Lock seit 2026-05-27:** Multi-Model Router per [ANN-009](decisions/ANN-009-multi-model-router-architecture.md). Pine-Router-Details: [pine_router_design.md](pine_router_design.md).
+
+## V1: Pine-Only (FX-Modell aktiv, Router-Skelett ready) — Target Q3–Q4 2026
 
 **Was läuft:**
-- ML-Modell direkt embedded in Pine Script v6
-- Tree-Cascade: max 30 trees × depth 3, ~12–15 Features nach SHAP-Reduktion
+- **EIN** Pine Script v6 Indikator mit Router-Layer-Skelett
+- **EIN** aktives Modell: `fx_model` (LightGBM, 30 trees × depth 3, 27 Features)
+- Pine-Code enthält bereits Asset-Detection + Stubs für Crypto/Indices/Commodity
+- Non-FX-Charts zeigen "🚧 V2 coming"-Badge im UI
 - Inferenz bar-by-bar im TradingView-Browser
 - Keine Server-Komponente
 
@@ -60,14 +64,37 @@
 
 ---
 
-## V2: Full Backend (V1.5 + 6–12 Monate, abhängig von User-Demand)
+## V2: Multi-Model Router (Crypto + Indices + Commodity hinzu)
 
 **Was sich ändert:**
-- ML-Inferenz läuft auf Cloud-Server 24/7
-- Live-Signals an TradingView via Webhook → Pine-Receiver
+- Aus den 1-aktiv-3-stub-Modellen werden **alle 4 aktiv**
+- `crypto_model_predict()` wird befüllt — Voraussetzung: NB13c (Crypto-Spezialmodell) bestand Quality-Anchor (ANN-010)
+- `indices_model_predict()` befüllt — Voraussetzung: Polygon-Aktivierung + Indices-Cross-Asset-Test
+- `commodity_model_predict()` befüllt — XAUUSD-Modell + ggf. Silber/Oil
+- UI-Badge "Coming Soon" verschwindet auto auf den entsprechenden Charts
+- Pine-Code-Generator (Phase E) re-runs → neuer Pine-File mit allen 4 Modellen embedded
+- **Kein architektureller Pine-Refactor nötig**, weil Router-Skelett in V1 schon vorhanden
+
+**Pine-Budget-Implikation:**
+- V1 (1 Modell): ~215 ops/bar, ~1055 lines
+- V2 (4 Modelle): ~860 ops/bar, ~4200 lines — passt unter 5000/7000 Limit
+- Lazy Evaluation im Router: nur aktives Modell wird traversed
+
+**Quality-Anchor-Gate vor V2-Modell-Aktivierung:**
+- Jedes neue Modell muss [ANN-010](decisions/ANN-010-quality-anchor.md) bestehen
+- Wenn Crypto-Modell PF Premium < 1.5: **wird nicht aktiviert**, UI zeigt weiter "Coming Soon"
+- Quality-Check-Report wird in `/results/quality_checks/` versioniert
+
+## V3: Full Cloud Backend (V2 + 6–12 Monate, abhängig von User-Demand)
+
+**Was sich ändert:**
+- ML-Inferenz läuft auf Cloud-Server 24/7 (optional, Pine-Lokal bleibt Default)
+- Live-Signals an TradingView via Webhook → Pine-Receiver (für High-Latency-Premium-Validation)
 - Web-Dashboard mit voller Trade-History + Analytics
 - User-Accounts, Multi-Device-Sync
 - Continuous Learning: Signal-Outcomes feed retraining (mit Opt-In)
+- Adaptive Model-Selection: z.B. "wenn Indices-Modell unterperformt, fallback auf FX-Modell für ähnliche Setups"
+- Cross-Model-Ensemble: innerhalb einer Asset-Klasse mehrere Modelle (z.B. FX-Trend + FX-Range)
 
 **Neue Komponenten:**
 - `deploy_server/inference_api/` — FastAPI Endpoint, Latenz < 200ms

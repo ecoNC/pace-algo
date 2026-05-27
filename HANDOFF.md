@@ -1373,11 +1373,51 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 
 ### Immediate next actions
 
-1. ✅ **NB13 Verdict gelocked:** FX-Edge generalisiert (Premium-PF 2.5+ auf 5 FX-Symbolen, inkl. 3 nie trainierten GBPUSD/AUDUSD/USDCHF), Crypto bricht (PF ~1.0 = random auf allen 5 Crypto × 4 TFs). [ANN-008](docs/decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md). **Marketing-Korrektur nötig vor V1-Launch:** kein "Universal"-Claim mehr.
+1. ✅ **ARCHITEKTUR-PIVOT 2026-05-27 gelocked:** Multi-Model Router per [ANN-009](docs/decisions/ANN-009-multi-model-router-architecture.md). "Universal UX + Specialized Intelligence". V1 = FX-Modell aktiv + Router-Skelett, V2 = Crypto/Indices/Commodity-Modelle aktiv. Quality-Anchor per [ANN-010](docs/decisions/ANN-010-quality-anchor.md): Premium PF ~2.0 als Referenz, strict-Mindest 1.5.
 
-2. ⏭️ **Nico entscheidet weiter:** (a) NB13b mit Universal-Training auf High-RAM (ob FX+Crypto-Mix Edge auf Crypto erzeugt), (b) Crypto-Spezialmodell bauen (eigenes LightGBM auf Crypto-only Pool), oder (c) direkt Phase C (NB14 Multi-TF).
+2. ✅ **NB13 Verdict gelocked:** FX-Edge generalisiert auf 5 FX-Symbolen (Premium-PF 2.5+), Crypto bricht (random PF 0.99). [ANN-008](docs/decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md).
 
-3. ✅ **NB12 Verdict gelocked:** V1 = LightGBM. Begründung: stabilste yearly CV (0.145), Pine-kompatibel, kein signifikanter Nachteil im In-Sample.
+3. ✅ **NB12 Verdict gelocked:** V1 = LightGBM. Begründung: stabilste yearly CV (0.145), Pine-kompatibel.
+
+4. ⏭️ **NEXT: NB14 (Phase C Multi-TF Deep Dive)** — Plan in [/research/timeframe_comparisons.md](research/timeframe_comparisons.md). Hypothesen H1-H5 mit Schwellen, FX-only Fokus, 5m/15m/30m/1h + optional 4h, Hold-Out + SHAP-per-TF + Pooled-vs-Single-Test.
+
+5. ⏭️ **NB13b/c Optional (parallel zu NB14 oder danach):** Crypto-Spezialmodell trainieren (eigenes LGBM auf Crypto-only Pool), Quality-Anchor-Check. Wenn pass → V2-ready.
+
+6. ⏭️ **Refactor `core/router/`** (neuer Ordner) — Asset-Detector + Model-Selector + Pine-Codegen-Stubs. Auch wenn V1 nur fx-Branch aktiv hat, das Skelett muss V2-bereit sein.
+
+7. **NICHT** NB 09 (Pine Generator) bauen vor NB14 + NB15 Abschluss.
+
+### Architektur-Konsequenzen aus dem Pivot
+
+- README, architecture.md, roadmap.md, deployment_plan.md, model_registry.md alle auf Multi-Model-Router umgestellt
+- docs/pine_router_design.md (NEU) beschreibt Pine-Side
+- ANN-005 (V1-Scope) bleibt Active, aber Architektur-Annahmen durch ANN-009 überstellt
+- Marketing-Story V1→V2→V3 wird klarer (siehe ANN-009 Marketing-Sektion)
+
+### Open decisions
+
+- ⏳ Polygon-Aktivierung jetzt oder nach NB14?
+- ⏳ NB13b/c Crypto-Spezialmodell-Test parallel oder sequential zu NB14?
+- ⏳ Core/router/ Implementation: jetzt Python-Stubs oder erst nach NB15?
+
+---
+
+## 16a. Open Technical Risks (Tracking-Liste)
+
+Pivot zur Multi-Model-Architektur hat neue Risiken generiert. Diese werden hier zentral getrackt — Mitigations in den jeweiligen ADRs.
+
+| ID | Risiko | Impact | Status | Owner | Mitigation |
+|---|---|---|---|---|---|
+| R-01 | Pine-Budget bei 4 Modellen knapp (V2) | hoch | offen | Code | Lazy Evaluation im Router, per-Modell Tree-Reduction. Siehe pine_router_design.md §4 |
+| R-02 | Polygon.io Fetcher fehlt für Indices-Tests | mittel | offen | Code | Phase C+: core/data/polygon_fetcher.py bauen ($29/Mo) |
+| R-03 | Crypto-Features unzureichend (Funding, OI fehlen) | hoch (V2) | offen | Research | NB13c: nur OHLCV-Pool testen. Wenn Pass → V2 möglich. Wenn Fail → V2 erfordert API-Erweiterung |
+| R-04 | RAM-Limit Colab Free für Multi-Pool-Training | mittel | mitigiert | Code | NB13 zeigt: float32 + gc + per-iter cleanup reicht für FX. Universal-Pool braucht Colab Pro |
+| R-05 | `syminfo.type` reicht nicht für CFDs | mittel | dokumentiert | Code | Tertiary user-override + Symbol-Pattern-Matching (pine_router_design.md §2) |
+| R-06 | User-Verwirrung "warum kein Signal auf Crypto?" | hoch UX | offen | Product | V1-UI: "🚧 V2 coming"-Badge auf Non-FX-Charts. Marketing-Korrektur |
+| R-07 | Bit-Exact-Test komplexer mit 4 Modellen (V2) | mittel | offen | Code | Pro Modell separat NB10-style validieren. V2-Build-Item |
+| R-08 | Modell-Drift in 4 Modellen parallel (V2+) | mittel | offen | Backend | V1.5+ Continuous Retraining mit Per-Modell-Drift-Alerts |
+| R-09 | Quality-Anchor zu strikt → V2 stockt | mittel | mitigiert | Process | ANN-010 hat "Nico explicit override" Option für missing_1_strict |
+| R-10 | Pine-Code-Generation für Multi-Model nicht gebaut | hoch (V2) | offen | Code | core/export/pine_router_codegen.py muss vor V2-Release stehen |
 
 2. ✅ **Strategische Erkenntnis gelocked:** Consensus-Filter (LGBM+XGB+Cat) liefert PF 2.93 auf GBPUSD vs LGBM-Alone 2.54 — V1.5-Backend-Gold, NICHT V1-Pine. Siehe [ANN-004](docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md).
 
@@ -1675,5 +1715,6 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-27 | arbeits-pc | work | **Strategy-Lock + Distribution-Plan.** Nico bestätigt CSVs-Ignore (JSON reicht) + lockt 4-Punkte-Robustheits-Mantra + skizziert Distribution-Pipeline (Lovable/Next.js + Stripe + TradingView-Invite-Auto-Manager + IONOS-Domain). `ANN-006` Robustheits-First-Mantra geschrieben (überstellt alle anderen Locks). `ANN-007` Distribution-Architektur geschrieben (separates Repo geplant pace-algo-distribution/, V1-Stack Lovable+Vercel+Railway+Postgres+Stripe). README mit Mantra prominent. HANDOFF Section 16 + 19 updated. | `dab1943` | **NB13 bauen.** Vorgehen klar in research/asset_generalization.md. Polygon-Frage offen (NB13 startet ohne, mit Crypto+GBPUSD+Gold). |
 | 2026-05-27 | arbeits-pc | work | **NB13 als 12-Section-Forschungsplattform gebaut.** `core/config.py` erweitert: `FX_TRAIN_SYMBOLS`/`FX_HOLDOUT_SYMBOLS` Trennung, `CRYPTO_SYMBOLS` um BNBUSDT/ADAUSDT erweitert, `PRIMARY_TIMEFRAMES = ['5m','15m','30m','1h']`, neue `ASSET_GROUPS`-Dict, `PHASE_B_THRESHOLDS` für deterministische H1-H6-Auswertung. `notebooks/13_cross_asset_generalization.ipynb` (29 cells, 12 Sections) mit Experiment-Registry, Data-Inventory-Check (fail-fast wenn Symbole fehlen), per-pool×TF-Training-Loop, SHAP auf 3 Ebenen, Cross-Asset-Matrix, TF-Comparison, Auto-Decision-Engine, Result-Persistence in `/results/nb13/`, Auto-Push. MVP-Run: LightGBM only, Experimente A/B/D aktiv, C/E gated. `research/asset_generalization.md` mit 12-Section-Plan dokumentiert. | `038c190` | **Nico:** (1) NB01-Re-Run in Colab mit erweitertem Symbol-Set (BNBUSDT, ADAUSDT, AUDUSD, USDCHF) + neuen TFs (30m, 1h). (2) NB04 für Label-Generation auf neuen Daten. (3) NB13 in Colab durchlaufen lassen. (4) Section 12 Auto-Push (PAT in Colab Secrets bereits aktiv). |
 | 2026-05-27 | colab | — | **NB13 Run 1 ABGESCHLOSSEN, Auto-Push.** Memory-Fix erforderlich (D-Experiment off, float32, gc.collect zwischen iterations, val_cutoffs_cache). Crash-Recovery, NB04 mit aktualisierter config für 30m+1h Labels nachgeholt (132 Label-Sets), dann NB13 sauber durchgelaufen. Outputs: 5 Files in `/results/nb13/`. **Verdict: FX-Edge generalisiert (Premium-PF 2.5+ auf 5 FX-Symbolen inkl. 3 nie trainierten), Crypto bricht komplett (PF≈1.0 auf 5 Crypto-Symbolen × 4 TFs).** | `56349b8` (NB13 memory fix) + `8a7bf8d` (results auto-push) | **Claude:** vollständige Analyse + ADR. |
-| 2026-05-27 | arbeits-pc | work | **NB13 Analyse + ANN-008 Lock.** `research/asset_generalization.md` komplett mit Run-1-Daten gefüllt (Cross-Asset Matrix Tabelle, TF-Comparison, SHAP-Stability-Erkenntnisse, 6-Hypothesen-Status). `docs/decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md` geschrieben — wichtige Konsequenz: V1-Marketing wird von "Universal" zu "FX Major Pairs". Crypto-Spezialmodell oder Universal-Pool-Training nötig vor V2. `docs/roadmap.md` Phase B als ABGESCHLOSSEN, Phase C (NB14 Multi-TF) als ACTIVE. `docs/decisions/README.md` mit ANN-008 ergänzt. | (next commit) | **Nico:** Entscheidung — NB13b (Universal-Training mit High-RAM oder Crypto-Spezialmodell)? Oder direkt Phase C (NB14 Multi-TF)? V1-Marketing-Korrektur intern bestätigen. |
+| 2026-05-27 | arbeits-pc | work | **NB13 Analyse + ANN-008 Lock.** `research/asset_generalization.md` komplett mit Run-1-Daten gefüllt (Cross-Asset Matrix Tabelle, TF-Comparison, SHAP-Stability-Erkenntnisse, 6-Hypothesen-Status). `docs/decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md` geschrieben — wichtige Konsequenz: V1-Marketing wird von "Universal" zu "FX Major Pairs". Crypto-Spezialmodell oder Universal-Pool-Training nötig vor V2. `docs/roadmap.md` Phase B als ABGESCHLOSSEN, Phase C (NB14 Multi-TF) als ACTIVE. `docs/decisions/README.md` mit ANN-008 ergänzt. | `ee7c7f9` | **Nico:** Entscheidung — NB13b (Universal-Training mit High-RAM oder Crypto-Spezialmodell)? Oder direkt Phase C (NB14 Multi-TF)? V1-Marketing-Korrektur intern bestätigen. |
+| 2026-05-27 | arbeits-pc | work | **ARCHITEKTUR-PIVOT GELOCKED.** Nico hat Multi-Model-Router als neue Zielarchitektur beschlossen ("Universal UX + Specialized Intelligence"). Geschrieben: `ANN-009` Multi-Model Router (Pivot-Lock, V1→V2 Architecture, Pine-Code-Skelett), `ANN-010` Quality-Anchor (Premium PF ~2.0 als Referenz, strict-Schwellen für neue Asset-Klassen-Modelle, strikte Feature-Regeln verschärft), `docs/pine_router_design.md` (NEU — Asset-Detection, Shared Feature-Layer, Model-Subgraphs, Tier-Engine, UI-Layer, Pine-Budget-Plan für 4 Modelle, V1→V2 Migration). Update: README mit "Universal UX + Specialized Intelligence" Tagline, architecture.md mit Router-Layer + core/router/ + core/models/{class}/ Struktur, deployment_plan.md V1-V3 mit Multi-Model, model_registry.md mit 4 Modell-Slots (fx aktiv, andere stub), roadmap.md mit V-Releases, ANN-005 als "Architecture-superseded by ANN-009"-Notiz. HANDOFF Section 16 mit Pivot-Konsequenzen + NEU Section 16a "Open Technical Risks" (R-01 bis R-10). decisions/README.md Index erweitert. | (next commit) | **Next concrete:** NB14 in Colab bauen + runnen (Multi-TF Deep-Dive für FX). Parallel optional: NB13c Crypto-Spezialmodell-Test, core/router/ Python-Stubs. |
 

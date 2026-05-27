@@ -1,8 +1,21 @@
-# Model Registry
+# Model Registry — Multi-Model
 
-Alle trainierten Modelle mit Hyperparams + OOS-Metriken. Quelle der Wahrheit für "welches Modell läuft gerade?" und "warum haben wir das gewählt?".
+**Architektur-Lock:** Multi-Model Router per [ANN-009](decisions/ANN-009-multi-model-router-architecture.md). 4 Modell-Slots, Quality-Anchor per [ANN-010](decisions/ANN-010-quality-anchor.md).
 
-**Locked Rule (HANDOFF 12.2):** Kein CatBoost in V1-Pine-Deployment. CatBoost bleibt im Research-Set.
+**Locked Rules:**
+- Kein CatBoost in Pine-Deployment (Pine-Inkompatibilität)
+- Neue Modelle MÜSSEN ANN-010 Quality-Anchor bestehen vor Deployment
+
+## Modell-Slot-Status
+
+| Slot | V1 Status | Modell | Premium PF | Notiz |
+|---|---|---|---|---|
+| **fx_model** | ✅ Aktiv | LightGBM 30 trees | 2.49 (5m mean, 5 Symbole) | V1-Sieger, NB13 belegt |
+| **crypto_model** | ⏳ V2 — Stub | TBD (Crypto-Spezialmodell) | — | NB13c Test ausstehend |
+| **indices_model** | ⏳ V2 — Stub | TBD | — | braucht Polygon-Aktivierung |
+| **commodity_model** | ⏳ V2 — Stub | TBD (XAU + ggf. XAG + USO) | — | Gold Phase 1 = random (ANN-003) |
+
+In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Badge "🚧 V2 coming". Router-Skelett ist ready, kein Refactor-Bedarf für V2.
 
 ---
 

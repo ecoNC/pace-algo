@@ -1,7 +1,8 @@
 # ANN-005: V1 vs V1.5 Scope-Split
 
-**Status:** Active
+**Status:** Active (Single-Model-Annahmen architektonisch überstellt durch [ANN-009](ANN-009-multi-model-router-architecture.md); V1-Scope-Klauseln bleiben gelocked)
 **Datum:** 2026-05-27
+**Wichtig:** Lies ANN-009 ZUERST. Dieses ADR beschreibt den V1-Feature-Scope ("welche Features hat V1?"); ANN-009 beschreibt die Architektur ("wie sind die Features intern gebaut?"). Beide gelten.
 **Locked-By:** HANDOFF Section 12.2.9 ("Backend-compatible from day one") + 12.3.13 ("Universal first")
 **Related:** [[ANN-004]] (Consensus → V1.5) [[ANN-001]] (SMC → research only)
 

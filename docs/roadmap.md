@@ -1,9 +1,8 @@
-# Roadmap — Phasen A bis E
+# Roadmap — Phasen A bis E + V-Releases
 
-**Strategische Prämisse (2026-05-27 reaffirmiert):**
-Wir optimieren auf **Robustheit, Cross-Asset-Generalisierung, Multi-Timeframe-Stabilität und langfristige Produktqualität** — NICHT auf den besten Einzelmarkt-PF oder den schnellsten Release. FX-only PF 2.015 aus NB11 bleibt **Forschungs-Baseline**, nicht Produktziel.
+**Architektur-Pivot 2026-05-27 (gelocked):** "Universal UX + Specialized Intelligence" — Multi-Model Router ([ANN-009](decisions/ANN-009-multi-model-router-architecture.md)). NB13 belegt: Single-Universal-Modell funktioniert nicht (FX-Edge 2.49 / Crypto-Edge 0.99 random). V1 = FX-only mit Router-Skelett, V2 = Multi-Model aktiv.
 
-Jede Phase muss abgeschlossen sein, bevor die nächste startet. Phasen-Ergebnisse landen als JSON in `/results/` und als Bericht in `/research/`.
+**Strategische Prämisse:** Robustheit, Cross-Asset-Generalisierung, Multi-Timeframe-Stabilität, langfristige Produktqualität ([ANN-006](decisions/ANN-006-robustness-first-mantra.md) Mantra). FX-Premium-PF ~2.0 ist Quality Anchor ([ANN-010](decisions/ANN-010-quality-anchor.md)).
 
 ---
 

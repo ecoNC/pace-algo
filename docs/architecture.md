@@ -1,23 +1,42 @@
 # Architecture
 
+**Locked seit 2026-05-27:** Multi-Model Router Architecture per [ANN-009](decisions/ANN-009-multi-model-router-architecture.md). Siehe auch [/docs/pine_router_design.md](pine_router_design.md) für Pine-spezifische Details.
+
+**Tagline:** "Universal UX + Specialized Intelligence" — ein Indikator, mehrere asset-spezialisierte Modelle.
+
 ## Code-Layout
 
 ```
 pace-algo/
 ├── core/                    # Platform-agnostic Python ML code
-│   ├── config.py            # Symbols, TFs, train/val/test cutoffs, holdouts
+│   ├── config.py            # Symbols, TFs, train/val/test cutoffs, holdouts, ASSET_GROUPS
 │   ├── data/                # Multi-source OHLCV fetchers (Binance, KuCoin, Dukascopy, Yahoo)
-│   ├── features/            # Feature engineering modules
+│   ├── features/            # SHARED Feature Engineering Layer (klassenneutral)
 │   │   ├── engineer.py      # ATR-normalized base features
-│   │   ├── smc.py           # SMC/structure features (deprecated post-NB11)
+│   │   ├── smc.py           # SMC/structure features (deprecated per ANN-001)
 │   │   ├── session.py       # Session/timing features
-│   │   ├── htf.py           # Higher-TF interactions
-│   │   └── macro.py         # Daily macro (VIX/DXY) — SHAP-dead, mostly unused
+│   │   ├── htf_interaction.py # Higher-TF interactions
+│   │   └── macro.py         # Daily macro — deprecated for intraday
 │   ├── labeling/            # Triple Barrier labeling (López de Prado)
 │   ├── train/               # Walk-Forward training (LGBM/XGB/CatBoost)
+│   │   ├── lgbm_trainer.py  # Shared trainer
+│   │   ├── train_fx.py      # V1 — actively trained
+│   │   ├── train_crypto.py  # V2 — wartet auf NB13c
+│   │   ├── train_indices.py # V2+ — wartet auf Polygon
+│   │   └── train_commodity.py # V2+
 │   ├── analysis/            # SHAP, calibration, regime stability
-│   ├── models/              # Serialized model artifacts (.pkl, .cbm) — NOT versioned
-│   └── export/              # Pine code generation (to be built in Phase E / NB09)
+│   │   ├── diagnostics.py
+│   │   └── quality_check.py # NEU — ANN-010 Quality Anchor enforcement
+│   ├── models/              # Multi-Model storage (ANN-009)
+│   │   ├── fx/              # V1 production
+│   │   ├── crypto/          # V2+
+│   │   ├── indices/         # V2+
+│   │   └── commodity/       # V2+
+│   ├── router/              # NEU — V1-Skelett, V2-vollständig
+│   │   ├── asset_detector.py    # Python-Spiegel der Pine-Logik
+│   │   ├── model_selector.py    # Per-Klasse Modell-Routing
+│   │   └── pine_router_codegen.py # Pine-Code-Generator für Router
+│   └── export/              # Pine code generation (Phase E)
 ├── deploy_pine/             # Pine Script v6 output
 ├── deploy_server/           # Future backend deployment (V2+, not yet active)
 ├── notebooks/               # Colab notebooks — monthly workflow
@@ -78,11 +97,17 @@ V2 (Full Backend)
 
 Siehe [deployment_plan.md](deployment_plan.md) für Migrations-Details.
 
-## Aktuelle Architektur-Entscheidung (offen)
+## Aktuelle Architektur-Entscheidung — GELOCKED 2026-05-27
 
-**Universal vs. Specialized** — wird in **Phase D (NB15)** entschieden:
-- Variante A: Ein Universal-Modell für alle Assets × TFs
-- Variante B: Core-Modell + per-Cluster Kalibrierung
-- Variante C: Mehrere Spezialmodelle + Pine-Router
+**Multi-Model Router (Variante C)** ist gelocked per [ANN-009](decisions/ANN-009-multi-model-router-architecture.md).
 
-Entscheidungs-Matrix siehe [roadmap.md](roadmap.md) Phase D.
+**Begründung:** NB13 hat empirisch gezeigt, dass ein Single-Universal-Modell nicht funktionieren kann — FX-trainiertes Modell liefert PF 2.49 auf FX, aber PF 0.99 (random) auf Crypto. Universal-Penalty existiert nicht "linear", sondern Crypto braucht komplett andere Patterns.
+
+**Konkrete V1-V3 Konsequenz:**
+- **V1:** Pine-Code enthält Router-Layer-Skelett. Nur `fx_model_predict()` ist aktiv. Andere Klassen liefern "Coming Soon"-UI.
+- **V2:** Crypto + Indices + Commodity Modelle werden trainiert und in Pine eingebettet. Router routet zu aktivem Modell.
+- **V3:** Cloud-Backend orchestriert Modell-Updates, Continuous Learning, asset-spezifisches Drift-Tracking.
+
+**Pine-Router-Details:** siehe [pine_router_design.md](pine_router_design.md).
+
+**Quality-Anchor:** Neue Asset-Klassen-Modelle müssen die Anchor-Kriterien aus [ANN-010](decisions/ANN-010-quality-anchor.md) erfüllen bevor sie in V2 deployed werden.
