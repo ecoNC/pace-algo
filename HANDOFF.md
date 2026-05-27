@@ -9,6 +9,31 @@
 
 ---
 
+## 0.0 Standard Boot Prompt (what Nico copy-pastes into every new chat)
+
+When Nico starts a fresh Claude session — on either machine — his very first message will be (or should be) the standard boot prompt:
+
+```
+PaceAlgo Boot. Workstation: <arbeits-pc oder heim-pc>.
+Mach git pull im pace-algo Repo, lies HANDOFF.md (Sections 0, 0a, 19, 20),
+und sag mir in 2 Sätzen wo wir stehen und was als nächstes ansteht.
+```
+
+If you receive this message, your job is mechanical:
+
+1. `git -C "C:\Users\nico.flotz\Downloads\pace-algo" pull --ff-only origin main` (adjust path on Heim-PC if different)
+2. Read this entire HANDOFF.md — at minimum Sections 0, 0a, 16, 19, 20
+3. Reply in German with EXACTLY:
+   - One sentence: where we are (last session log entry + any open in-flight work)
+   - One sentence: what the next concrete action is (next notebook, next decision, next test)
+   - Optionally: one line "Bereit." or a clarifying question if Section 19 + Section 16 contradict each other
+
+**Do NOT** start working on anything before Nico confirms direction. The boot prompt is a status report, not a work order.
+
+If Nico forgets to send the boot prompt and goes straight into a task, still run the boot sequence silently (`git pull`, read HANDOFF) before responding, then proceed with his task.
+
+---
+
 ## 0. CRITICAL — READ THIS FIRST (Multi-Workstation Protocol)
 
 **You are a Claude session working on PaceAlgo. There are TWO physical Claude installations on TWO different machines (Arbeits-PC and Heim-PC), each with its own Anthropic account and its own local memory. They share only this Git repository.**
@@ -1611,4 +1636,5 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-26 | arbeits-pc | work | Original document creation — full 18-section handoff written from scratch after FX-only → Universal pivot | (uncommitted at time) | Commit + push to GitHub |
 | 2026-05-27 | arbeits-pc | work | Context-window refresh, fresh session continuation. Verified content intact, updated date stamps, added Session Handoff Log section | `42fe4fb` | Resume NB 12 debug cycle (last commit `33f68c4`), then proceed to Phase 2 cross-asset work |
 | 2026-05-27 | arbeits-pc (NWILF026, intern\nico.flotz) | work | Multi-Workstation Sync Protocol added. Section 0 rewritten with mandatory boot/end-of-turn sequence. Section 0a embeds the full persona/communication rules so a "naked" Claude on the Heim-PC (without local memory files) agrees with the work-account Claude. Section 20 added with detailed git workflow + Heim-PC bootstrap script. Local MEMORY.md on Arbeits-PC updated with pointer header. | `51ee6c7` | **Heim-PC first run:** read this entire HANDOFF (especially Sections 0, 0a, 20), then run the bootstrap commands in Section 20.4 to write the pointer MEMORY.md on Heim-PC. Then resume NB 12 work. |
+| 2026-05-27 | arbeits-pc | work | Added Section 0.0 — **Standard Boot Prompt**. Nico now has one fixed copy-paste prompt to start any new chat on any machine. Claude's response protocol on boot is mechanically defined (git pull → read HANDOFF → 2-sentence status). | (next commit) | Nico starts new chat (context refresh). Use the boot prompt. Next substantive work: NB 12 debug cycle. |
 
