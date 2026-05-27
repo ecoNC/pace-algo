@@ -22,27 +22,50 @@ ARTIFACTS_PINE = PROJECT_ROOT / "artifacts" / "pine_exports"
 # ---------------------------------------------------------------------------
 # SYMBOL UNIVERSE
 # ---------------------------------------------------------------------------
-CRYPTO_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
-FX_SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY"]
-METAL_SYMBOLS = ["XAUUSD"]
-INDEX_SYMBOLS_FUTURE = ["SPY", "QQQ", "USO"]  # ETF proxies via Polygon (Phase 2)
+# Expanded 2026-05-27 (Phase B prep, ANN-006 Mantra): wider coverage to test
+# universal generalization across asset classes.
 
-# Hold-out sets (NEVER used for training)
-DEV_HOLDOUT_SYMBOLS = ["SOLUSDT", "GBPUSD"]    # can be peeked at during development
-FINAL_HOLDOUT_SYMBOLS = ["QQQ"]                 # blind until final evaluation
+# FX — sauber getrennt in Train vs Hold-Out
+FX_TRAIN_SYMBOLS    = ["EURUSD", "USDJPY"]                       # core training pool
+FX_HOLDOUT_SYMBOLS  = ["GBPUSD", "AUDUSD", "USDCHF"]             # never trained on
+FX_SYMBOLS          = FX_TRAIN_SYMBOLS + FX_HOLDOUT_SYMBOLS
 
-# Training universe (Phase 1, free data only)
+# Crypto — 24/7 markets, different volatility regimes
+CRYPTO_SYMBOLS      = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ADAUSDT"]
+
+# Commodities — Gold + Silver + Oil (Silver/Oil via Polygon, see INDEX_SYMBOLS_FUTURE)
+METAL_SYMBOLS       = ["XAUUSD"]                                 # Dukascopy
+
+# Indices / ETFs — institutional flow, macro-driven (REQUIRES Polygon.io API, Phase B+)
+INDEX_SYMBOLS_FUTURE = ["SPY", "QQQ", "DIA", "IWM", "USO", "XAGUSD"]
+
+# Legacy hold-out aliases (used by NB12 + earlier pipelines)
+DEV_HOLDOUT_SYMBOLS   = ["SOLUSDT", "GBPUSD"]      # can be peeked at during development
+FINAL_HOLDOUT_SYMBOLS = ["QQQ"]                    # blind until final evaluation
+
+# Phase 1 training pool (legacy — used by NB05–NB12)
 PHASE1_TRAINING_SYMBOLS = (
     [s for s in CRYPTO_SYMBOLS if s not in DEV_HOLDOUT_SYMBOLS] +
     [s for s in FX_SYMBOLS if s not in DEV_HOLDOUT_SYMBOLS] +
     METAL_SYMBOLS
 )
 
+# Asset-Group dict — used by NB13+ for per-class evaluation + SHAP stability
+ASSET_GROUPS = {
+    "fx":          FX_SYMBOLS,
+    "crypto":      CRYPTO_SYMBOLS,
+    "commodities": METAL_SYMBOLS,
+    "indices":     INDEX_SYMBOLS_FUTURE,   # gated by Polygon availability
+}
+
 # ---------------------------------------------------------------------------
 # TIMEFRAMES
 # ---------------------------------------------------------------------------
-PRIMARY_TIMEFRAMES = ["5m", "15m"]
-HTF_CONTEXT_TIMEFRAMES = ["1h", "4h"]
+# Expanded 2026-05-27: PRIMARY_TIMEFRAMES now covers 5M/15M/30M/1H per Phase B plan.
+# NB14 will systematically compare these. NB13 trains separate models per (asset_group, TF).
+PRIMARY_TIMEFRAMES      = ["5m", "15m", "30m", "1h"]
+PRIMARY_TIMEFRAMES_FAST = ["15m"]                  # for quick smoke-tests
+HTF_CONTEXT_TIMEFRAMES  = ["1h", "4h"]             # used as shift(1) features in any LTF model
 
 # ---------------------------------------------------------------------------
 # DATE RANGES
@@ -125,4 +148,29 @@ ACCEPTANCE_CRITERIA = {
     "min_pf_long":          1.3,
     "min_pf_short":         1.3,
     "min_pf_holdout":       1.3,
+}
+
+# ---------------------------------------------------------------------------
+# PHASE B HYPOTHESIS THRESHOLDS (NB13 decision logic)
+# ---------------------------------------------------------------------------
+# Reference: /research/asset_generalization.md hypotheses H1–H6.
+# These thresholds turn Phase B from "look at the numbers" into deterministic Decisions.
+PHASE_B_THRESHOLDS = {
+    # H1 — Universal-PF cost: how much PF does generalization actually cost?
+    "h1_mean_pf_min":              1.4,   # mean across asset classes — TRUE if >= 1.4
+    "h1_min_pf_per_class":         1.3,   # min single-asset-class PF for "no class breaks"
+
+    # H5 — Consensus generalization across asset classes
+    "h5_consensus_lift_threshold": 0.15,  # PF lift over LGBM-Alone, per asset class
+    "h5_min_asset_classes":        3,     # of >=5 — needed for "generalizes" verdict
+
+    # H6 — XGBoost-Lift generalization
+    "h6_xgb_lift_threshold":       0.05,  # PF lift over LGBM, per asset class
+    "h6_min_asset_classes":        4,     # of >=5 — needed for "switch to XGB" verdict
+
+    # Statistical guardrails (avoid claims on too-few trades)
+    "min_trades_per_tier_asset":   200,   # below this: "data insufficient", not "no edge"
+
+    # Stability guardrails
+    "max_stability_cv":            0.25,
 }

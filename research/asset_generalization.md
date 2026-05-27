@@ -1,7 +1,38 @@
 # Asset Generalization — Phase B (NB13)
 
-**Status:** 🟡 ACTIVE — Plan + verschärfte Forschungsfragen nach NB12-Run (2026-05-27)
+**Status:** 🟡 ACTIVE — NB13 als 12-Section-Forschungsplattform gebaut, wartet auf Colab-Run
 **Decision-Framework:** Diese Datei nutzt das Pattern aus [/docs/_phase_decision_template.md](../docs/_phase_decision_template.md)
+**Notebook:** [notebooks/13_cross_asset_generalization.ipynb](../notebooks/13_cross_asset_generalization.ipynb)
+
+---
+
+## NB13-Architektur (12 Sections)
+
+Modulares Research-Framework, NICHT nur ein Experiment-Notebook:
+
+| Section | Inhalt |
+|---|---|
+| **0** | Config + Experiment Registry — alles tracebar (EXPERIMENT_ID, GIT_COMMIT, RUN_DATE, Seeds) |
+| **1** | Data Loading + Inventory Check — verifiziert welche Symbole × TFs verfügbar sind |
+| **2** | Feature Engineering — extended features für alle Symbole × TFs (NB12-Pattern generalisiert) |
+| **3** | Labeling Check — Class-Balance-Report pro Asset × TF |
+| **4** | Walk-Forward Split Builder — identische Cutoffs über alle Asset-Gruppen |
+| **5** | Model Training Loop (Pool × TF × Model) — `fx_train` und `universal` Pools |
+| **6** | SHAP Analysis (Global / per Asset-Class / per TF / Consistency Score) |
+| **7** | Cross-Asset Generalization Matrix — Pool × TF × Test-Asset → Premium-PF |
+| **8** | Timeframe Comparison — welcher TF generalisiert am stabilsten? |
+| **9** | Architecture Decision Engine — Auto-Scoring von H1/H5/H6 |
+| **10** | Result Persistence (`/results/nb13/` mit Subordnern `metrics/`, `shap/`, `summaries/`, etc.) |
+| **11** | Final Verdict — human-readable Conclusion + next steps |
+| **12** | Auto-Push to GitHub (NB12-Pattern, `nb13`-tag) |
+
+**Steuerung über Flags in Section 0:**
+- `EXPERIMENTS_TO_RUN`: A/B/C/D/E pro Experiment togglebar
+- `MODELS_TO_TRAIN`: Default `['LightGBM']` (schlanker MVP), erweiterbar auf XGB/CatBoost
+- `TIMEFRAMES_USED`: Default `PRIMARY_TIMEFRAMES = ['5m', '15m', '30m', '1h']`
+- `TRAIN_FRESH=True`, `LOAD_CACHE=False` — wissenschaftlich sauber per Nico-Lock
+
+---
 
 ---
 
