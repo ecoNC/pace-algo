@@ -1,0 +1,598 @@
+{
+  "notebook": "NB12_model_battery",
+  "run_date_utc": "2026-05-27",
+  "random_seed": 42,
+  "lib_versions": {
+    "lightgbm": "4.6.0",
+    "xgboost": "3.2.0",
+    "catboost": "1.2.10"
+  },
+  "config": {
+    "asset_scope": "FX_only",
+    "n_features": 27,
+    "feature_cols": [
+      "hour_sin",
+      "dist_to_swing_low_atr",
+      "htf_1h_rsi_14",
+      "realized_vol_20",
+      "atr_percentile_100",
+      "atr_pct",
+      "dist_to_swing_high_atr",
+      "volume_z_score",
+      "ema_20_slope_atr",
+      "hour_cos",
+      "momentum_composite",
+      "rvol_20",
+      "adx_14",
+      "ema_20_dist_atr",
+      "htf_1h_atr_percentile_100",
+      "htf_ltf_agree_bull",
+      "htf_ltf_agree_bear",
+      "htf_ltf_counter_trend",
+      "htf_ltf_alignment_score",
+      "ltf_rsi_minus_htf_rsi",
+      "both_rsi_oversold",
+      "both_rsi_overbought",
+      "vol_pct_diff_htf",
+      "both_high_vol",
+      "both_low_vol",
+      "pullback_in_bull",
+      "pullback_in_bear"
+    ],
+    "train_end": "2024-01-01 00:00:00+00:00",
+    "val_end": "2024-07-01 00:00:00+00:00",
+    "r_value": 1.5,
+    "win_r": 1.5,
+    "loss_r": 1.0,
+    "nb11_baseline_pf": 2.015039727582293
+  },
+  "dataset_shape": {
+    "train_rows": 795180,
+    "val_rows": 99163,
+    "test_rows": 365198,
+    "gbpusd_holdout_rows": 182553,
+    "class_balance_train": 0.3900022636384215,
+    "class_balance_val": 0.39070016034206306,
+    "class_balance_test": 0.39189426010000056
+  },
+  "hyperparams": {
+    "LightGBM": {
+      "objective": "binary",
+      "metric": "binary_logloss",
+      "num_leaves": 7,
+      "max_depth": 3,
+      "min_data_in_leaf": 200,
+      "learning_rate": 0.05,
+      "num_iterations": 30,
+      "lambda_l2": 0.5,
+      "feature_fraction": 0.85,
+      "bagging_fraction": 0.85,
+      "bagging_freq": 5,
+      "is_unbalance": true,
+      "verbose": -1,
+      "n_jobs": -1,
+      "seed": 42,
+      "deterministic": true
+    },
+    "XGBoost": {
+      "n_estimators": 30,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "reg_lambda": 0.5,
+      "subsample": 0.85,
+      "colsample_bytree": 0.85,
+      "scale_pos_weight": 1.5640876816220712,
+      "random_state": 42
+    },
+    "CatBoost": {
+      "iterations": 30,
+      "depth": 3,
+      "learning_rate": 0.05,
+      "l2_leaf_reg": 3.0,
+      "rsm": 0.85,
+      "auto_class_weights": "Balanced",
+      "random_seed": 42
+    }
+  },
+  "in_sample_test_metrics": [
+    {
+      "n": 37560,
+      "wins": 16364,
+      "losses": 20804,
+      "wr": 0.4402712010331468,
+      "pf": 1.1798692559123245,
+      "expR": 0.09962726304579339,
+      "model": "LightGBM",
+      "tier": "Standard",
+      "cutoff": 0.4913990445913419,
+      "auc": 0.5280438782835644
+    },
+    {
+      "n": 10769,
+      "wins": 5351,
+      "losses": 5250,
+      "wr": 0.5047637015375908,
+      "pf": 1.528857142857143,
+      "expR": 0.2578233819296128,
+      "model": "LightGBM",
+      "tier": "High",
+      "cutoff": 0.49711373557301697,
+      "auc": 0.5280438782835644
+    },
+    {
+      "n": 4323,
+      "wins": 2406,
+      "losses": 1849,
+      "wr": 0.5654524089306698,
+      "pf": 1.9518658734451055,
+      "expR": 0.4071246819338422,
+      "model": "LightGBM",
+      "tier": "Premium",
+      "cutoff": 0.5250057911178686,
+      "auc": 0.5280438782835644
+    },
+    {
+      "n": 34702,
+      "wins": 15305,
+      "losses": 19017,
+      "wr": 0.4459238972087874,
+      "pf": 1.2072093390124625,
+      "expR": 0.11355253299521642,
+      "model": "XGBoost",
+      "tier": "Standard",
+      "cutoff": 0.5153359770774841,
+      "auc": 0.5279822623295846
+    },
+    {
+      "n": 10752,
+      "wins": 5363,
+      "losses": 5205,
+      "wr": 0.5074753974261923,
+      "pf": 1.5455331412103746,
+      "expR": 0.2640904017857143,
+      "model": "XGBoost",
+      "tier": "High",
+      "cutoff": 0.5215885639190674,
+      "auc": 0.5279822623295846
+    },
+    {
+      "n": 4231,
+      "wins": 2352,
+      "losses": 1814,
+      "wr": 0.5645703312530005,
+      "pf": 1.9448732083792724,
+      "expR": 0.40510517608130464,
+      "model": "XGBoost",
+      "tier": "Premium",
+      "cutoff": 0.5449366569519043,
+      "auc": 0.5279822623295846
+    },
+    {
+      "n": 38076,
+      "wins": 16289,
+      "losses": 21419,
+      "wr": 0.4319772992468442,
+      "pf": 1.1407395303235446,
+      "expR": 0.07917060615610884,
+      "model": "CatBoost",
+      "tier": "Standard",
+      "cutoff": 0.5138416009525567,
+      "auc": 0.5267587780075654
+    },
+    {
+      "n": 11593,
+      "wins": 5625,
+      "losses": 5800,
+      "wr": 0.4923413566739606,
+      "pf": 1.4547413793103448,
+      "expR": 0.22750797895281635,
+      "model": "CatBoost",
+      "tier": "High",
+      "cutoff": 0.5205773969087292,
+      "auc": 0.5267587780075654
+    },
+    {
+      "n": 4181,
+      "wins": 2313,
+      "losses": 1806,
+      "wr": 0.5615440640932265,
+      "pf": 1.9210963455149501,
+      "expR": 0.39787132265008374,
+      "model": "CatBoost",
+      "tier": "Premium",
+      "cutoff": 0.5401734981495214,
+      "auc": 0.5267587780075654
+    },
+    {
+      "n": 35725,
+      "wins": 15654,
+      "losses": 19715,
+      "wr": 0.4425909694930589,
+      "pf": 1.1910220644179559,
+      "expR": 0.10541637508747376,
+      "model": "Voting",
+      "tier": "Standard",
+      "cutoff": 0.5065815348516914,
+      "auc": 0.5278978381612226
+    },
+    {
+      "n": 10541,
+      "wins": 5308,
+      "losses": 5072,
+      "wr": 0.5113680154142581,
+      "pf": 1.569794952681388,
+      "expR": 0.2741675362868798,
+      "model": "Voting",
+      "tier": "High",
+      "cutoff": 0.5124354664150652,
+      "auc": 0.5278978381612226
+    },
+    {
+      "n": 4260,
+      "wins": 2382,
+      "losses": 1816,
+      "wr": 0.5674130538351596,
+      "pf": 1.967511013215859,
+      "expR": 0.41244131455399063,
+      "model": "Voting",
+      "tier": "Premium",
+      "cutoff": 0.5358853575270635,
+      "auc": 0.5278978381612226
+    }
+  ],
+  "gbpusd_holdout_metrics": [
+    {
+      "n": 21372,
+      "wins": 9402,
+      "losses": 11723,
+      "wr": 0.4450650887573965,
+      "pf": 1.2030197048537064,
+      "expR": 0.11136065880591428,
+      "model": "LightGBM",
+      "tier": "Standard"
+    },
+    {
+      "n": 6464,
+      "wins": 3217,
+      "losses": 3130,
+      "wr": 0.5068536316369938,
+      "pf": 1.5416932907348242,
+      "expR": 0.26229888613861385,
+      "model": "LightGBM",
+      "tier": "High"
+    },
+    {
+      "n": 2366,
+      "wins": 1453,
+      "losses": 859,
+      "wr": 0.6284602076124568,
+      "pf": 2.5372526193247964,
+      "expR": 0.5581149619611158,
+      "model": "LightGBM",
+      "tier": "Premium"
+    },
+    {
+      "n": 19476,
+      "wins": 8610,
+      "losses": 10631,
+      "wr": 0.4474819396081285,
+      "pf": 1.2148433825604366,
+      "expR": 0.11727254056274389,
+      "model": "XGBoost",
+      "tier": "Standard"
+    },
+    {
+      "n": 6205,
+      "wins": 3118,
+      "losses": 2969,
+      "wr": 0.5122391982914408,
+      "pf": 1.5752778713371505,
+      "expR": 0.2752618855761483,
+      "model": "XGBoost",
+      "tier": "High"
+    },
+    {
+      "n": 2339,
+      "wins": 1464,
+      "losses": 822,
+      "wr": 0.6404199475065617,
+      "pf": 2.6715328467153285,
+      "expR": 0.5874305258657546,
+      "model": "XGBoost",
+      "tier": "Premium"
+    },
+    {
+      "n": 20097,
+      "wins": 8795,
+      "losses": 11047,
+      "wr": 0.44325168833786915,
+      "pf": 1.1942156241513533,
+      "expR": 0.10675722744688262,
+      "model": "CatBoost",
+      "tier": "Standard"
+    },
+    {
+      "n": 7178,
+      "wins": 3514,
+      "losses": 3549,
+      "wr": 0.4975222993062438,
+      "pf": 1.485207100591716,
+      "expR": 0.23989969350794094,
+      "model": "CatBoost",
+      "tier": "High"
+    },
+    {
+      "n": 2362,
+      "wins": 1464,
+      "losses": 858,
+      "wr": 0.6304909560723514,
+      "pf": 2.5594405594405596,
+      "expR": 0.5664690939881456,
+      "model": "CatBoost",
+      "tier": "Premium"
+    },
+    {
+      "n": 20004,
+      "wins": 8827,
+      "losses": 10942,
+      "wr": 0.4465071576711012,
+      "pf": 1.210062145859989,
+      "expR": 0.11490201959608079,
+      "model": "Voting",
+      "tier": "Standard"
+    },
+    {
+      "n": 6460,
+      "wins": 3206,
+      "losses": 3144,
+      "wr": 0.5048818897637796,
+      "pf": 1.5295801526717556,
+      "expR": 0.25773993808049533,
+      "model": "Voting",
+      "tier": "High"
+    },
+    {
+      "n": 2351,
+      "wins": 1460,
+      "losses": 838,
+      "wr": 0.6353350739773717,
+      "pf": 2.613365155131265,
+      "expR": 0.5750744364100383,
+      "model": "Voting",
+      "tier": "Premium"
+    }
+  ],
+  "yearly_stability_premium": [
+    {
+      "model": "LightGBM",
+      "year": 2024,
+      "pf": 1.7488479262672811,
+      "wr": 0.5382978723404256,
+      "n": 1444
+    },
+    {
+      "model": "LightGBM",
+      "year": 2025,
+      "pf": 2.0,
+      "wr": 0.5714285714285714,
+      "n": 2298
+    },
+    {
+      "model": "LightGBM",
+      "year": 2026,
+      "pf": 2.3340807174887894,
+      "wr": 0.6087719298245614,
+      "n": 581
+    },
+    {
+      "model": "XGBoost",
+      "year": 2024,
+      "pf": 1.707373271889401,
+      "wr": 0.5323275862068966,
+      "n": 1425
+    },
+    {
+      "model": "XGBoost",
+      "year": 2025,
+      "pf": 1.991080797481637,
+      "wr": 0.5703336339044184,
+      "n": 2239
+    },
+    {
+      "model": "XGBoost",
+      "year": 2026,
+      "pf": 2.4714285714285715,
+      "wr": 0.6223021582733813,
+      "n": 567
+    },
+    {
+      "model": "CatBoost",
+      "year": 2024,
+      "pf": 1.720447284345048,
+      "wr": 0.5342261904761905,
+      "n": 1368
+    },
+    {
+      "model": "CatBoost",
+      "year": 2025,
+      "pf": 1.9952076677316295,
+      "wr": 0.5708409506398537,
+      "n": 2215
+    },
+    {
+      "model": "CatBoost",
+      "year": 2026,
+      "pf": 2.1535269709543567,
+      "wr": 0.5894378194207837,
+      "n": 598
+    },
+    {
+      "model": "Voting",
+      "year": 2024,
+      "pf": 1.749223602484472,
+      "wr": 0.5383512544802868,
+      "n": 1424
+    },
+    {
+      "model": "Voting",
+      "year": 2025,
+      "pf": 2.014644351464435,
+      "wr": 0.5732142857142857,
+      "n": 2262
+    },
+    {
+      "model": "Voting",
+      "year": 2026,
+      "pf": 2.4097222222222223,
+      "wr": 0.6163410301953819,
+      "n": 574
+    }
+  ],
+  "stability_cv_per_model": {
+    "LightGBM": 0.1447957270640219,
+    "XGBoost": 0.18779383128751595,
+    "CatBoost": 0.11200875279332093,
+    "Voting": 0.1615090381359096
+  },
+  "consensus_vs_lgbm_only": {
+    "in_sample_test": [
+      {
+        "n": 21894,
+        "wins": 9996,
+        "losses": 11692,
+        "wr": 0.4609000368867577,
+        "pf": 1.2824153267191243,
+        "expR": 0.15081757559148626,
+        "filter": "Consensus (Standard)"
+      },
+      {
+        "n": 7063,
+        "wins": 3765,
+        "losses": 3182,
+        "wr": 0.5419605585144667,
+        "pf": 1.7748271527341295,
+        "expR": 0.34907263202605127,
+        "filter": "Consensus (High)"
+      },
+      {
+        "n": 3530,
+        "wins": 1978,
+        "losses": 1504,
+        "wr": 0.5680643308443424,
+        "pf": 1.9727393617021276,
+        "expR": 0.41444759206798865,
+        "filter": "Consensus (Premium)"
+      },
+      {
+        "n": 37560,
+        "wins": 16364,
+        "losses": 20804,
+        "wr": 0.4402712010331468,
+        "pf": 1.1798692559123245,
+        "expR": 0.09962726304579339,
+        "filter": "LightGBM-only (Standard)"
+      },
+      {
+        "n": 10769,
+        "wins": 5351,
+        "losses": 5250,
+        "wr": 0.5047637015375908,
+        "pf": 1.528857142857143,
+        "expR": 0.2578233819296128,
+        "filter": "LightGBM-only (High)"
+      },
+      {
+        "n": 4323,
+        "wins": 2406,
+        "losses": 1849,
+        "wr": 0.5654524089306698,
+        "pf": 1.9518658734451055,
+        "expR": 0.4071246819338422,
+        "filter": "LightGBM-only (Premium)"
+      }
+    ],
+    "gbpusd_holdout": [
+      {
+        "n": 12098,
+        "wins": 5568,
+        "losses": 6388,
+        "wr": 0.46570759451321514,
+        "pf": 1.3074514715090795,
+        "expR": 0.1623408827905439,
+        "filter": "Consensus (Standard)"
+      },
+      {
+        "n": 4144,
+        "wins": 2264,
+        "losses": 1806,
+        "wr": 0.5562653562653562,
+        "pf": 1.8803986710963456,
+        "expR": 0.38368725868725867,
+        "filter": "Consensus (High)"
+      },
+      {
+        "n": 1914,
+        "wins": 1244,
+        "losses": 637,
+        "wr": 0.6613503455608719,
+        "pf": 2.9293563579277864,
+        "expR": 0.642110762800418,
+        "filter": "Consensus (Premium)"
+      },
+      {
+        "n": 21372,
+        "wins": 9402,
+        "losses": 11723,
+        "wr": 0.4450650887573965,
+        "pf": 1.2030197048537064,
+        "expR": 0.11136065880591428,
+        "filter": "LightGBM-only (Standard)"
+      },
+      {
+        "n": 6464,
+        "wins": 3217,
+        "losses": 3130,
+        "wr": 0.5068536316369938,
+        "pf": 1.5416932907348242,
+        "expR": 0.26229888613861385,
+        "filter": "LightGBM-only (High)"
+      },
+      {
+        "n": 2366,
+        "wins": 1453,
+        "losses": 859,
+        "wr": 0.6284602076124568,
+        "pf": 2.5372526193247964,
+        "expR": 0.5581149619611158,
+        "filter": "LightGBM-only (Premium)"
+      }
+    ]
+  },
+  "pine_exportability": {
+    "LightGBM": {
+      "pine_ready": true,
+      "notes": "Native tree-cascade, well-understood, our baseline"
+    },
+    "XGBoost": {
+      "pine_ready": true,
+      "notes": "Similar tree structure, exportable with similar effort"
+    },
+    "CatBoost": {
+      "pine_ready": false,
+      "notes": "Oblivious trees + categorical embeddings \u2014 complex/impossible Pine export"
+    },
+    "Voting": {
+      "pine_ready": true,
+      "notes": "Need to embed 3 models in Pine \u2014 ~3x line count, possible but bulky"
+    }
+  },
+  "verdict": {
+    "lgbm_premium_pf": 1.9518658734451055,
+    "best_model": "Voting",
+    "best_premium_pf": 1.967511013215859,
+    "lift_over_lgbm": 0.015645139770753547,
+    "lift_threshold": 0.05,
+    "wins_by_threshold": false,
+    "best_is_pine_ready": true
+  }
+}
