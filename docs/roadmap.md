@@ -36,30 +36,15 @@ Volle Analyse: [/research/model_battery_results.md](../research/model_battery_re
 
 ---
 
-## Phase B — Cross-Asset Generalization (NB13) 🟡 NEXT — ACTIVE
+## Phase B — Cross-Asset Generalization (NB13) ✅ ABGESCHLOSSEN 2026-05-27
 
-**Frage:** Welche Features generalisieren über Asset-Klassen, welche sind asset-spezifisch?
+**Verdict:** FX-trainiertes Modell generalisiert SAUBER auf andere FX-Symbole (GBPUSD/AUDUSD/USDCHF Premium-PF 2.5+), bricht KOMPLETT auf Crypto (alle 5 Crypto-Symbole PF ≈ 1.0 = random). Architektur-Hint aus Auto-Decision-Engine: **Variante C (Router)**. Volle Analyse: [/research/asset_generalization.md](../research/asset_generalization.md). Locked in [ANN-008](decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md).
 
-**Setup:**
-- Phase-A-Sieger als Trainings-Modell
-- Inferenz auf: BTC, ETH, SOL (Crypto), SPY, QQQ (Indices — Polygon-Aktivierung nötig), USO/Gold
-- KEIN Retraining auf neuen Assets — pure Out-of-Distribution-Test
-
-**Forschungsfragen:**
-- Welche Features generalisieren? (SHAP-Vergleich pro Asset-Klasse)
-- Welche Assets brechen? (PF < 1.3 markiert "no edge")
-- Wie stark ist die Universalitäts-Strafe? (Mean-PF über Klassen vs FX-only)
-- Welche Features sind asset-spezifisch? (Hohe SHAP-Varianz zwischen Klassen)
-
-**Vorbedingung:** Polygon.io-Aktivierung ($29/Monat) — separate Nico-Entscheidung.
-
-**Output:**
-- `/results/per_symbol_metrics/nb13_cross_asset_{date}.json`
-- `/research/asset_generalization.md`
+**Konsequenz für V1-Marketing:** "Universal AI Trading Indicator" wird zu "AI Trading Indicator für FX Major Pairs". Crypto/Indices = V1.5/V2.
 
 ---
 
-## Phase C — Multi-Timeframe Comparison (NB14) ⚪ NEXT+1
+## Phase C — Multi-Timeframe Comparison (NB14) 🟡 NEXT — ACTIVE
 
 **Frage:** Welche Timeframes liefern die stabilsten OOS-Ergebnisse?
 

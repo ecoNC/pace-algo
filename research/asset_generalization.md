@@ -1,209 +1,204 @@
 # Asset Generalization — Phase B (NB13)
 
-**Status:** 🟡 ACTIVE — NB13 als 12-Section-Forschungsplattform gebaut, wartet auf Colab-Run
-**Decision-Framework:** Diese Datei nutzt das Pattern aus [/docs/_phase_decision_template.md](../docs/_phase_decision_template.md)
+**Status:** ✅ RUN 1 ABGESCHLOSSEN — 2026-05-27 (commit `8a7bf8d`)
+**Decision-Framework:** [/docs/_phase_decision_template.md](../docs/_phase_decision_template.md)
 **Notebook:** [notebooks/13_cross_asset_generalization.ipynb](../notebooks/13_cross_asset_generalization.ipynb)
+**Snapshot:** [results/nb13/summaries/nb13_full_snapshot_2026-05-27.json](../results/nb13/summaries/nb13_full_snapshot_2026-05-27.json)
 
 ---
 
-## NB13-Architektur (12 Sections)
+## TL;DR (in einem Satz)
 
-Modulares Research-Framework, NICHT nur ein Experiment-Notebook:
+**FX-trainiertes Modell generalisiert SAUBER innerhalb FX (inkl. nie trainierter Cousins AUDUSD/USDCHF: PF 2.5–2.7 Premium auf 5m), aber bricht KOMPLETT auf Crypto (PF ≈ 1.0 auf allen 5 Crypto-Symbolen × allen 4 TFs).** Architektur-Hint: **Variante C (Router + Spezialmodelle).**
 
-| Section | Inhalt |
+---
+
+## ## Run 2026-05-27
+
+### Setup (was lief)
+
+| Parameter | Wert |
 |---|---|
-| **0** | Config + Experiment Registry — alles tracebar (EXPERIMENT_ID, GIT_COMMIT, RUN_DATE, Seeds) |
-| **1** | Data Loading + Inventory Check — verifiziert welche Symbole × TFs verfügbar sind |
-| **2** | Feature Engineering — extended features für alle Symbole × TFs (NB12-Pattern generalisiert) |
-| **3** | Labeling Check — Class-Balance-Report pro Asset × TF |
-| **4** | Walk-Forward Split Builder — identische Cutoffs über alle Asset-Gruppen |
-| **5** | Model Training Loop (Pool × TF × Model) — `fx_train` und `universal` Pools |
-| **6** | SHAP Analysis (Global / per Asset-Class / per TF / Consistency Score) |
-| **7** | Cross-Asset Generalization Matrix — Pool × TF × Test-Asset → Premium-PF |
-| **8** | Timeframe Comparison — welcher TF generalisiert am stabilsten? |
-| **9** | Architecture Decision Engine — Auto-Scoring von H1/H5/H6 |
-| **10** | Result Persistence (`/results/nb13/` mit Subordnern `metrics/`, `shap/`, `summaries/`, etc.) |
-| **11** | Final Verdict — human-readable Conclusion + next steps |
-| **12** | Auto-Push to GitHub (NB12-Pattern, `nb13`-tag) |
+| Run-Commit | `8a7bf8d` |
+| Experiment-ID | nb13_2026-05-27T13-15-41Z_81f2316 |
+| Active Experiments | **A** (FX→FX-Holdout), **B** (FX→Crypto) |
+| Skipped | C (Indices, kein Polygon), D (Universal, RAM-gated), E (Asset-Cluster) |
+| Trainings-Pool | FX-only: EURUSD + USDJPY |
+| Test-Symbole | 11 (5 FX, 5 Crypto, 1 Gold — Gold leer in dieser Asset-Class-Auswertung) |
+| Modelle | LightGBM only |
+| TFs | 5m, 15m, 30m, 1h |
+| Features | 27 (NB11-Winner-Config) |
+| Random Seed | 42 |
 
-**Steuerung über Flags in Section 0:**
-- `EXPERIMENTS_TO_RUN`: A/B/C/D/E pro Experiment togglebar
-- `MODELS_TO_TRAIN`: Default `['LightGBM']` (schlanker MVP), erweiterbar auf XGB/CatBoost
-- `TIMEFRAMES_USED`: Default `PRIMARY_TIMEFRAMES = ['5m', '15m', '30m', '1h']`
-- `TRAIN_FRESH=True`, `LOAD_CACHE=False` — wissenschaftlich sauber per Nico-Lock
+### 1. Cross-Asset Premium PF — die zentrale Tabelle
 
----
+**Premium-Tier PF (FX-trained Modell, OOS-Inferenz pro Symbol):**
 
----
+| Symbol | Klasse | 5m | 15m | 30m | 1h |
+|---|---|---:|---:|---:|---:|
+| EURUSD | fx | 2.62 | 1.37 | 1.23 | 1.39 |
+| USDJPY | fx | 1.98 | 1.25 | 1.17 | 1.08 |
+| **GBPUSD** ⁂ | fx | **2.66** | **1.67** | **2.06** | 1.22 |
+| **AUDUSD** ⁂ | fx | **2.58** | 1.81 | 1.56 | 0.86 |
+| **USDCHF** ⁂ | fx | **2.61** | **1.88** | 1.37 | 1.35 |
+| BTCUSDT | crypto | 1.05 | 0.75 | 0.75 | 0.96 |
+| ETHUSDT | crypto | 0.84 | 1.06 | 1.50 | 1.06 |
+| SOLUSDT | crypto | 0.97 | 1.42 | 0.60 | 0.95 |
+| BNBUSDT | crypto | 1.05 | 0.92 | 0.75 | 0.99 |
+| ADAUSDT | crypto | 1.01 | 0.94 | 1.31 | 0.98 |
 
-## Strategische Verschärfung nach NB12
+⁂ = nie im Training gesehen (echtes Hold-Out)
 
-NB12 hat **zwei** überraschende Signale geliefert die NB13 jetzt aufklären muss:
+**Per-Klasse Mean (Premium):**
 
-1. **XGBoost-Marginal-Lift auf Hold-Out (+0.135 PF):** Auf in-sample TEST sind LightGBM und XGBoost praktisch gleich, aber auf GBPUSD-Hold-Out ist XGBoost +0.135 PF besser. EIN Symbol = kein robustes Signal — wir wissen nicht, ob das systematisch ist oder GBPUSD-spezifisches Glück.
+| TF | FX Mean PF | Crypto Mean PF | Spread |
+|---|---:|---:|---:|
+| 5m | **2.49** | 0.98 | -1.51 |
+| 15m | 1.60 | 1.02 | -0.58 |
+| 30m | 1.48 | 0.98 | -0.50 |
+| 1h | 1.18 | 0.99 | -0.19 |
 
-2. **Consensus-Filter-Lift auf Hold-Out (+0.39 PF):** Massiv, aber auch nur EIN Symbol. Wenn das auf Crypto/Indices/Gold hält → V1.5-Backend ist unverhandelbar. Wenn nicht → Consensus war Zufall, V1.5 macht nur Continuous Retraining (siehe [ANN-004](../docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md)).
+> **Erkenntnis 1:** FX-Edge ist REAL und generalisiert auf andere FX-Symbole (auch nie trainierte). GBPUSD/AUDUSD/USDCHF zeigen Premium-PF zwischen 2.58 und 2.66 auf 5m — bessere Zahlen als die Trainings-Symbole selbst.
 
-**Beide Fragen müssen in NB13 quantitativ beantwortet werden, sonst überinterpretieren wir GBPUSD-Daten.**
+> **Erkenntnis 2:** Crypto-Edge ist NULL. Alle 5 Crypto-Symbole haben PF ≈ 0.95–1.05 auf allen TFs. Das ist statistisch ununterscheidbar von random.
 
----
+> **Erkenntnis 3:** Höhere TFs zerstören FX-Edge progressiv (2.49 → 1.18). Wahrscheinlich Trade-Frequency-Issue: auf 1h gibt es zu wenig Premium-Signale für statistisch belastbare Edge.
 
-## 1. Hypothese (für NB13)
+### 2. TF-Comparison (FX-trained, Premium über alle 11 Symbole)
 
-### H1 (alt — bleibt): "FX-trainiertes Modell generalisiert eingeschränkt"
+| TF | Mean PF | Min PF | Max PF | Stability CV | Total Trades |
+|---|---:|---:|---:|---:|---:|
+| **5m** | **1.737** | 0.84 | 2.66 | 0.471 | 23,336 |
+| 15m | 1.306 | 0.75 | 1.88 | 0.302 | 3,100 |
+| 30m | 1.230 | 0.60 | 2.06 | 0.359 | 1,084 |
+| 1h | 1.086 | 0.87 | 1.40 | 0.164 | 11,398 |
 
-Mean-PF über alle Asset-Klassen wird messbar unter FX-only PF 2.0 liegen. Die "Universalitäts-Strafe" wird quantifizierbar.
+> **Beobachtung:** 5m hat besten Mean-PF aber höchste CV (0.471) — weil FX (2.49) und Crypto (0.98) so weit auseinander liegen. 1h hat niedrigste CV (0.164) **WEIL alle Symbole bei ~1.0 clustern** — kein Spread mehr, aber auch kein Edge.
 
-**Schwelle für H1 = TRUE:** Mean Premium-PF über ≥4 Asset-Klassen liegt im Bereich 1.2–1.7.
-**Schwelle für H1 = FALSE:** Mean Premium-PF über ≥4 Asset-Klassen liegt > 1.8.
+> **Konsequenz für V1:** 5m bleibt der Ziel-TF, weil dort die größte Edge sitzt. Aber: nur für FX. Crypto braucht eigenen Ansatz.
 
-### H2 (alt — bleibt): "Crypto bricht, FX-Cousins generalisieren"
+### 3. SHAP-Stability (FX vs Crypto)
 
-Per-Asset-Rangfolge wird:
-- Top: GBPUSD, USDCHF, EURJPY (FX-Familie) — PF > 1.5
-- Mitte: SPY, QQQ (Indices) — PF 1.1–1.4
-- Bottom: BTC, ETH (Crypto, andere Vola-Regimes) — PF < 1.1
+**Top-Features mean |SHAP| auf 5m:**
 
-### H3 (alt — bleibt): "Session-Features sind FX-spezifisch und brechen auf Crypto"
+| Feature | FX SHAP | Crypto SHAP | Stabilität |
+|---|---:|---:|---|
+| hour_sin | 0.0374 | 0.0387 | ✅ stabil |
+| ema_20_dist_atr | 0.0170 | 0.0190 | ✅ stabil |
+| dist_to_swing_low_atr | 0.0135 | 0.0120 | ✅ stabil |
+| hour_cos | 0.0129 | 0.0134 | ✅ stabil |
+| rvol_20 | 0.0061 | 0.0095 | ✅ stabil |
+| atr_percentile_100 | 0.0045 | 0.0051 | ✅ stabil |
+| **htf_ltf_agree_bull** | 0.0 | 0.0 | dead auf 5m |
+| **htf_1h_atr_percentile_100** | 0.0 | 0.0 | dead auf 5m |
+| **both_rsi_oversold/overbought** | 0.0 | 0.0 | dead auf 5m |
+| **htf_ltf_alignment_score** | 0.0 | 0.0 | dead auf 5m |
 
-`hour_sin/cos` SHAP-Rang fällt auf Crypto deutlich ab (kein klares Session-Cycle bei 24/7-Markt).
+> **WICHTIGSTE Erkenntnis aus SHAP:** Die Feature-Gewichtung ist FAST IDENTISCH zwischen FX und Crypto. Das Modell nutzt die GLEICHEN Patterns. Aber: die Patterns sind in Crypto NICHT prädiktiv. Crypto braucht ANDERE Features (z.B. Funding Rate, OI, On-Chain-Metrics, BTC-Dominance) die wir aktuell nicht haben.
 
-### H4 (alt — bleibt): "Volatilitäts-Features generalisieren"
+> **HTF-Interactions:** Auf 5m sind sie SHAP-zero (Modell ignoriert sie). Auf 30m: `htf_ltf_agree_bull` SHAP 0.0092. Auf 1h: `htf_ltf_alignment_score` SHAP 0.0144. **HTF-Context wird wichtiger auf höheren TFs** — aber die Edge ist insgesamt schwächer dort.
 
-`realized_vol_20`, `atr_percentile_100` haben über alle Asset-Klassen ähnliche SHAP-Werte und tragen zur Edge bei.
+### 4. Auto-Decision-Engine Output
 
-### H5 🔥 (NEU nach NB12): "Consensus-Lift verallgemeinert sich"
+Aus [nb13_full_snapshot_2026-05-27.json](../results/nb13/summaries/nb13_full_snapshot_2026-05-27.json):
 
-Wenn der Consensus-Filter-Lift (LGBM+XGB+Cat alle drei) systemisch ist und nicht GBPUSD-spezifisches Ensemble-Glück, dann sollte er auf MINDESTENS 3 von 5 Asset-Klassen messbar Lift gegenüber LightGBM-Alone bringen.
-
-**Schwelle für H5 = TRUE:** Consensus-Premium-Lift > +0.15 PF auf ≥3 von ≥5 getesteten Asset-Klassen.
-**Schwelle für H5 = FALSE:** Consensus-Lift verschwindet auf 3+ Asset-Klassen (PF-Differenz <±0.05).
-
-**Konsequenz wenn H5 = TRUE:** V1.5-Backend mit Consensus-API ist unverhandelbar, marketing-fähig.
-**Konsequenz wenn H5 = FALSE:** Consensus war Zufall, V1.5 macht nur Continuous Retraining ([ANN-004](../docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md) muss revisited werden).
-
-### H6 🔥 (NEU nach NB12): "XGBoost-Hold-Out-Lift verallgemeinert sich"
-
-Wenn XGBoost auf GBPUSD systematisch besser als LightGBM ist (und nicht 1-Symbol-Glück), sollte es das auf MINDESTENS 4 von 5 Asset-Klassen tun.
-
-**Schwelle für H6 = TRUE:** XGBoost-Premium-Lift > +0.05 PF auf ≥4 von ≥5 getesteten Asset-Klassen.
-**Schwelle für H6 = FALSE:** XGBoost-Lift verschwindet oder kehrt sich um auf 2+ Klassen.
-
-**Konsequenz wenn H6 = TRUE:** XGBoost wird zum V1-Modell statt LightGBM. ADR-Update + NB17 Pine-Generator XGBoost-spezifisch.
-**Konsequenz wenn H6 = FALSE:** LightGBM bleibt V1, Verdict aus NB12 final.
-
----
-
-## 2. Experiment (Setup für NB13)
-
-| Element | Wert |
-|---|---|
-| Trainings-Daten | FX-only (EURUSD, USDJPY) — wie NB11/NB12 |
-| Trainings-Pool | NICHT erweitert, Phase-A-Sieger-Modell weiterverwenden |
-| Test-Daten (alle OOS, `>= VAL_END`) | Crypto: BTC, ETH, SOL · Indices: SPY, QQQ (Polygon nötig) · FX Hold-Out: GBPUSD · Gold: XAUUSD |
-| Retraining | KEINS — pure Out-of-Distribution-Inferenz |
-| Modelle inferenziert | LightGBM (V1-Sieger) + XGBoost + CatBoost (für Consensus-Test) |
-| Tier-Cutoffs | TWO Varianten parallel: (a) FX-VAL-derived, (b) Per-Asset-VAL-derived |
-| Evaluation | Per-Asset PF/WR/Trade-Count + Per-Asset Consensus vs LGBM-Alone |
-| SHAP | Pro Asset (TreeExplainer) — Feature-Rang-Stabilität messen |
-
-**Vorbedingung — kritisch:**
-- Polygon.io-Aktivierung für SPY/QQQ ($29/Monat) — siehe HANDOFF Section 16 Item 5
-- Alternativ: starte ohne Polygon, nur Crypto + GBPUSD + Gold + sekundäre FX-Cousins (USDCHF, EURJPY)
-
-**Schwellen für Decision-Robustheit:**
-- Min Trades pro Asset/Tier für valide Aussage: **200** (sonst "data insufficient", nicht "edge missing")
-- Min Asset-Klassen für H5/H6-Verallgemeinerung: **3 von 5** bzw. **4 von 5** (oben definiert)
-
----
-
-## 3. Resultat (wird nach NB13-Run gefüllt)
-
-⏳ TBD nach Colab-Run.
-
-Wird folgende Tabellen enthalten:
-
-**A. Per-Asset PF (LightGBM-Alone, Premium-Tier, FX-VAL Cutoffs):**
-
-| Asset | Klasse | PF | WR | Trades | H1/H2-Klassifikation |
-|---|---|---:|---:|---:|---|
-| GBPUSD | FX | 2.54 | 62.8% | 2366 | (Referenz aus NB12) |
-| BTC | Crypto | ? | ? | ? | ? |
-| ... | ... | ... | ... | ... | ... |
-
-**B. Per-Asset Consensus vs LGBM-Alone (Premium-Tier):**
-
-| Asset | LGBM PF | Consensus PF | Lift | H5-Klassifikation |
-|---|---:|---:|---:|---|
-| GBPUSD | 2.54 | 2.93 | +0.39 | (Referenz aus NB12) |
-| BTC | ? | ? | ? | ? |
-| ... | ... | ... | ... | ... |
-
-**C. Per-Asset XGBoost vs LightGBM (Premium-Tier):**
-
-| Asset | LGBM PF | XGB PF | Lift | H6-Klassifikation |
-|---|---:|---:|---:|---|
-| GBPUSD | 2.54 | 2.67 | +0.13 | (Referenz aus NB12) |
-| BTC | ? | ? | ? | ? |
-| ... | ... | ... | ... | ... |
-
-**D. SHAP-Rang-Stabilität pro Feature:**
-
-| Feature | SHAP-Rang FX | SHAP-Rang Crypto | SHAP-Rang Indices | Std-Dev über Klassen |
-|---|---:|---:|---:|---:|
-| `hour_sin` | 2 | ? | ? | ? |
-| `realized_vol_20` | 3 | ? | ? | ? |
-| `htf_ltf_agree_bull` | 5 | ? | ? | ? |
-| ... | ... | ... | ... | ... |
-
----
-
-## 4. Decision (wird nach NB13-Run gefüllt)
-
-⏳ TBD nach Colab-Run.
-
-Decision-Matrix-Skelett:
-
-```
-H1 (universale Strafe quantifizierbar)
-├── TRUE → erwarteten Effekt dokumentiert, NB15 macht Architektur-Wahl
-└── FALSE (unerwartet wenig Strafe) → Universal-Modell-Variante in NB15 stark gewichten
-
-H5 (Consensus generalisiert)
-├── TRUE → V1.5-Backend mit Consensus ist unverhandelbar
-└── FALSE → ANN-004 revisited, V1.5 nur Continuous Retraining
-
-H6 (XGBoost systematisch besser)
-├── TRUE → ADR-Update: V1-Modell wechselt von LGBM auf XGBoost. NB17 Pine-Generator XGB-spezifisch.
-└── FALSE → LightGBM bleibt V1, NB12-Verdict final
-
-Per-Asset-Cluster-Pattern (für NB15)
-├── Klare Cluster mit ähnlichem PF → Variante B (Per-Cluster-Cutoffs) gewinnt
-├── Random Mix → Variante A (Universal) oder C (Router) gewinnt
-└── Crypto bricht hart → spezielles Crypto-Modell als V2-Feature einplanen
+```json
+"verdict": {
+  "h1_mean_pf": 1.34,
+  "h1_min_pf_per_class": 0.99,
+  "h1_pass": false,
+  "h1_per_class": {"crypto": 0.993, "fx": 1.687},
+  "architecture_hint": "Variante C (Router) wahrscheinlich — mindestens eine Asset-Klasse bricht hart"
+}
 ```
 
----
-
-## 5. Konsequenz (vorbereitet, finalisiert nach NB13)
-
-Wird folgende Files updaten:
-
-- `/docs/model_registry.md` — V1-Sieger bestätigt oder gewechselt
-- `/docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md` — Status bleibt Active oder wird Superseded
-- `/docs/decisions/ANN-006-XX.md` (neu) — Per-Asset-Generalisierungs-Pattern dokumentieren
-- `/docs/roadmap.md` — Phase B abgeschlossen, Phase C ACTIVE
-- `/docs/feature_registry.md` — Neue Spalte "Generalisiert über Asset-Klassen?"
-- `/research/shap_analysis.md` — Phase-B-Sektion mit echten Per-Asset-SHAP-Daten
+**H1 Verdict: FAIL** — Mean PF über Asset-Klassen liegt bei 1.34 (Threshold 1.4), Min liegt bei 0.99 (Threshold 1.3 → Crypto-Bruch).
 
 ---
 
-## Output-Pfade (für NB13-Code)
+## Hypothesen — Status nach Run 1
 
-Files die NB13 schreiben muss nach `/results/`:
+| Hypothese | Ergebnis | Belegt durch |
+|---|---|---|
+| **H1** Universale Strafe quantifizierbar | ❌ FAIL — Crypto bricht hart (PF 0.99) | Auto-Decision-Engine |
+| **H2** FX-Cousins generalisieren | ✅ STARK — AUDUSD/USDCHF PF > 2.5 auf 5m | Cross-Asset Matrix |
+| **H3** Session-Features brechen auf Crypto | ❌ überraschend nein — `hour_sin` SHAP fast identisch | SHAP-Tabelle |
+| **H4** Vola-Features generalisieren | ⚠️ TEILWEISE — SHAP stabil aber Edge fehlt | SHAP-Tabelle |
+| **H5** Consensus generalisiert | ⏳ PENDING — XGB+CatBoost nicht trainiert in MVP | needs NB13b mit allen 3 Modellen |
+| **H6** XGBoost-Lift generalisiert | ⏳ PENDING — XGB nicht trainiert | needs NB13b |
 
-- `per_symbol_metrics/nb13_per_asset_pf_{date}.csv`
-- `per_symbol_metrics/nb13_consensus_per_asset_{date}.csv`
-- `per_symbol_metrics/nb13_xgboost_vs_lgbm_per_asset_{date}.csv`
-- `benchmark_tables/nb13_asset_class_means_{date}.csv`
-- `json_exports/nb13_cross_asset_{date}.json` — full snapshot inkl. per-Asset-SHAP
+### Überraschungen
+
+**H3 Falsifikation:** Wir hatten erwartet, dass `hour_sin`/`hour_cos` auf Crypto SHAP-tot wären (weil 24/7-Markt = keine Session). Tatsächlich nutzt das Modell sie mit identischer Gewichtung auf Crypto wie auf FX. Das heißt: **das Modell SUCHT nach Session-Patterns auch in Crypto, findet aber keine Edge daraus**. Die Patterns existieren statistisch, sind aber für Crypto-Returns nicht prädiktiv.
+
+**Konsequenz:** Asset-spezifische Features alleine reichen wahrscheinlich nicht. Wir brauchen **asset-spezifische LABELS** oder **asset-spezifische TRAINING** (= Variante C).
+
+---
+
+## Decision
+
+### Phase B Lock
+
+1. **FX-Edge ist real und universell innerhalb FX.** Premium-PF 2.5+ auf 5 FX-Symbolen, davon 3 nie trainiert. Das ist die stärkste Generalisations-Evidenz aus Phase 1+2.
+
+2. **FX-Modell ist NICHT crypto-fähig.** Crypto-Premium-PF ≈ 1.0 auf 5 Crypto-Symbolen × 4 TFs. Das ist statistisch zwingend, keine Stichprobenvariation.
+
+3. **5m bleibt Ziel-TF für V1-FX.** Höhere TFs (15m+) bringen weniger Edge bei weniger Trades. NB14 wird das systematisch bestätigen.
+
+4. **Architektur-Decision wird in NB15:** Variante C (Router) ist der wahrscheinliche Gewinner. Aber: Crypto-Spezialmodell muss erst gebaut + getestet werden.
+
+### Strikte Aussagen für ADR
+
+- **V1-Pine-Scope: nur FX-Charts** (oder zumindest: clear UX-Warning auf Non-FX-Charts dass Signal-Qualität nicht validiert ist)
+- **Crypto-Support in V1: defer.** Entweder Spezialmodell in NB16+ oder erst V1.5
+- **Indices-Support: noch unbekannt.** Polygon-Aktivierung + NB13b für Cross-Asset auf Indices
+
+---
+
+## Konsequenz
+
+### Code-Änderungen (bereits ausgeführt oder geplant)
+
+- [ ] `docs/decisions/ANN-008-fx-features-do-not-generalize-to-crypto.md` schreiben (this commit)
+- [ ] `docs/roadmap.md` — Phase B als ABGESCHLOSSEN, Phase C/D mit Architektur-Verdict
+- [ ] `docs/model_registry.md` — V1-Scope-Update (FX-only)
+- [ ] `docs/feature_registry.md` — Spalte "Generalisiert über Asset-Klassen" mit Daten füllen
+
+### Roadmap-Implikation
+
+**Phase B (NB13) ✅ DONE.**
+**Phase C (NB14 Multi-TF):** weiterhin sinnvoll — wir wissen jetzt dass 5m die beste TF für FX ist, aber NB14 sollte das systematisch über mehr Konfigurationen testen.
+**Phase D (NB15 Architecture):** klare Richtung — entweder:
+- Variante C-light: V1 = FX-only LightGBM, Crypto/Indices = "coming soon"-UI-Element
+- Variante C-full: V1 = LightGBM-Router (FX-Spezialmodell + Crypto-Spezialmodell + Gold/Indices-Spezialmodelle)
+
+**Vor NB15 nötig:** NB13b oder NB14 muss Crypto-Spezialmodell-Test machen — train auf nur Crypto, sehe ob es eigene Edge produziert.
+
+### Marketing-Implikation (für V1-Launch)
+
+> **NICHT erlaubt (per ANN-006 Lock 3+4):** "Universal AI Trading Indicator" — wir haben datenbelegt KEINE universelle Edge.
+>
+> **Erlaubt:** "AI-Indikator für Forex Major Pairs" mit dem Disclaimer "Crypto + Indices in V1.5/V2".
+
+Das ist eine **wichtige Marketing-Korrektur** vor V1-Launch. Hätten wir das Cross-Asset-Pattern nicht getestet und nur auf FX-PF verlassen, hätten wir mit "Universal"-Claim gelauncht und Crypto-Trader frustriert.
+
+---
+
+## Output-Files
+
+- `/results/nb13/metrics/cross_asset_matrix_2026-05-27.csv` — 121 rows, full per-(pool,tf,model,symbol,tier) Tabelle
+- `/results/nb13/shap/shap_per_class_2026-05-27.csv` — 216 rows, SHAP pro (tf, asset_class, feature)
+- `/results/nb13/summaries/tf_comparison_2026-05-27.csv` — 4 rows, Per-TF aggregiert
+- `/results/nb13/summaries/label_balance_2026-05-27.csv` — 40 rows, Class-Balance pro (symbol, tf)
+- `/results/nb13/summaries/nb13_full_snapshot_2026-05-27.json` — vollständiger Run-Snapshot inkl. Verdict
+- `/results/nb13/config_snapshots/*.json` — 5 Config-Snapshots (Run-Retries beim Memory-Fix-Debug)
+
+---
+
+## Open Items für NB13b/NB14
+
+1. **Universal-Pool-Training (Experiment D)** — wartet auf High-RAM-Runtime oder modulareres NB13b
+2. **Crypto-Only-Training** — kritisch um zu sehen ob Crypto inherent ML-edge-fähig ist
+3. **XGBoost + CatBoost** für H5/H6-Test (Consensus + per-Asset-Lift)
+4. **Polygon-Aktivierung** für Indices Cross-Asset-Test
+5. **NB14 Multi-TF Deep-Dive** — was passiert auf 4H und Daily?

@@ -33,6 +33,7 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-005](ANN-005-v1-vs-v1.5-scope-split.md) | V1 vs V1.5 Scope-Split | Active | 2026-05-27 |
 | [ANN-006](ANN-006-robustness-first-mantra.md) | Robustheits-First-Mantra (Strategy Lock) | Active | 2026-05-27 |
 | [ANN-007](ANN-007-distribution-architecture.md) | Distribution-Architektur (Website + Stripe + TV-Invite) | Active | 2026-05-27 |
+| [ANN-008](ANN-008-fx-features-do-not-generalize-to-crypto.md) | FX-Features generalisieren NICHT auf Crypto | Active | 2026-05-27 |
 
 ## Was hier NICHT hingehört
 
