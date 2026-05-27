@@ -31,6 +31,8 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-003](ANN-003-gold-removed-from-training.md) | Gold/XAUUSD aus FX-Trainings-Pool entfernt | Active | 2026-05-26 |
 | [ANN-004](ANN-004-consensus-filter-v1.5-not-v1.md) | Consensus-Filter gehört nicht in V1-Pine | Active | 2026-05-27 |
 | [ANN-005](ANN-005-v1-vs-v1.5-scope-split.md) | V1 vs V1.5 Scope-Split | Active | 2026-05-27 |
+| [ANN-006](ANN-006-robustness-first-mantra.md) | Robustheits-First-Mantra (Strategy Lock) | Active | 2026-05-27 |
+| [ANN-007](ANN-007-distribution-architecture.md) | Distribution-Architektur (Website + Stripe + TV-Invite) | Active | 2026-05-27 |
 
 ## Was hier NICHT hingehört
 

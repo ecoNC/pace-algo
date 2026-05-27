@@ -6,6 +6,15 @@
 
 > **Strategische Prämisse (LOCKED 2026-05-27):** Wir optimieren auf Robustheit, Cross-Asset-Generalisierung und langfristige Produktqualität — NICHT auf den besten Single-Market-PF oder schnellen Release. FX-only PF 2.015 (NB11) ist Forschungs-Baseline, nicht Produktziel.
 
+## Strategy Locks (oberste Hierarchie)
+
+Diese 4 Sätze überschreiben jede andere Locked Rule im Konfliktfall (siehe [ANN-006](docs/decisions/ANN-006-robustness-first-mantra.md)):
+
+1. **Generalisierung > Maximierung eines einzelnen PF-Werts** — PF 1.6 auf 8 Asset-Klassen schlägt PF 2.5 auf 1
+2. **Robustheit > Benchmark-Chasing** — Stabilität in 3 Marktregimen schlägt Brillanz in einem
+3. **Konsistenz > Cherry-Picking** — Marketing-Zahlen reflektieren das schlechteste Hold-Out, nicht das beste
+4. **Gute UX + ehrliches Backtesting > Marketing-Zahlen** — was der User auf seinem Chart sieht IST der Backtest
+
 ---
 
 ## Produkt-Vision
