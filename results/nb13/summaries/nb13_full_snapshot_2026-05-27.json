@@ -1,0 +1,3886 @@
+{
+  "notebook": "NB13_cross_asset_generalization",
+  "experiment_id": "nb13_2026-05-27T13-15-41Z_81f2316",
+  "run_config": {
+    "experiment_id": "nb13_2026-05-27T13-15-41Z_81f2316",
+    "run_date": "2026-05-27",
+    "git_commit": "81f2316",
+    "random_seed": 42,
+    "train_fresh": true,
+    "load_cache": false,
+    "experiments_to_run": {
+      "A_fx_to_fx_holdout": true,
+      "B_fx_to_crypto": true,
+      "C_fx_to_indices": false,
+      "D_universal_trained": false,
+      "E_asset_cluster": false
+    },
+    "models_to_train": [
+      "LightGBM"
+    ],
+    "timeframes_used": [
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ],
+    "fx_train_symbols": [
+      "EURUSD",
+      "USDJPY"
+    ],
+    "fx_holdout_symbols": [
+      "GBPUSD",
+      "AUDUSD",
+      "USDCHF"
+    ],
+    "crypto_symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT",
+      "ADAUSDT"
+    ],
+    "metal_symbols": [
+      "XAUUSD"
+    ],
+    "index_symbols": [],
+    "train_end": "2024-01-01 00:00:00+00:00",
+    "val_end": "2024-07-01 00:00:00+00:00",
+    "phase_b_thresholds": {
+      "h1_mean_pf_min": 1.4,
+      "h1_min_pf_per_class": 1.3,
+      "h5_consensus_lift_threshold": 0.15,
+      "h5_min_asset_classes": 3,
+      "h6_xgb_lift_threshold": 0.05,
+      "h6_min_asset_classes": 4,
+      "min_trades_per_tier_asset": 200,
+      "max_stability_cv": 0.25
+    },
+    "lib_versions": {
+      "lightgbm": "4.6.0",
+      "xgboost": "3.2.0",
+      "catboost": "1.2.10",
+      "shap": "0.51.0"
+    }
+  },
+  "verdict": {
+    "h1_mean_pf": 1.3399359533366875,
+    "h1_min_pf_per_class": 0.9927119633578666,
+    "h1_pass": false,
+    "h1_per_class": {
+      "crypto": 0.993,
+      "fx": 1.687
+    },
+    "h6_pending": "XGBoost not trained \u2014 see MODELS_TO_TRAIN config",
+    "h5_pending": "Need all 3 models trained for Consensus \u2014 set MODELS_TO_TRAIN",
+    "architecture_hint": "Variante C (Router) wahrscheinlich \u2014 mindestens eine Asset-Klasse bricht hart"
+  },
+  "cross_asset_matrix": [
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 21501,
+      "wins": 8758,
+      "losses": 12653,
+      "wr": 0.4090420811732287,
+      "pf": 1.038251797992571,
+      "expR": 0.022510580903213805
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 12266,
+      "wins": 4930,
+      "losses": 7278,
+      "wr": 0.4038335517693316,
+      "pf": 1.0160758450123661,
+      "expR": 0.009538561878362955
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 5958,
+      "wins": 2391,
+      "losses": 3536,
+      "wr": 0.40340813227602496,
+      "pf": 1.0142816742081449,
+      "expR": 0.00847599865726754
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 10539,
+      "wins": 4733,
+      "losses": 5745,
+      "wr": 0.45170834128650506,
+      "pf": 1.2357702349869453,
+      "expR": 0.12852263023057217
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 2962,
+      "wins": 1570,
+      "losses": 1367,
+      "wr": 0.5345590738849166,
+      "pf": 1.7227505486466717,
+      "expR": 0.33355840648210666
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1178,
+      "wins": 739,
+      "losses": 429,
+      "wr": 0.6327054794520548,
+      "pf": 2.5839160839160837,
+      "expR": 0.5768251273344652
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 22147,
+      "wins": 9279,
+      "losses": 12791,
+      "wr": 0.4204349796103308,
+      "pf": 1.0881479165037917,
+      "expR": 0.05090982977378426
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 12788,
+      "wins": 5283,
+      "losses": 7444,
+      "wr": 0.41510175218040385,
+      "pf": 1.0645486297689415,
+      "expR": 0.03757428839537066
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 6558,
+      "wins": 2682,
+      "losses": 3849,
+      "wr": 0.41065686724850714,
+      "pf": 1.0452065471551053,
+      "expR": 0.026532479414455627
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 14395,
+      "wins": 6023,
+      "losses": 8302,
+      "wr": 0.4204537521815009,
+      "pf": 1.0882317513852084,
+      "expR": 0.05088572420979507
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 4841,
+      "wins": 2007,
+      "losses": 2792,
+      "wr": 0.41821212752656806,
+      "pf": 1.078259312320917,
+      "expR": 0.04513530262342491
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1398,
+      "wins": 575,
+      "losses": 819,
+      "wr": 0.41248206599713055,
+      "pf": 1.0531135531135531,
+      "expR": 0.03111587982832618
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 9777,
+      "wins": 3970,
+      "losses": 5757,
+      "wr": 0.408142284363113,
+      "pf": 1.034392912975508,
+      "expR": 0.020251610923596196
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 2813,
+      "wins": 1132,
+      "losses": 1653,
+      "wr": 0.40646319569120287,
+      "pf": 1.0272232304900182,
+      "expR": 0.015997156061144685
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 461,
+      "wins": 162,
+      "losses": 291,
+      "wr": 0.3576158940397351,
+      "pf": 0.8350515463917526,
+      "expR": -0.10412147505422993
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 13772,
+      "wins": 6235,
+      "losses": 7403,
+      "wr": 0.45717847191670336,
+      "pf": 1.2633391868161556,
+      "expR": 0.14155532965437118
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 3755,
+      "wins": 1943,
+      "losses": 1733,
+      "wr": 0.528563656147987,
+      "pf": 1.6817657241777264,
+      "expR": 0.31464713715046605
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1085,
+      "wins": 668,
+      "losses": 383,
+      "wr": 0.6355851569933397,
+      "pf": 2.6161879895561357,
+      "expR": 0.5705069124423963
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 14034,
+      "wins": 6375,
+      "losses": 7543,
+      "wr": 0.45803994826842936,
+      "pf": 1.267731671748641,
+      "expR": 0.14390052729086505
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 4478,
+      "wins": 2339,
+      "losses": 2085,
+      "wr": 0.5287070524412296,
+      "pf": 1.6827338129496403,
+      "expR": 0.3178874497543546
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1832,
+      "wins": 1160,
+      "losses": 654,
+      "wr": 0.639470782800441,
+      "pf": 2.6605504587155964,
+      "expR": 0.5927947598253275
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 13280,
+      "wins": 5446,
+      "losses": 7780,
+      "wr": 0.4117647058823529,
+      "pf": 1.05,
+      "expR": 0.029292168674698794
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 4630,
+      "wins": 1875,
+      "losses": 2720,
+      "wr": 0.40805223068552776,
+      "pf": 1.0340073529411764,
+      "expR": 0.01997840172786177
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1187,
+      "wins": 461,
+      "losses": 711,
+      "wr": 0.39334470989761094,
+      "pf": 0.9725738396624473,
+      "expR": -0.016427969671440605
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 13547,
+      "wins": 5895,
+      "losses": 7513,
+      "wr": 0.4396628878281623,
+      "pf": 1.1769599361107415,
+      "expR": 0.09813980955193032
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 4254,
+      "wins": 2107,
+      "losses": 2106,
+      "wr": 0.5001186802753382,
+      "pf": 1.5007122507122508,
+      "expR": 0.24788434414668548
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 1654,
+      "wins": 1036,
+      "losses": 595,
+      "wr": 0.6351931330472103,
+      "pf": 2.611764705882353,
+      "expR": 0.5798065296251511
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49315318103198996,
+      "n": 11627,
+      "wins": 5153,
+      "losses": 6426,
+      "wr": 0.4450297953191122,
+      "pf": 1.2028478057889822,
+      "expR": 0.11210974456007569
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5007720438925009,
+      "n": 4158,
+      "wins": 2114,
+      "losses": 2033,
+      "wr": 0.5097660959729925,
+      "pf": 1.55976389572061,
+      "expR": 0.2736892736892737
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5233374558181257,
+      "n": 2025,
+      "wins": 1148,
+      "losses": 871,
+      "wr": 0.5685983159980188,
+      "pf": 1.9770378874856487,
+      "expR": 0.4202469135802469
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 6685,
+      "wins": 2658,
+      "losses": 3964,
+      "wr": 0.4013893083660526,
+      "pf": 1.0058022199798184,
+      "expR": 0.0034405385190725505
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1612,
+      "wins": 669,
+      "losses": 926,
+      "wr": 0.419435736677116,
+      "pf": 1.0836933045356372,
+      "expR": 0.04807692307692308
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 430,
+      "wins": 164,
+      "losses": 263,
+      "wr": 0.3840749414519906,
+      "pf": 0.935361216730038,
+      "expR": -0.03953488372093023
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4118,
+      "wins": 1838,
+      "losses": 2262,
+      "wr": 0.4482926829268293,
+      "pf": 1.2188328912466844,
+      "expR": 0.12020398251578436
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1070,
+      "wins": 514,
+      "losses": 550,
+      "wr": 0.4830827067669173,
+      "pf": 1.4018181818181819,
+      "expR": 0.20654205607476636
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 311,
+      "wins": 170,
+      "losses": 141,
+      "wr": 0.5466237942122186,
+      "pf": 1.8085106382978724,
+      "expR": 0.3665594855305466
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 6304,
+      "wins": 2569,
+      "losses": 3695,
+      "wr": 0.4101213282247765,
+      "pf": 1.0428958051420838,
+      "expR": 0.02514276649746193
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1567,
+      "wins": 602,
+      "losses": 960,
+      "wr": 0.3854033290653009,
+      "pf": 0.940625,
+      "expR": -0.036375239310784936
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 431,
+      "wins": 163,
+      "losses": 267,
+      "wr": 0.37906976744186044,
+      "pf": 0.9157303370786517,
+      "expR": -0.052204176334106726
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4867,
+      "wins": 1911,
+      "losses": 2819,
+      "wr": 0.4040169133192389,
+      "pf": 1.0168499467896417,
+      "expR": 0.009759605506472159
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 527,
+      "wins": 206,
+      "losses": 302,
+      "wr": 0.40551181102362205,
+      "pf": 1.0231788079470199,
+      "expR": 0.013282732447817837
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 43,
+      "wins": 14,
+      "losses": 28,
+      "wr": 0.3333333333333333,
+      "pf": 0.75,
+      "expR": -0.16279069767441862
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 3630,
+      "wins": 1335,
+      "losses": 2215,
+      "wr": 0.376056338028169,
+      "pf": 0.9040632054176072,
+      "expR": -0.05853994490358127
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 252,
+      "wins": 80,
+      "losses": 167,
+      "wr": 0.32388663967611336,
+      "pf": 0.718562874251497,
+      "expR": -0.1865079365079365
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 29,
+      "wins": 12,
+      "losses": 17,
+      "wr": 0.41379310344827586,
+      "pf": 1.0588235294117647,
+      "expR": 0.034482758620689655
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4754,
+      "wins": 1952,
+      "losses": 2699,
+      "wr": 0.419694689314126,
+      "pf": 1.0848462393479066,
+      "expR": 0.048169962137147665
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1222,
+      "wins": 548,
+      "losses": 618,
+      "wr": 0.4699828473413379,
+      "pf": 1.3300970873786409,
+      "expR": 0.16693944353518822
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 299,
+      "wins": 140,
+      "losses": 153,
+      "wr": 0.4778156996587031,
+      "pf": 1.3725490196078431,
+      "expR": 0.19063545150501673
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 5240,
+      "wins": 2182,
+      "losses": 2929,
+      "wr": 0.4269223243983565,
+      "pf": 1.1174462273813588,
+      "expR": 0.06564885496183206
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1453,
+      "wins": 652,
+      "losses": 736,
+      "wr": 0.4697406340057637,
+      "pf": 1.328804347826087,
+      "expR": 0.16655196145905024
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 468,
+      "wins": 233,
+      "losses": 209,
+      "wr": 0.5271493212669683,
+      "pf": 1.6722488038277512,
+      "expR": 0.3002136752136752
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4054,
+      "wins": 1637,
+      "losses": 2370,
+      "wr": 0.4085350636386324,
+      "pf": 1.0360759493670886,
+      "expR": 0.021090281203749384
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 411,
+      "wins": 171,
+      "losses": 236,
+      "wr": 0.4201474201474201,
+      "pf": 1.0868644067796611,
+      "expR": 0.049878345498783457
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 36,
+      "wins": 17,
+      "losses": 18,
+      "wr": 0.4857142857142857,
+      "pf": 1.4166666666666667,
+      "expR": 0.20833333333333334
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4813,
+      "wins": 1928,
+      "losses": 2741,
+      "wr": 0.41293638894838297,
+      "pf": 1.0550893834367019,
+      "expR": 0.03137336380635778
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1289,
+      "wins": 566,
+      "losses": 655,
+      "wr": 0.46355446355446356,
+      "pf": 1.2961832061068703,
+      "expR": 0.15050426687354537
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 422,
+      "wins": 216,
+      "losses": 172,
+      "wr": 0.5567010309278351,
+      "pf": 1.8837209302325582,
+      "expR": 0.36018957345971564
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.49626551252142076,
+      "n": 4202,
+      "wins": 1758,
+      "losses": 2426,
+      "wr": 0.4201720841300191,
+      "pf": 1.0869744435284419,
+      "expR": 0.05021418372203713
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5045669625211532,
+      "n": 1484,
+      "wins": 682,
+      "losses": 795,
+      "wr": 0.4617467840216655,
+      "pf": 1.2867924528301886,
+      "expR": 0.15363881401617252
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5272349222479638,
+      "n": 631,
+      "wins": 286,
+      "losses": 343,
+      "wr": 0.4546899841017488,
+      "pf": 1.250728862973761,
+      "expR": 0.13629160063391443
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 6467,
+      "wins": 2508,
+      "losses": 3883,
+      "wr": 0.3924268502581756,
+      "pf": 0.9688385269121813,
+      "expR": -0.018710375753827124
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 592,
+      "wins": 232,
+      "losses": 350,
+      "wr": 0.39862542955326463,
+      "pf": 0.9942857142857143,
+      "expR": -0.0033783783783783786
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 59,
+      "wins": 27,
+      "losses": 31,
+      "wr": 0.46551724137931033,
+      "pf": 1.3064516129032258,
+      "expR": 0.16101694915254236
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 2566,
+      "wins": 1041,
+      "losses": 1509,
+      "wr": 0.4082352941176471,
+      "pf": 1.0347912524850895,
+      "expR": 0.020459859703819173
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 550,
+      "wins": 251,
+      "losses": 295,
+      "wr": 0.4597069597069597,
+      "pf": 1.276271186440678,
+      "expR": 0.1481818181818182
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 151,
+      "wins": 77,
+      "losses": 74,
+      "wr": 0.5099337748344371,
+      "pf": 1.5608108108108107,
+      "expR": 0.27483443708609273
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 6247,
+      "wins": 2452,
+      "losses": 3718,
+      "wr": 0.3974068071312804,
+      "pf": 0.9892415277030662,
+      "expR": -0.006403073475268129
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 519,
+      "wins": 171,
+      "losses": 339,
+      "wr": 0.3352941176470588,
+      "pf": 0.7566371681415929,
+      "expR": -0.15895953757225434
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 27,
+      "wins": 9,
+      "losses": 18,
+      "wr": 0.3333333333333333,
+      "pf": 0.75,
+      "expR": -0.16666666666666666
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 5898,
+      "wins": 2241,
+      "losses": 3445,
+      "wr": 0.39412592332043617,
+      "pf": 0.9757619738751814,
+      "expR": -0.014157341471685318
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 294,
+      "wins": 104,
+      "losses": 178,
+      "wr": 0.36879432624113473,
+      "pf": 0.8764044943820225,
+      "expR": -0.07482993197278912
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 6,
+      "wins": 2,
+      "losses": 4,
+      "wr": 0.3333333333333333,
+      "pf": 0.75,
+      "expR": -0.16666666666666666
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 5757,
+      "wins": 2218,
+      "losses": 3380,
+      "wr": 0.39621293319042517,
+      "pf": 0.9843195266272189,
+      "expR": -0.009206183776272364
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 240,
+      "wins": 94,
+      "losses": 139,
+      "wr": 0.4034334763948498,
+      "pf": 1.014388489208633,
+      "expR": 0.008333333333333333
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 2,
+      "wins": 1,
+      "losses": 1,
+      "wr": 0.5,
+      "pf": 1.5,
+      "expR": 0.25
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 2358,
+      "wins": 995,
+      "losses": 1331,
+      "wr": 0.4277730008598452,
+      "pf": 1.1213373403456048,
+      "expR": 0.068490245971162
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 537,
+      "wins": 220,
+      "losses": 307,
+      "wr": 0.4174573055028463,
+      "pf": 1.0749185667752443,
+      "expR": 0.04283054003724395
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 147,
+      "wins": 64,
+      "losses": 78,
+      "wr": 0.4507042253521127,
+      "pf": 1.2307692307692308,
+      "expR": 0.12244897959183673
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 2555,
+      "wins": 1172,
+      "losses": 1362,
+      "wr": 0.46250986582478293,
+      "pf": 1.2907488986784141,
+      "expR": 0.15499021526418788
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 580,
+      "wins": 283,
+      "losses": 293,
+      "wr": 0.4913194444444444,
+      "pf": 1.4488054607508531,
+      "expR": 0.2267241379310345
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 166,
+      "wins": 96,
+      "losses": 70,
+      "wr": 0.5783132530120482,
+      "pf": 2.057142857142857,
+      "expR": 0.4457831325301205
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 5990,
+      "wins": 2281,
+      "losses": 3630,
+      "wr": 0.3858907122314329,
+      "pf": 0.9425619834710743,
+      "expR": -0.03480801335559265
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 307,
+      "wins": 105,
+      "losses": 200,
+      "wr": 0.3442622950819672,
+      "pf": 0.7875,
+      "expR": -0.13843648208469056
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 7,
+      "wins": 2,
+      "losses": 5,
+      "wr": 0.2857142857142857,
+      "pf": 0.6,
+      "expR": -0.2857142857142857
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 2460,
+      "wins": 1008,
+      "losses": 1433,
+      "wr": 0.41294551413355185,
+      "pf": 1.055129099790649,
+      "expR": 0.03211382113821138
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 559,
+      "wins": 257,
+      "losses": 294,
+      "wr": 0.4664246823956443,
+      "pf": 1.3112244897959184,
+      "expR": 0.16368515205724507
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 180,
+      "wins": 86,
+      "losses": 94,
+      "wr": 0.4777777777777778,
+      "pf": 1.372340425531915,
+      "expR": 0.19444444444444445
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.48923026093020794,
+      "n": 2533,
+      "wins": 1037,
+      "losses": 1492,
+      "wr": 0.4100434954527481,
+      "pf": 1.0425603217158177,
+      "expR": 0.025069088037899725
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5033839211100936,
+      "n": 724,
+      "wins": 315,
+      "losses": 406,
+      "wr": 0.4368932038834951,
+      "pf": 1.1637931034482758,
+      "expR": 0.09185082872928177
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5201878602474604,
+      "n": 339,
+      "wins": 148,
+      "losses": 189,
+      "wr": 0.4391691394658754,
+      "pf": 1.1746031746031746,
+      "expR": 0.09734513274336283
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 5624,
+      "wins": 2173,
+      "losses": 3384,
+      "wr": 0.3910383300341911,
+      "pf": 0.963209219858156,
+      "expR": -0.022137268847795162
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 3873,
+      "wins": 1528,
+      "losses": 2292,
+      "wr": 0.4,
+      "pf": 1.0,
+      "expR": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ADAUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 2109,
+      "wins": 825,
+      "losses": 1257,
+      "wr": 0.3962536023054755,
+      "pf": 0.9844868735083532,
+      "expR": -0.009246088193456615
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 2861,
+      "wins": 1120,
+      "losses": 1735,
+      "wr": 0.3922942206654991,
+      "pf": 0.968299711815562,
+      "expR": -0.019224047535826634
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 733,
+      "wins": 275,
+      "losses": 457,
+      "wr": 0.3756830601092896,
+      "pf": 0.9026258205689278,
+      "expR": -0.06070941336971351
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "AUDUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 227,
+      "wins": 83,
+      "losses": 144,
+      "wr": 0.3656387665198238,
+      "pf": 0.8645833333333334,
+      "expR": -0.08590308370044053
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 6489,
+      "wins": 2568,
+      "losses": 3861,
+      "wr": 0.3994400373308446,
+      "pf": 0.9976689976689976,
+      "expR": -0.0013869625520110957
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 4352,
+      "wins": 1691,
+      "losses": 2617,
+      "wr": 0.3925255338904364,
+      "pf": 0.969239587313718,
+      "expR": -0.018497242647058824
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BNBUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 2348,
+      "wins": 926,
+      "losses": 1397,
+      "wr": 0.39862247094274644,
+      "pf": 0.9942734430923408,
+      "expR": -0.0034071550255536627
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 5951,
+      "wins": 2291,
+      "losses": 3485,
+      "wr": 0.39664127423822715,
+      "pf": 0.9860832137733142,
+      "expR": -0.008149890774659722
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 3932,
+      "wins": 1520,
+      "losses": 2289,
+      "wr": 0.39905487004463114,
+      "pf": 0.9960681520314548,
+      "expR": -0.002288911495422177
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "BTCUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 2004,
+      "wins": 766,
+      "losses": 1194,
+      "wr": 0.39081632653061227,
+      "pf": 0.9623115577889447,
+      "expR": -0.02245508982035928
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 5361,
+      "wins": 2177,
+      "losses": 3058,
+      "wr": 0.41585482330468004,
+      "pf": 1.0678548070634402,
+      "expR": 0.0387054653982466
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 3700,
+      "wins": 1507,
+      "losses": 2096,
+      "wr": 0.4182625589786289,
+      "pf": 1.078482824427481,
+      "expR": 0.044459459459459456
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "ETHUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 2012,
+      "wins": 803,
+      "losses": 1140,
+      "wr": 0.4132784354091611,
+      "pf": 1.056578947368421,
+      "expR": 0.03205765407554672
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 1423,
+      "wins": 603,
+      "losses": 816,
+      "wr": 0.4249471458773784,
+      "pf": 1.1084558823529411,
+      "expR": 0.06219255094869993
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 317,
+      "wins": 142,
+      "losses": 175,
+      "wr": 0.4479495268138801,
+      "pf": 1.217142857142857,
+      "expR": 0.11987381703470032
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "EURUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 110,
+      "wins": 53,
+      "losses": 57,
+      "wr": 0.4818181818181818,
+      "pf": 1.394736842105263,
+      "expR": 0.20454545454545456
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 1650,
+      "wins": 687,
+      "losses": 955,
+      "wr": 0.41839220462850185,
+      "pf": 1.0790575916230367,
+      "expR": 0.04575757575757576
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 344,
+      "wins": 149,
+      "losses": 193,
+      "wr": 0.43567251461988304,
+      "pf": 1.1580310880829014,
+      "expR": 0.08866279069767442
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "GBPUSD",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 96,
+      "wins": 43,
+      "losses": 53,
+      "wr": 0.4479166666666667,
+      "pf": 1.2169811320754718,
+      "expR": 0.11979166666666667
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 5433,
+      "wins": 2125,
+      "losses": 3245,
+      "wr": 0.3957169459962756,
+      "pf": 0.9822804314329738,
+      "expR": -0.010583471378612186
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 3877,
+      "wins": 1487,
+      "losses": 2337,
+      "wr": 0.3888598326359833,
+      "pf": 0.9544287548138639,
+      "expR": -0.0274696930616456
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "SOLUSDT",
+      "asset_class": "crypto",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 2042,
+      "wins": 783,
+      "losses": 1232,
+      "wr": 0.38858560794044666,
+      "pf": 0.953327922077922,
+      "expR": -0.028158667972575907
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 1976,
+      "wins": 767,
+      "losses": 1207,
+      "wr": 0.38855116514690985,
+      "pf": 0.9531897265948633,
+      "expR": -0.028593117408906882
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 496,
+      "wins": 208,
+      "losses": 288,
+      "wr": 0.41935483870967744,
+      "pf": 1.0833333333333333,
+      "expR": 0.04838709677419355
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDCHF",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 156,
+      "wins": 74,
+      "losses": 82,
+      "wr": 0.47435897435897434,
+      "pf": 1.353658536585366,
+      "expR": 0.1858974358974359
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Standard",
+      "cutoff": 0.498380317827923,
+      "n": 2450,
+      "wins": 1007,
+      "losses": 1425,
+      "wr": 0.4140625,
+      "pf": 1.06,
+      "expR": 0.03489795918367347
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "High",
+      "cutoff": 0.5066115742097532,
+      "n": 754,
+      "wins": 299,
+      "losses": 447,
+      "wr": 0.4008042895442359,
+      "pf": 1.0033557046979866,
+      "expR": 0.001989389920424403
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "test_symbol": "USDJPY",
+      "asset_class": "fx",
+      "tier": "Premium",
+      "cutoff": 0.5114265753619736,
+      "n": 294,
+      "wins": 121,
+      "losses": 168,
+      "wr": 0.4186851211072664,
+      "pf": 1.0803571428571428,
+      "expR": 0.04591836734693878
+    }
+  ],
+  "tf_comparison": [
+    {
+      "tf": "5m",
+      "mean_pf": 1.737,
+      "min_pf": 0.835,
+      "max_pf": 2.661,
+      "cv": 0.471,
+      "total_trades": 23336
+    },
+    {
+      "tf": "15m",
+      "mean_pf": 1.306,
+      "min_pf": 0.75,
+      "max_pf": 1.884,
+      "cv": 0.302,
+      "total_trades": 3100
+    },
+    {
+      "tf": "30m",
+      "mean_pf": 1.23,
+      "min_pf": 0.6,
+      "max_pf": 2.057,
+      "cv": 0.359,
+      "total_trades": 1084
+    },
+    {
+      "tf": "1h",
+      "mean_pf": 1.086,
+      "min_pf": 0.865,
+      "max_pf": 1.395,
+      "cv": 0.164,
+      "total_trades": 11398
+    }
+  ],
+  "shap_per_class": [
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.037395984585944925
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.013510066247659717
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.002611094443343691
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.0013351299556904153
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.004525764392646119
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.000560559300398976
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.0008347352051892861
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.0026388814607169325
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.00042234671777510095
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.012899408463053558
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.0018910667542234273
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.006105214560051267
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.0005973981650077109
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.017003198464080025
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.003603380993965301
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.00036910970285525767
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0012293102459285756
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0006232764986931739
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0008137117806503376
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.03870435729349718
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.011983407939968481
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.002740324247834573
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.0018180218245351788
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.005148833870216216
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.0005324558349461212
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.0009040938803894897
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.001987071615340281
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.00043780939631170914
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.013399665618626974
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.0018936962486084024
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.009529494635355962
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.0006325408316288501
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.01897048038151625
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.003464780860650633
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.0003466331181453171
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0011232838296134605
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0006582847250185023
+    },
+    {
+      "pool": "fx_train",
+      "tf": "5m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0009443951943803813
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.08465941731970092
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.006782614187995919
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.002634211181382884
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.0025176565120396564
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.0067448877504188475
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.0002026037350964803
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.0074958012227305144
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.004237607359587936
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.01156952064823067
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.0020717382466330786
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.005000161610497551
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.003717464703265727
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.01718328086452968
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.0060697714382143145
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.00017400831372115476
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0003976970849552413
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.007676611231055621
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.0012534191970856173
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.004244125624778806
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.08365970228483481
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.004719164576415772
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.0025804095615741774
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.002393253056645114
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.006794474064058736
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.00014534276198152892
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.0073108972640322425
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.0036776242430371434
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.011539209737319272
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.0021601004270139267
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.005521648333711847
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.003628089995196922
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.01630730270257001
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.005900611493198894
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.000159540052378882
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.00043139879791147766
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.00758997270878603
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.0012348833074160123
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0037347421677671904
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "15m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.03632387437802936
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.005179952226581037
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.001096386863301635
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.004490520337963271
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.005931064601955903
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.0024974239001285614
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.012479759466063953
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.0016585708040168544
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.00213062751575376
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.01165683711605402
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.000692990319639221
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.005841074723962859
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.0071942168693318095
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.0020898465905831607
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0015367772834465952
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.009210051465956133
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0008461673600705788
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.003267318178749297
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.0044498165178705595
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.03388075429508575
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.0036230120123669166
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.001067897636212012
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.008693687965745572
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.006093010956302351
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.003161678539087621
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.010816506491776736
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.0017205170550972876
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.002181778479001991
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.011259449686810337
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.0006114741751970352
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.004277123919803569
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.01038119989343524
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.002384349531155427
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0015400759568612876
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.008638856354542344
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0007958187919951329
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.0028125599258510712
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.006142923850743072
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "30m",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.010649061933345428
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.008308672944946735
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.005526045972182796
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.0051958984468398126
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.02093070368998689
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.006739546912574396
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.001012948441680874
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.0022888849947445573
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.003817737945391163
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.004523408112814395
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.00029704981814382566
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.04945715790404111
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.0023074705968042517
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0007208049141900665
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.004038827938359797
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.01438184522694864
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.00375904910228696
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.0005984174730688724
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "fx",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0003915837573115687
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_sin",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_low_atr",
+      "mean_abs_shap": 0.009757905600120726
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_rsi_14",
+      "mean_abs_shap": 0.005862663956328646
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "realized_vol_20",
+      "mean_abs_shap": 0.0139595639953572
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_percentile_100",
+      "mean_abs_shap": 0.004343129894974293
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "atr_pct",
+      "mean_abs_shap": 0.04101423238641394
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "dist_to_swing_high_atr",
+      "mean_abs_shap": 0.005667259959197883
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "volume_z_score",
+      "mean_abs_shap": 0.0011076459137006848
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_slope_atr",
+      "mean_abs_shap": 0.002209172794515495
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "hour_cos",
+      "mean_abs_shap": 0.003053486040539547
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "momentum_composite",
+      "mean_abs_shap": 0.005290726349101003
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "rvol_20",
+      "mean_abs_shap": 0.00017660904705664777
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "adx_14",
+      "mean_abs_shap": 0.05882877559062231
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ema_20_dist_atr",
+      "mean_abs_shap": 0.0040959874137825114
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_1h_atr_percentile_100",
+      "mean_abs_shap": 0.0005470251639273046
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bull",
+      "mean_abs_shap": 0.0028180040953085486
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_agree_bear",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_counter_trend",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "htf_ltf_alignment_score",
+      "mean_abs_shap": 0.0175411962967966
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "ltf_rsi_minus_htf_rsi",
+      "mean_abs_shap": 0.0030099483247710067
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_oversold",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_rsi_overbought",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "vol_pct_diff_htf",
+      "mean_abs_shap": 0.00048490213240152713
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_high_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "both_low_vol",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bull",
+      "mean_abs_shap": 0.0
+    },
+    {
+      "pool": "fx_train",
+      "tf": "1h",
+      "model": "LightGBM",
+      "asset_class": "crypto",
+      "feature": "pullback_in_bear",
+      "mean_abs_shap": 0.0003610758154330084
+    }
+  ],
+  "label_balance": [
+    {
+      "symbol": "ADAUSDT",
+      "timeframe": "5m",
+      "n": 665856,
+      "pos_rate": 0.398575668012303
+    },
+    {
+      "symbol": "ADAUSDT",
+      "timeframe": "15m",
+      "n": 221952,
+      "pos_rate": 0.3849435914071511
+    },
+    {
+      "symbol": "ADAUSDT",
+      "timeframe": "30m",
+      "n": 110976,
+      "pos_rate": 0.38171316320645904
+    },
+    {
+      "symbol": "ADAUSDT",
+      "timeframe": "1h",
+      "n": 55488,
+      "pos_rate": 0.37775735294117646
+    },
+    {
+      "symbol": "AUDUSD",
+      "timeframe": "5m",
+      "n": 473415,
+      "pos_rate": 0.392186559361237
+    },
+    {
+      "symbol": "AUDUSD",
+      "timeframe": "15m",
+      "n": 157875,
+      "pos_rate": 0.38013618368962787
+    },
+    {
+      "symbol": "AUDUSD",
+      "timeframe": "30m",
+      "n": 78942,
+      "pos_rate": 0.3823693344480758
+    },
+    {
+      "symbol": "AUDUSD",
+      "timeframe": "1h",
+      "n": 39470,
+      "pos_rate": 0.38925766404864454
+    },
+    {
+      "symbol": "BNBUSDT",
+      "timeframe": "5m",
+      "n": 665856,
+      "pos_rate": 0.40655787437524027
+    },
+    {
+      "symbol": "BNBUSDT",
+      "timeframe": "15m",
+      "n": 221952,
+      "pos_rate": 0.3983609068627451
+    },
+    {
+      "symbol": "BNBUSDT",
+      "timeframe": "30m",
+      "n": 110976,
+      "pos_rate": 0.3965091551326413
+    },
+    {
+      "symbol": "BNBUSDT",
+      "timeframe": "1h",
+      "n": 55488,
+      "pos_rate": 0.3963920126874279
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "5m",
+      "n": 665856,
+      "pos_rate": 0.39479857506728183
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "15m",
+      "n": 221952,
+      "pos_rate": 0.3846056805074971
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "30m",
+      "n": 110976,
+      "pos_rate": 0.3815870098039216
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "n": 55488,
+      "pos_rate": 0.38008217993079585
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "5m",
+      "n": 665856,
+      "pos_rate": 0.3953948000768935
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "15m",
+      "n": 221952,
+      "pos_rate": 0.3892823673587082
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "30m",
+      "n": 110976,
+      "pos_rate": 0.39047181372549017
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "n": 55488,
+      "pos_rate": 0.39141796424452135
+    },
+    {
+      "symbol": "EURUSD",
+      "timeframe": "5m",
+      "n": 473535,
+      "pos_rate": 0.39197524998152194
+    },
+    {
+      "symbol": "EURUSD",
+      "timeframe": "15m",
+      "n": 157888,
+      "pos_rate": 0.3750823368463721
+    },
+    {
+      "symbol": "EURUSD",
+      "timeframe": "30m",
+      "n": 78949,
+      "pos_rate": 0.37982748356533963
+    },
+    {
+      "symbol": "EURUSD",
+      "timeframe": "1h",
+      "n": 39473,
+      "pos_rate": 0.39274947432422164
+    },
+    {
+      "symbol": "GBPUSD",
+      "timeframe": "5m",
+      "n": 473399,
+      "pos_rate": 0.39436923187416956
+    },
+    {
+      "symbol": "GBPUSD",
+      "timeframe": "15m",
+      "n": 157868,
+      "pos_rate": 0.3714749030835888
+    },
+    {
+      "symbol": "GBPUSD",
+      "timeframe": "30m",
+      "n": 78940,
+      "pos_rate": 0.3794274132252344
+    },
+    {
+      "symbol": "GBPUSD",
+      "timeframe": "1h",
+      "n": 39469,
+      "pos_rate": 0.39694443740657226
+    },
+    {
+      "symbol": "SOLUSDT",
+      "timeframe": "5m",
+      "n": 498408,
+      "pos_rate": 0.3954771994028988
+    },
+    {
+      "symbol": "SOLUSDT",
+      "timeframe": "15m",
+      "n": 166136,
+      "pos_rate": 0.38699619588770645
+    },
+    {
+      "symbol": "SOLUSDT",
+      "timeframe": "30m",
+      "n": 83068,
+      "pos_rate": 0.3841310733375066
+    },
+    {
+      "symbol": "SOLUSDT",
+      "timeframe": "1h",
+      "n": 41534,
+      "pos_rate": 0.3842394183078923
+    },
+    {
+      "symbol": "USDCHF",
+      "timeframe": "5m",
+      "n": 472973,
+      "pos_rate": 0.3927496918428747
+    },
+    {
+      "symbol": "USDCHF",
+      "timeframe": "15m",
+      "n": 157808,
+      "pos_rate": 0.3644555409104735
+    },
+    {
+      "symbol": "USDCHF",
+      "timeframe": "30m",
+      "n": 78921,
+      "pos_rate": 0.3670505948986962
+    },
+    {
+      "symbol": "USDCHF",
+      "timeframe": "1h",
+      "n": 39464,
+      "pos_rate": 0.38070139874315834
+    },
+    {
+      "symbol": "USDJPY",
+      "timeframe": "5m",
+      "n": 473529,
+      "pos_rate": 0.39704854401736744
+    },
+    {
+      "symbol": "USDJPY",
+      "timeframe": "15m",
+      "n": 157885,
+      "pos_rate": 0.3825505906197549
+    },
+    {
+      "symbol": "USDJPY",
+      "timeframe": "30m",
+      "n": 78945,
+      "pos_rate": 0.3898663626575464
+    },
+    {
+      "symbol": "USDJPY",
+      "timeframe": "1h",
+      "n": 39472,
+      "pos_rate": 0.3950901905147953
+    }
+  ]
+}
