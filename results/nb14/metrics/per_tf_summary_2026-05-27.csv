@@ -1,0 +1,5 @@
+tf,premium_pf,premium_wr,premium_n_trades,premium_mdd,stability_cv,holdout_pf,holdout_pf_min,sigs_day_premium,session_dep,pine_budget_util,product_verdict,quality_severity
+5m,2.0025,0.5717,3354,0.0285,0.1449,2.3888,2.1226,3.5267,0.6658,0.0684,product_grade_C,soft_only
+15m,1.2331,0.4512,954,0.343,0.0702,1.8256,1.6651,1.0031,0.6813,0.0684,product_grade_C,blocked
+30m,1.0389,0.4092,1495,1.3396,0.0508,1.2789,1.1671,1.5726,0.5084,0.0684,product_grade_C,blocked
+1h,0.9805,0.3953,4414,1.5015,0.1077,0.8991,0.839,4.6486,0.4184,0.0684,product_grade_C,blocked

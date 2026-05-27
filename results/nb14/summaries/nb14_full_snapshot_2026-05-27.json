@@ -1,0 +1,1334 @@
+{
+  "experiment_id": "nb14_2026-05-27T16-15-44Z_81f2316",
+  "run_date": "2026-05-27",
+  "git_commit": "81f2316",
+  "asset_class": "fx",
+  "train_symbols": [
+    "EURUSD",
+    "USDJPY"
+  ],
+  "holdout_symbols": [
+    "GBPUSD",
+    "AUDUSD",
+    "USDCHF"
+  ],
+  "timeframes": [
+    "5m",
+    "15m",
+    "30m",
+    "1h"
+  ],
+  "feature_cols": [
+    "hour_sin",
+    "dist_to_swing_low_atr",
+    "htf_1h_rsi_14",
+    "realized_vol_20",
+    "atr_percentile_100",
+    "atr_pct",
+    "dist_to_swing_high_atr",
+    "volume_z_score",
+    "ema_20_slope_atr",
+    "hour_cos",
+    "momentum_composite",
+    "rvol_20",
+    "adx_14",
+    "ema_20_dist_atr",
+    "htf_1h_atr_percentile_100",
+    "htf_ltf_agree_bull",
+    "htf_ltf_agree_bear",
+    "htf_ltf_counter_trend",
+    "htf_ltf_alignment_score",
+    "ltf_rsi_minus_htf_rsi",
+    "both_rsi_oversold",
+    "both_rsi_overbought",
+    "vol_pct_diff_htf",
+    "both_high_vol",
+    "both_low_vol",
+    "pullback_in_bull",
+    "pullback_in_bear"
+  ],
+  "tier_percentiles": {
+    "standard": 0.9,
+    "high": 0.97,
+    "premium": 0.99
+  },
+  "tier_overrides": {
+    "1h": {
+      "premium": 0.97
+    }
+  },
+  "phase_c_thresholds": {
+    "h1_min_premium_pf_holdout": 2.0,
+    "h1_max_stability_cv": 0.2,
+    "h1_max_drawdown": 0.18,
+    "h1_min_trades_per_day": 3.0,
+    "h2_min_premium_pf": 1.5,
+    "h2_max_stability_cv": 0.15,
+    "h2_min_trades_per_day": 1.0,
+    "h3_exclude_threshold_pf": 1.5,
+    "h4_min_pooled_lift": 0.0,
+    "h4_required_tf_count": 3,
+    "h5_relaxed_cutoff_premium": 0.97,
+    "h5_min_trades_per_year": 30
+  },
+  "product_thresholds": {
+    "signals_per_day_premium_min": 1.0,
+    "signals_per_day_premium_max": 8.0,
+    "signals_per_day_high_min": 3.0,
+    "signals_per_day_high_max": 20.0,
+    "signals_per_day_standard_max": 80.0,
+    "trade_duration_min_bars": 3,
+    "trade_duration_max_bars": 24,
+    "premium_density_max": 0.015,
+    "max_boxes_visible_window": 8,
+    "max_overlapping_signals": 2,
+    "max_signal_share_single_session": 0.65,
+    "max_pine_ops_per_bar": 5000,
+    "max_request_security_calls": 12
+  },
+  "results": {
+    "5m": {
+      "asset_class": "fx",
+      "tf": "5m",
+      "n_train_symbols": 2,
+      "n_holdout_symbols": 3,
+      "n_train_rows": 596347,
+      "n_val_rows": 74371,
+      "n_test_rows": 273898,
+      "cutoffs": {
+        "standard": 0.40669208766775994,
+        "high": 0.40669208766775994,
+        "premium": 0.4096275800747894
+      },
+      "quant_premium": {
+        "n_trades": 3354,
+        "wins": 1893,
+        "losses": 1418,
+        "neutrals": 43,
+        "win_rate": 0.571730594986409,
+        "expected_R": 0.4238223017292785,
+        "profit_factor": 2.0024682651622,
+        "trade_rate": 0.012245434431795777,
+        "max_drawdown": 0.028491030601477313
+      },
+      "quant_high": {
+        "n_trades": 35648,
+        "wins": 15251,
+        "losses": 20187,
+        "neutrals": 210,
+        "win_rate": 0.4303572436367741,
+        "expected_R": 0.07544602782764812,
+        "profit_factor": 1.1332293059890028,
+        "trade_rate": 0.13015064001927726,
+        "max_drawdown": 0.06339581036383682
+      },
+      "quant_standard": {
+        "n_trades": 35648,
+        "wins": 15251,
+        "losses": 20187,
+        "neutrals": 210,
+        "win_rate": 0.4303572436367741,
+        "expected_R": 0.07544602782764812,
+        "profit_factor": 1.1332293059890028,
+        "trade_rate": 0.13015064001927726,
+        "max_drawdown": 0.06339581036383682
+      },
+      "holdout_premium": {
+        "profit_factor": 2.388842360357604,
+        "profit_factor_min": 2.1225626740947074,
+        "profit_factor_max": 2.574786324786325
+      },
+      "holdout_per_symbol": {
+        "GBPUSD": {
+          "n_trades": 1951,
+          "wins": 1205,
+          "losses": 702,
+          "neutrals": 44,
+          "win_rate": 0.631882538017829,
+          "expected_R": 0.5666324961558176,
+          "profit_factor": 2.574786324786325,
+          "trade_rate": 0.014250237382221897
+        },
+        "AUDUSD": {
+          "n_trades": 1182,
+          "wins": 721,
+          "losses": 438,
+          "neutrals": 23,
+          "win_rate": 0.6220880069025022,
+          "expected_R": 0.5444162436548223,
+          "profit_factor": 2.469178082191781,
+          "trade_rate": 0.008634354797472515
+        },
+        "USDCHF": {
+          "n_trades": 1778,
+          "wins": 1016,
+          "losses": 718,
+          "neutrals": 44,
+          "win_rate": 0.5859284890426759,
+          "expected_R": 0.453318335208099,
+          "profit_factor": 2.1225626740947074,
+          "trade_rate": 0.012989100260074224
+        }
+      },
+      "yearly_pf": {
+        "2024": 1.7864173228346456,
+        "2025": 2.0367156208277706,
+        "2026": 2.5248447204968945
+      },
+      "stability_cv": 0.14491043229633283,
+      "product_premium": {
+        "signals_per_day_per_symbol": 3.5266851163571844,
+        "signal_density": 0.012245434431795777,
+        "max_burst_per_hour": 19,
+        "alert_freq_hour": {
+          "0": 15,
+          "1": 13,
+          "2": 27,
+          "3": 27,
+          "4": 17,
+          "5": 6,
+          "6": 8,
+          "7": 2,
+          "8": 1,
+          "9": 2,
+          "10": 3,
+          "11": 2,
+          "14": 1,
+          "21": 2232,
+          "22": 944,
+          "23": 54
+        },
+        "alert_freq_weekday": {
+          "0": 600,
+          "1": 598,
+          "2": 787,
+          "3": 652,
+          "4": 22,
+          "6": 695
+        },
+        "session_shares": {
+          "asia": 0.050387596899224806,
+          "london": 0.0026833631484794273,
+          "ny": 0.6657722122838402,
+          "ldn_ny_kz": 0.0002981514609421586
+        },
+        "session_dependency": 0.6657722122838402,
+        "trade_duration": {
+          "mean": 6.21824686940966,
+          "median": 5.0,
+          "p25": 2.0,
+          "p75": 9.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.2766845557543232,
+          "share_long": 0.0,
+          "n_trades": 3354
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 13,
+          "mean_overlapping": 0.08839056875187114,
+          "boxes_per_window": 2.4478131085608643
+        }
+      },
+      "product_high": {
+        "signals_per_day_per_symbol": 37.48338432555185,
+        "signal_density": 0.13015064001927726,
+        "max_burst_per_hour": 23,
+        "alert_freq_hour": {
+          "0": 2542,
+          "1": 2089,
+          "2": 1644,
+          "3": 1602,
+          "4": 1791,
+          "5": 1983,
+          "6": 2125,
+          "7": 2141,
+          "8": 1827,
+          "9": 1511,
+          "10": 1510,
+          "11": 1686,
+          "12": 2136,
+          "13": 1993,
+          "14": 1966,
+          "15": 148,
+          "21": 3145,
+          "22": 2050,
+          "23": 1759
+        },
+        "alert_freq_weekday": {
+          "0": 7094,
+          "1": 7409,
+          "2": 7202,
+          "3": 7067,
+          "4": 5334,
+          "6": 1542
+        },
+        "session_shares": {
+          "asia": 0.49584829443447037,
+          "london": 0.35842122980251345,
+          "ny": 0.20343357271095153,
+          "ldn_ny_kz": 0.11520982944344704
+        },
+        "session_dependency": 0.49584829443447037,
+        "trade_duration": {
+          "mean": 4.21142841113106,
+          "median": 3.0,
+          "p25": 2.0,
+          "p75": 5.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.427737881508079,
+          "share_long": 0.0,
+          "n_trades": 35648
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 15,
+          "mean_overlapping": 0.6782707431233524,
+          "boxes_per_window": 26.044760850423277
+        }
+      },
+      "product_thresholds_check": {
+        "signals_per_day_in_range": true,
+        "premium_density_ok": true,
+        "trade_duration_in_range": true,
+        "chart_clean": false,
+        "session_balanced": false,
+        "n_pass": 3,
+        "n_total": 5,
+        "verdict": "product_grade_C"
+      },
+      "pine_ux": {
+        "tf": "5m",
+        "ops_per_bar_estimate": 342,
+        "budget_utilization": 0.0684,
+        "request_security_utilization": 0.16666666666666666,
+        "feasibility_score": 0.8333333333333334
+      },
+      "shap_top": [
+        [
+          "hour_sin",
+          0.005339550505140056
+        ],
+        [
+          "ema_20_dist_atr",
+          0.0037483696358919017
+        ],
+        [
+          "hour_cos",
+          0.0011575473293706307
+        ],
+        [
+          "rvol_20",
+          0.0008971071239745509
+        ],
+        [
+          "dist_to_swing_low_atr",
+          0.0
+        ],
+        [
+          "htf_1h_rsi_14",
+          0.0
+        ],
+        [
+          "realized_vol_20",
+          0.0
+        ],
+        [
+          "atr_percentile_100",
+          0.0
+        ],
+        [
+          "atr_pct",
+          0.0
+        ],
+        [
+          "dist_to_swing_high_atr",
+          0.0
+        ]
+      ],
+      "quality_anchor": {
+        "asset_class": "fx",
+        "severity": "soft_only",
+        "action": "deploy with marketing transparency",
+        "strict_results": {
+          "premium_pf_oos": true,
+          "premium_pf_holdout": true,
+          "min_pf_per_symbol": true,
+          "stability_cv": true,
+          "min_pf_per_year": true,
+          "trades_per_year": true,
+          "pine_budget": true
+        },
+        "strict_failed": [],
+        "soft_results": {
+          "matches_fx_anchor": true,
+          "wr_target": false
+        },
+        "soft_passed_count": 1,
+        "soft_total": 2,
+        "metrics_input": {
+          "premium_pf_mean_oos": 2.0024682651622,
+          "premium_pf_holdout_mean": 2.388842360357604,
+          "min_pf_per_symbol": 2.1225626740947074,
+          "stability_cv": 0.14491043229633283,
+          "min_pf_per_year": 1.7864173228346456,
+          "min_trades_per_year_tier": 1118.0,
+          "premium_wr": 0.571730594986409
+        }
+      },
+      "notes": []
+    },
+    "15m": {
+      "asset_class": "fx",
+      "tf": "15m",
+      "n_train_symbols": 2,
+      "n_holdout_symbols": 3,
+      "n_train_rows": 198833,
+      "n_val_rows": 24792,
+      "n_test_rows": 91300,
+      "cutoffs": {
+        "standard": 0.3858661318493243,
+        "high": 0.38595333981540525,
+        "premium": 0.39285720566705834
+      },
+      "quant_premium": {
+        "n_trades": 954,
+        "wins": 425,
+        "losses": 517,
+        "neutrals": 12,
+        "win_rate": 0.45116772823779194,
+        "expected_R": 0.12631027253668764,
+        "profit_factor": 1.2330754352030948,
+        "trade_rate": 0.01044906900328587,
+        "max_drawdown": 0.34297520661157027
+      },
+      "quant_high": {
+        "n_trades": 5557,
+        "wins": 2288,
+        "losses": 2985,
+        "neutrals": 284,
+        "win_rate": 0.43390859093495165,
+        "expected_R": 0.08043908583768221,
+        "profit_factor": 1.149748743718593,
+        "trade_rate": 0.06086527929901424,
+        "max_drawdown": 0.44224422442244227
+      },
+      "quant_standard": {
+        "n_trades": 74856,
+        "wins": 29541,
+        "losses": 44492,
+        "neutrals": 823,
+        "win_rate": 0.3990247592289925,
+        "expected_R": -0.0024112963556695522,
+        "profit_factor": 0.9959430908927448,
+        "trade_rate": 0.8198904709748083,
+        "max_drawdown": 4.620338983050847
+      },
+      "holdout_premium": {
+        "profit_factor": 1.8256106338917057,
+        "profit_factor_min": 1.6650717703349283,
+        "profit_factor_max": 1.943661971830986
+      },
+      "holdout_per_symbol": {
+        "GBPUSD": {
+          "n_trades": 468,
+          "wins": 232,
+          "losses": 209,
+          "neutrals": 27,
+          "win_rate": 0.5260770975056689,
+          "expected_R": 0.297008547008547,
+          "profit_factor": 1.6650717703349283,
+          "trade_rate": 0.010253489034463116
+        },
+        "AUDUSD": {
+          "n_trades": 326,
+          "wins": 184,
+          "losses": 142,
+          "neutrals": 0,
+          "win_rate": 0.5644171779141104,
+          "expected_R": 0.4110429447852761,
+          "profit_factor": 1.943661971830986,
+          "trade_rate": 0.00714254414793392
+        },
+        "USDCHF": {
+          "n_trades": 399,
+          "wins": 203,
+          "losses": 163,
+          "neutrals": 33,
+          "win_rate": 0.5546448087431693,
+          "expected_R": 0.35463659147869675,
+          "profit_factor": 1.8680981595092025,
+          "trade_rate": 0.008741756676817912
+        }
+      },
+      "yearly_pf": {
+        "2024": 1.1214285714285714,
+        "2025": 1.332618025751073,
+        "2026": 1.2364864864864864
+      },
+      "stability_cv": 0.07017934474773907,
+      "product_premium": {
+        "signals_per_day_per_symbol": 1.0031106243154437,
+        "signal_density": 0.01044906900328587,
+        "max_burst_per_hour": 8,
+        "alert_freq_hour": {
+          "0": 2,
+          "2": 2,
+          "3": 5,
+          "5": 1,
+          "6": 1,
+          "10": 1,
+          "14": 1,
+          "20": 3,
+          "21": 646,
+          "22": 275,
+          "23": 17
+        },
+        "alert_freq_weekday": {
+          "0": 180,
+          "1": 165,
+          "2": 232,
+          "3": 168,
+          "4": 6,
+          "6": 203
+        },
+        "session_shares": {
+          "asia": 0.029350104821802937,
+          "london": 0.0020964360587002098,
+          "ny": 0.6813417190775681,
+          "ldn_ny_kz": 0.0010482180293501049
+        },
+        "session_dependency": 0.6813417190775681,
+        "trade_duration": {
+          "mean": 6.20125786163522,
+          "median": 5.0,
+          "p25": 3.0,
+          "p75": 9.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.22117400419287211,
+          "share_long": 0.0,
+          "n_trades": 954
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 7,
+          "mean_overlapping": 0.07524644030668128,
+          "boxes_per_window": 2.092995686106629
+        }
+      },
+      "product_high": {
+        "signals_per_day_per_symbol": 5.843066812705367,
+        "signal_density": 0.06086527929901424,
+        "max_burst_per_hour": 8,
+        "alert_freq_hour": {
+          "0": 12,
+          "1": 8,
+          "2": 7,
+          "3": 7,
+          "4": 10,
+          "5": 6,
+          "6": 2,
+          "10": 1,
+          "12": 1,
+          "14": 1,
+          "15": 154,
+          "16": 367,
+          "17": 530,
+          "18": 762,
+          "19": 887,
+          "20": 786,
+          "21": 1291,
+          "22": 668,
+          "23": 57
+        },
+        "alert_freq_weekday": {
+          "0": 1246,
+          "1": 1087,
+          "2": 1163,
+          "3": 997,
+          "4": 659,
+          "6": 405
+        },
+        "session_shares": {
+          "asia": 0.019614900125967248,
+          "london": 0.09429548317437467,
+          "ny": 0.8598164477235919,
+          "ldn_ny_kz": 0.09393557675004499
+        },
+        "session_dependency": 0.8598164477235919,
+        "trade_duration": {
+          "mean": 8.315637934137124,
+          "median": 6.0,
+          "p25": 3.0,
+          "p75": 12.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.1831923699838042,
+          "share_long": 0.0,
+          "n_trades": 5557
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 20,
+          "mean_overlapping": 0.566538882803943,
+          "boxes_per_window": 12.184860758937882
+        }
+      },
+      "product_thresholds_check": {
+        "signals_per_day_in_range": true,
+        "premium_density_ok": true,
+        "trade_duration_in_range": true,
+        "chart_clean": false,
+        "session_balanced": false,
+        "n_pass": 3,
+        "n_total": 5,
+        "verdict": "product_grade_C"
+      },
+      "pine_ux": {
+        "tf": "15m",
+        "ops_per_bar_estimate": 342,
+        "budget_utilization": 0.0684,
+        "request_security_utilization": 0.16666666666666666,
+        "feasibility_score": 0.8333333333333334
+      },
+      "shap_top": [
+        [
+          "hour_sin",
+          0.006208441705918484
+        ],
+        [
+          "ema_20_dist_atr",
+          0.0017467820244643619
+        ],
+        [
+          "htf_ltf_agree_bull",
+          0.0007692005441064134
+        ],
+        [
+          "atr_percentile_100",
+          0.0007610933093624425
+        ],
+        [
+          "rvol_20",
+          0.0006117388893858298
+        ],
+        [
+          "ltf_rsi_minus_htf_rsi",
+          0.0003060859353476232
+        ],
+        [
+          "dist_to_swing_low_atr",
+          0.0
+        ],
+        [
+          "htf_1h_rsi_14",
+          0.0
+        ],
+        [
+          "realized_vol_20",
+          0.0
+        ],
+        [
+          "atr_pct",
+          0.0
+        ]
+      ],
+      "quality_anchor": {
+        "asset_class": "fx",
+        "severity": "blocked",
+        "action": "deployment blocked \u2014 re-research required",
+        "strict_results": {
+          "premium_pf_oos": false,
+          "premium_pf_holdout": true,
+          "min_pf_per_symbol": true,
+          "stability_cv": true,
+          "min_pf_per_year": false,
+          "trades_per_year": true,
+          "pine_budget": true
+        },
+        "strict_failed": [
+          "premium_pf_oos",
+          "min_pf_per_year"
+        ],
+        "soft_results": {
+          "matches_fx_anchor": false,
+          "wr_target": false
+        },
+        "soft_passed_count": 0,
+        "soft_total": 2,
+        "metrics_input": {
+          "premium_pf_mean_oos": 1.2330754352030948,
+          "premium_pf_holdout_mean": 1.8256106338917057,
+          "min_pf_per_symbol": 1.6650717703349283,
+          "stability_cv": 0.07017934474773907,
+          "min_pf_per_year": 1.1214285714285714,
+          "min_trades_per_year_tier": 318.0,
+          "premium_wr": 0.45116772823779194
+        }
+      },
+      "notes": []
+    },
+    "30m": {
+      "asset_class": "fx",
+      "tf": "30m",
+      "n_train_symbols": 2,
+      "n_holdout_symbols": 3,
+      "n_train_rows": 99418,
+      "n_val_rows": 12396,
+      "n_test_rows": 45632,
+      "cutoffs": {
+        "standard": 0.3921466930180099,
+        "high": 0.3960939946550421,
+        "premium": 0.3960939946550421
+      },
+      "quant_premium": {
+        "n_trades": 1495,
+        "wins": 606,
+        "losses": 875,
+        "neutrals": 14,
+        "win_rate": 0.4091829844699527,
+        "expected_R": 0.02274247491638796,
+        "profit_factor": 1.038857142857143,
+        "trade_rate": 0.03276209677419355,
+        "max_drawdown": 1.3396226415094339
+      },
+      "quant_high": {
+        "n_trades": 1495,
+        "wins": 606,
+        "losses": 875,
+        "neutrals": 14,
+        "win_rate": 0.4091829844699527,
+        "expected_R": 0.02274247491638796,
+        "profit_factor": 1.038857142857143,
+        "trade_rate": 0.03276209677419355,
+        "max_drawdown": 1.3396226415094339
+      },
+      "quant_standard": {
+        "n_trades": 36358,
+        "wins": 14302,
+        "losses": 21800,
+        "neutrals": 256,
+        "win_rate": 0.39615533765442357,
+        "expected_R": -0.009543979316794102,
+        "profit_factor": 0.9840825688073395,
+        "trade_rate": 0.7967654277699859,
+        "max_drawdown": 7.408450704225352
+      },
+      "holdout_premium": {
+        "profit_factor": 1.2789404742713968,
+        "profit_factor_min": 1.1670644391408114,
+        "profit_factor_max": 1.3495934959349594
+      },
+      "holdout_per_symbol": {
+        "GBPUSD": {
+          "n_trades": 748,
+          "wins": 326,
+          "losses": 419,
+          "neutrals": 3,
+          "win_rate": 0.4375838926174497,
+          "expected_R": 0.09358288770053476,
+          "profit_factor": 1.1670644391408114,
+          "trade_rate": 0.03278688524590164
+        },
+        "AUDUSD": {
+          "n_trades": 704,
+          "wins": 332,
+          "losses": 369,
+          "neutrals": 3,
+          "win_rate": 0.47360912981455067,
+          "expected_R": 0.18323863636363635,
+          "profit_factor": 1.3495934959349594,
+          "trade_rate": 0.030860950376994566
+        },
+        "USDCHF": {
+          "n_trades": 698,
+          "wins": 323,
+          "losses": 367,
+          "neutrals": 8,
+          "win_rate": 0.4681159420289855,
+          "expected_R": 0.1683381088825215,
+          "profit_factor": 1.3201634877384196,
+          "trade_rate": 0.030595248531603402
+        }
+      },
+      "yearly_pf": {
+        "2024": 0.9774193548387097,
+        "2025": 1.0973871733966747,
+        "2026": 1.0
+      },
+      "stability_cv": 0.050787433985940864,
+      "product_premium": {
+        "signals_per_day_per_symbol": 1.5725806451612905,
+        "signal_density": 0.03276209677419355,
+        "max_burst_per_hour": 4,
+        "alert_freq_hour": {
+          "0": 8,
+          "1": 3,
+          "2": 4,
+          "3": 5,
+          "4": 5,
+          "5": 3,
+          "6": 2,
+          "7": 1,
+          "15": 1,
+          "20": 59,
+          "21": 700,
+          "22": 503,
+          "23": 201
+        },
+        "alert_freq_weekday": {
+          "0": 316,
+          "1": 314,
+          "2": 325,
+          "3": 303,
+          "4": 33,
+          "6": 204
+        },
+        "session_shares": {
+          "asia": 0.1551839464882943,
+          "london": 0.0006688963210702341,
+          "ny": 0.5083612040133779,
+          "ldn_ny_kz": 0.0006688963210702341
+        },
+        "session_dependency": 0.5083612040133779,
+        "trade_duration": {
+          "mean": 6.37190635451505,
+          "median": 5.0,
+          "p25": 3.0,
+          "p75": 8.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.2120401337792642,
+          "share_long": 0.0,
+          "n_trades": 1495
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 10,
+          "mean_overlapping": 0.24151910939691446,
+          "boxes_per_window": 6.547773644707592
+        }
+      },
+      "product_high": {
+        "signals_per_day_per_symbol": 1.5725806451612905,
+        "signal_density": 0.03276209677419355,
+        "max_burst_per_hour": 4,
+        "alert_freq_hour": {
+          "0": 8,
+          "1": 3,
+          "2": 4,
+          "3": 5,
+          "4": 5,
+          "5": 3,
+          "6": 2,
+          "7": 1,
+          "15": 1,
+          "20": 59,
+          "21": 700,
+          "22": 503,
+          "23": 201
+        },
+        "alert_freq_weekday": {
+          "0": 316,
+          "1": 314,
+          "2": 325,
+          "3": 303,
+          "4": 33,
+          "6": 204
+        },
+        "session_shares": {
+          "asia": 0.1551839464882943,
+          "london": 0.0006688963210702341,
+          "ny": 0.5083612040133779,
+          "ldn_ny_kz": 0.0006688963210702341
+        },
+        "session_dependency": 0.5083612040133779,
+        "trade_duration": {
+          "mean": 6.37190635451505,
+          "median": 5.0,
+          "p25": 3.0,
+          "p75": 8.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.2120401337792642,
+          "share_long": 0.0,
+          "n_trades": 1495
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 10,
+          "mean_overlapping": 0.24151910939691446,
+          "boxes_per_window": 6.547773644707592
+        }
+      },
+      "product_thresholds_check": {
+        "signals_per_day_in_range": true,
+        "premium_density_ok": false,
+        "trade_duration_in_range": true,
+        "chart_clean": false,
+        "session_balanced": true,
+        "n_pass": 3,
+        "n_total": 5,
+        "verdict": "product_grade_C"
+      },
+      "pine_ux": {
+        "tf": "30m",
+        "ops_per_bar_estimate": 342,
+        "budget_utilization": 0.0684,
+        "request_security_utilization": 0.16666666666666666,
+        "feasibility_score": 0.8333333333333334
+      },
+      "shap_top": [
+        [
+          "hour_sin",
+          0.0030527673279667935
+        ],
+        [
+          "htf_ltf_agree_bull",
+          0.001027543064299191
+        ],
+        [
+          "rvol_20",
+          0.0010130503507420794
+        ],
+        [
+          "dist_to_swing_low_atr",
+          0.0007782108278708834
+        ],
+        [
+          "realized_vol_20",
+          0.0005227556108106482
+        ],
+        [
+          "ltf_rsi_minus_htf_rsi",
+          0.0004980773895859105
+        ],
+        [
+          "htf_1h_rsi_14",
+          0.0
+        ],
+        [
+          "atr_percentile_100",
+          0.0
+        ],
+        [
+          "atr_pct",
+          0.0
+        ],
+        [
+          "dist_to_swing_high_atr",
+          0.0
+        ]
+      ],
+      "quality_anchor": {
+        "asset_class": "fx",
+        "severity": "blocked",
+        "action": "deployment blocked \u2014 re-research required",
+        "strict_results": {
+          "premium_pf_oos": false,
+          "premium_pf_holdout": false,
+          "min_pf_per_symbol": false,
+          "stability_cv": true,
+          "min_pf_per_year": false,
+          "trades_per_year": true,
+          "pine_budget": true
+        },
+        "strict_failed": [
+          "premium_pf_oos",
+          "premium_pf_holdout",
+          "min_pf_per_symbol",
+          "min_pf_per_year"
+        ],
+        "soft_results": {
+          "matches_fx_anchor": false,
+          "wr_target": false
+        },
+        "soft_passed_count": 0,
+        "soft_total": 2,
+        "metrics_input": {
+          "premium_pf_mean_oos": 1.038857142857143,
+          "premium_pf_holdout_mean": 1.2789404742713968,
+          "min_pf_per_symbol": 1.1670644391408114,
+          "stability_cv": 0.050787433985940864,
+          "min_pf_per_year": 0.9774193548387097,
+          "min_trades_per_year_tier": 498.3333333333333,
+          "premium_wr": 0.4091829844699527
+        }
+      },
+      "notes": []
+    },
+    "1h": {
+      "asset_class": "fx",
+      "tf": "1h",
+      "n_train_symbols": 2,
+      "n_holdout_symbols": 3,
+      "n_train_rows": 49710,
+      "n_val_rows": 6198,
+      "n_test_rows": 22789,
+      "cutoffs": {
+        "standard": 0.4035536956048695,
+        "high": 0.4035536956048695,
+        "premium": 0.4035536956048695
+      },
+      "quant_premium": {
+        "n_trades": 4414,
+        "wins": 1740,
+        "losses": 2662,
+        "neutrals": 12,
+        "win_rate": 0.3952748750567924,
+        "expected_R": -0.011780697779791573,
+        "profit_factor": 0.980465815176559,
+        "trade_rate": 0.19368993812804422,
+        "max_drawdown": 1.501492537313433
+      },
+      "quant_high": {
+        "n_trades": 4414,
+        "wins": 1740,
+        "losses": 2662,
+        "neutrals": 12,
+        "win_rate": 0.3952748750567924,
+        "expected_R": -0.011780697779791573,
+        "profit_factor": 0.980465815176559,
+        "trade_rate": 0.19368993812804422,
+        "max_drawdown": 1.501492537313433
+      },
+      "quant_standard": {
+        "n_trades": 4414,
+        "wins": 1740,
+        "losses": 2662,
+        "neutrals": 12,
+        "win_rate": 0.3952748750567924,
+        "expected_R": -0.011780697779791573,
+        "profit_factor": 0.980465815176559,
+        "trade_rate": 0.19368993812804422,
+        "max_drawdown": 1.501492537313433
+      },
+      "holdout_premium": {
+        "profit_factor": 0.8991405789407821,
+        "profit_factor_min": 0.838953488372093,
+        "profit_factor_max": 0.9822157434402332
+      },
+      "holdout_per_symbol": {
+        "GBPUSD": {
+          "n_trades": 2841,
+          "wins": 1123,
+          "losses": 1715,
+          "neutrals": 3,
+          "win_rate": 0.39570119802677944,
+          "expected_R": -0.010735656458993312,
+          "profit_factor": 0.9822157434402332,
+          "trade_rate": 0.2493417588204318
+        },
+        "AUDUSD": {
+          "n_trades": 2684,
+          "wins": 962,
+          "losses": 1720,
+          "neutrals": 2,
+          "win_rate": 0.3586875466070097,
+          "expected_R": -0.10320417287630403,
+          "profit_factor": 0.838953488372093,
+          "trade_rate": 0.2355832528745721
+        },
+        "USDCHF": {
+          "n_trades": 3165,
+          "wins": 1166,
+          "losses": 1996,
+          "neutrals": 3,
+          "win_rate": 0.3687539531941809,
+          "expected_R": -0.07804107424960506,
+          "profit_factor": 0.87625250501002,
+          "trade_rate": 0.2777777777777778
+        }
+      },
+      "yearly_pf": {
+        "2024": 1.1771739130434782,
+        "2025": 0.9349376114081996,
+        "2026": 0.953757225433526
+      },
+      "stability_cv": 0.10766023289436935,
+      "product_premium": {
+        "signals_per_day_per_symbol": 4.648558515073062,
+        "signal_density": 0.19368993812804422,
+        "max_burst_per_hour": 2,
+        "alert_freq_hour": {
+          "0": 167,
+          "1": 161,
+          "2": 164,
+          "3": 169,
+          "4": 168,
+          "5": 170,
+          "6": 172,
+          "7": 169,
+          "8": 179,
+          "9": 194,
+          "10": 212,
+          "11": 221,
+          "12": 223,
+          "13": 219,
+          "14": 208,
+          "15": 205,
+          "16": 186,
+          "17": 182,
+          "18": 177,
+          "19": 168,
+          "20": 176,
+          "21": 179,
+          "22": 172,
+          "23": 173
+        },
+        "alert_freq_weekday": {
+          "0": 830,
+          "1": 912,
+          "2": 930,
+          "3": 804,
+          "4": 849,
+          "6": 89
+        },
+        "session_shares": {
+          "asia": 0.3427729950158586,
+          "london": 0.41844132306298143,
+          "ny": 0.3851381966470322,
+          "ldn_ny_kz": 0.18531943815133667
+        },
+        "session_dependency": 0.41844132306298143,
+        "trade_duration": {
+          "mean": 4.855913004077934,
+          "median": 3.0,
+          "p25": 2.0,
+          "p75": 6.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.3688264612596285,
+          "share_long": 0.0,
+          "n_trades": 4414
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 20,
+          "mean_overlapping": 1.1342314274430647,
+          "boxes_per_window": 38.805799026117754
+        }
+      },
+      "product_high": {
+        "signals_per_day_per_symbol": 4.648558515073062,
+        "signal_density": 0.19368993812804422,
+        "max_burst_per_hour": 2,
+        "alert_freq_hour": {
+          "0": 167,
+          "1": 161,
+          "2": 164,
+          "3": 169,
+          "4": 168,
+          "5": 170,
+          "6": 172,
+          "7": 169,
+          "8": 179,
+          "9": 194,
+          "10": 212,
+          "11": 221,
+          "12": 223,
+          "13": 219,
+          "14": 208,
+          "15": 205,
+          "16": 186,
+          "17": 182,
+          "18": 177,
+          "19": 168,
+          "20": 176,
+          "21": 179,
+          "22": 172,
+          "23": 173
+        },
+        "alert_freq_weekday": {
+          "0": 830,
+          "1": 912,
+          "2": 930,
+          "3": 804,
+          "4": 849,
+          "6": 89
+        },
+        "session_shares": {
+          "asia": 0.3427729950158586,
+          "london": 0.41844132306298143,
+          "ny": 0.3851381966470322,
+          "ldn_ny_kz": 0.18531943815133667
+        },
+        "session_dependency": 0.41844132306298143,
+        "trade_duration": {
+          "mean": 4.855913004077934,
+          "median": 3.0,
+          "p25": 2.0,
+          "p75": 6.0,
+          "min": 1.0,
+          "max": 24.0,
+          "share_short": 0.3688264612596285,
+          "share_long": 0.0,
+          "n_trades": 4414
+        },
+        "chart_cleanliness": {
+          "max_overlapping": 20,
+          "mean_overlapping": 1.1342314274430647,
+          "boxes_per_window": 38.805799026117754
+        }
+      },
+      "product_thresholds_check": {
+        "signals_per_day_in_range": true,
+        "premium_density_ok": false,
+        "trade_duration_in_range": true,
+        "chart_clean": false,
+        "session_balanced": true,
+        "n_pass": 3,
+        "n_total": 5,
+        "verdict": "product_grade_C"
+      },
+      "pine_ux": {
+        "tf": "1h",
+        "ops_per_bar_estimate": 342,
+        "budget_utilization": 0.0684,
+        "request_security_utilization": 0.16666666666666666,
+        "feasibility_score": 0.8333333333333334
+      },
+      "shap_top": [
+        [
+          "adx_14",
+          0.004163333796914359
+        ],
+        [
+          "atr_pct",
+          0.0022380123176128116
+        ],
+        [
+          "realized_vol_20",
+          0.001252568871073616
+        ],
+        [
+          "ltf_rsi_minus_htf_rsi",
+          0.0011346896296464304
+        ],
+        [
+          "atr_percentile_100",
+          0.0008197150595182908
+        ],
+        [
+          "hour_sin",
+          0.0
+        ],
+        [
+          "dist_to_swing_low_atr",
+          0.0
+        ],
+        [
+          "htf_1h_rsi_14",
+          0.0
+        ],
+        [
+          "dist_to_swing_high_atr",
+          0.0
+        ],
+        [
+          "volume_z_score",
+          0.0
+        ]
+      ],
+      "quality_anchor": {
+        "asset_class": "fx",
+        "severity": "blocked",
+        "action": "deployment blocked \u2014 re-research required",
+        "strict_results": {
+          "premium_pf_oos": false,
+          "premium_pf_holdout": false,
+          "min_pf_per_symbol": false,
+          "stability_cv": true,
+          "min_pf_per_year": false,
+          "trades_per_year": true,
+          "pine_budget": true
+        },
+        "strict_failed": [
+          "premium_pf_oos",
+          "premium_pf_holdout",
+          "min_pf_per_symbol",
+          "min_pf_per_year"
+        ],
+        "soft_results": {
+          "matches_fx_anchor": false,
+          "wr_target": false
+        },
+        "soft_passed_count": 0,
+        "soft_total": 2,
+        "metrics_input": {
+          "premium_pf_mean_oos": 0.980465815176559,
+          "premium_pf_holdout_mean": 0.8991405789407821,
+          "min_pf_per_symbol": 0.838953488372093,
+          "stability_cv": 0.10766023289436935,
+          "min_pf_per_year": 0.9349376114081996,
+          "min_trades_per_year_tier": 1471.3333333333333,
+          "premium_wr": 0.3952748750567924
+        }
+      },
+      "notes": []
+    }
+  },
+  "pooled_vs_single": [
+    {
+      "tf": "5m",
+      "single_tf_pf": 2.0025,
+      "pooled_pf": 2.0819,
+      "lift": 0.0794,
+      "single_n": 3354,
+      "pooled_n": 3161
+    },
+    {
+      "tf": "15m",
+      "single_tf_pf": 1.2331,
+      "pooled_pf": 1.4232,
+      "lift": 0.1901,
+      "single_n": 954,
+      "pooled_n": 1327
+    },
+    {
+      "tf": "30m",
+      "single_tf_pf": 1.0389,
+      "pooled_pf": 1.2416,
+      "lift": 0.2027,
+      "single_n": 1495,
+      "pooled_n": 1036
+    },
+    {
+      "tf": "1h",
+      "single_tf_pf": 0.9805,
+      "pooled_pf": 1.1325,
+      "lift": 0.1521,
+      "single_n": 4414,
+      "pooled_n": 439
+    }
+  ],
+  "h5_pass": false,
+  "decision": {
+    "default_tf": "5m",
+    "supported_tfs": [
+      "5m"
+    ],
+    "profile_map": {
+      "Aggressive": "5m",
+      "Balanced": "5m",
+      "Conservative": "5m"
+    },
+    "alert_strategy": {
+      "5m": {
+        "alert_on_tier": "premium",
+        "expected_alerts_per_day": 3.5266851163571844
+      }
+    },
+    "h1_pass": true,
+    "h2_pass": false,
+    "h3_pass": true,
+    "product_ok": {
+      "5m": false,
+      "15m": false,
+      "30m": false,
+      "1h": false
+    },
+    "explanation": [
+      "H1 (5m=Default): holdout_pf=2.39, cv=0.145, mdd=0.028, sigs/day=3.53 \u2192 PASS",
+      "H2 (15m=Conservative): pf=1.23, cv=0.070, sigs/day=1.00 \u2192 FAIL",
+      "H3 (exclude 30m/1h): PASS",
+      "WARNING: kein TF erreicht Produkt-Grade B+ \u2014 Default-TF Fallback 5m"
+    ]
+  }
+}
