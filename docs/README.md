@@ -11,6 +11,7 @@ Langlebige Architektur- und Strategie-Dokumente. Im Gegensatz zu `/research/` (w
 | [pine_constraints.md](pine_constraints.md) | Pine-Budget (30 trees, depth 3, 15 features, 5000 ops/bar) | Vor jedem Modell-Design |
 | [backtesting_vision.md](backtesting_vision.md) | User-facing Backtest-Widget, Anti-Curve-Fitting-Design | Vor V1-Pine-Generator (NB09) |
 | [deployment_plan.md](deployment_plan.md) | Pine V1 → Hybrid V1.5 → Backend V2 Migrationspfad | Bei jeder Phasen-Entscheidung |
+| [colab_auto_push.md](colab_auto_push.md) | Colab→GitHub Auto-Push-Pattern für `/results/`-Files (Token-Setup + Code-Snippet) | Beim Bau jedes neuen Notebooks |
 
 ## Verhältnis zu HANDOFF.md
 
