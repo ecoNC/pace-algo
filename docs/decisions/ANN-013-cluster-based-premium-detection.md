@@ -1,9 +1,10 @@
 # ANN-013: Cluster-Based Premium Detection (V1 Premium-Tier-Mechanik)
 
-**Status:** Active — **supersedes Cutoff-Mechanik in [ANN-012](ANN-012-v1-tier-architecture-premium-core-plus-filters.md)** (Filter-Stack-Konzept bleibt gültig)
+**Status:** Active (Cluster-Detection-Mechanik gültig — **Stability-Definition durch [ANN-014](ANN-014-per-model-relative-cluster-behavioral-stability.md) superseded**)
 **Datum:** 2026-05-28
 **Locked-By:** Nico-Decision nach NB14d Probability-Distribution-Diagnostik
-**Related:** [[ANN-006]] (Robustheits-Mantra) [[ANN-009]] (Multi-Model-Router) [[ANN-010]] (Quality-Anchor) [[ANN-011]] (V1-TF + Whitelist) [[ANN-012]] (Premium-Core + Filters)
+**Related:** [[ANN-006]] (Robustheits-Mantra) [[ANN-009]] (Multi-Model-Router) [[ANN-010]] (Quality-Anchor) [[ANN-011]] (V1-TF + Whitelist) [[ANN-012]] (Premium-Core + Filters) [[ANN-014]] (Per-Model Relative Cluster + Behavioral Stability)
+**Superseded BY ANN-014 für:** Stability-Requirement (`cluster_drift < 0.001` ist methodisch falsch). Cluster-Extraction-Mechanik selbst bleibt gültig.
 
 ---
 

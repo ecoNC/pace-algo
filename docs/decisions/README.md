@@ -38,7 +38,8 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-010](ANN-010-quality-anchor.md) | Quality Anchor (Premium PF ≥ 2.0) | Active | 2026-05-27 |
 | [ANN-011](ANN-011-v1-timeframe-and-profile-setup.md) | V1 Timeframe Lock (5m) + User-Settings Whitelist *(Profile-Map durch ANN-012 superseded)* | Active (partial) | 2026-05-27 |
 | [ANN-012](ANN-012-v1-tier-architecture-premium-core-plus-filters.md) | V1 Tier-Architektur — Premium Core + Secondary Filters *(Cutoff-Mechanik durch ANN-013 superseded)* | Active (partial) | 2026-05-27 |
-| [ANN-013](ANN-013-cluster-based-premium-detection.md) | **Cluster-Based Premium Detection** (NB14d data-driven) | Active | 2026-05-28 |
+| [ANN-013](ANN-013-cluster-based-premium-detection.md) | Cluster-Based Premium Detection *(Stability-Definition durch ANN-014 superseded)* | Active (partial) | 2026-05-28 |
+| [ANN-014](ANN-014-per-model-relative-cluster-behavioral-stability.md) | **Per-Model Relative Cluster + Behavioral Stability** | Active | 2026-05-28 |
 
 ## Was hier NICHT hingehört
 
