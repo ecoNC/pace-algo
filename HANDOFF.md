@@ -15,14 +15,14 @@ When Nico starts a fresh Claude session — on either machine — his very first
 
 ```
 PaceAlgo Boot. Workstation: <arbeits-pc oder heim-pc>.
-Mach git pull im pace-algo Repo, lies HANDOFF.md (Sections 0, 0a, 19, 20),
+Mach git pull im pace-algo Repo, lies HANDOFF.md (Sections 0, 0a, 16, 19, 20),
 und sag mir in 2 Sätzen wo wir stehen und was als nächstes ansteht.
 ```
 
 If you receive this message, your job is mechanical:
 
 1. `git -C "C:\Users\nico.flotz\Downloads\pace-algo" pull --ff-only origin main` (adjust path on Heim-PC if different)
-2. Read this entire HANDOFF.md — at minimum Sections 0, 0a, 16, 19, 20
+2. Read this entire HANDOFF.md — at minimum Sections 0, 0a, **16 (zuerst die TL;DR-Box oben für aktuellen Build-Status + Top-5 aktive Locks)**, 19, 20
 3. Reply in German with EXACTLY:
    - One sentence: where we are (last session log entry + any open in-flight work)
    - One sentence: what the next concrete action is (next notebook, next decision, next test)
@@ -1400,6 +1400,49 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 ---
 
 ## 16. Open Action Items for New Session
+
+### 🚦 TL;DR FÜR SIBLING-CLAUDE — Stand 2026-05-28 (lies das ZUERST)
+
+**Aktueller Build-Status:**
+- ✅ **Build 1 fertig:** `deploy_pine/pace_algo_v1_skeleton.pine` (commit `41eda70` / Section 19 letzter Eintrag)
+- 🟡 **Build 2 wartet** auf Nico-Feedback aus TradingView-Live-Test des Skeletons
+- ⏭️ Build 3 (Live-FX-Test mit echtem Modell) danach
+
+**Top-5 aktive Locks die NICHT verletzt werden dürfen:**
+
+| Lock | Was bedeutet |
+|---|---|
+| **ANN-018 Execution-Lock** | KEINE weiteren ANN-Splits (ANN-019/020/021 verboten). 3 Layer in 1 Pine-File. Keine separaten Python-Module für Dashboard, kein filter_interaction_registry. |
+| **Section 12.5 Regel 29 — Produkt-First-Filter** | Vor jeder Idee fragen: "Verbessert das Trading-Produkt direkt oder nur Architektur?" Wenn nur Architektur → nicht priorisieren, Nico fragen. |
+| **ANN-016 — FX vollständig industrialisieren** | V1-Launch erst bei ≥ 2 Asset-Klassen über denselben Blueprint. Keine FX-spezifischen Hacks ohne Blueprint-Doku. |
+| **ANN-011 — V1 = 5m only + Whitelist** | User-Settings nur aus Whitelist (Profile / Display-Toggles / Session-Filter). Keine freien Probability-Thresholds. |
+| **ANN-009 — Multi-Model-Router** | V2 = pro Asset-Klasse eigenes Modell. V1 hat nur FX aktiv, andere "Coming Soon". |
+
+**Nicos zwei mögliche Pfade nach Live-Test:**
+
+| Wenn… | Sibling-Action |
+|---|---|
+| (a) Bug-Reports aus Pine-Skeleton | Direkt fixen. Pine v6, keine Refactor-Übungen. |
+| (b) "Skeleton läuft" | **Build 2 starten** — siehe Build-2-Checkliste unten |
+
+**Build 2 Checkliste (wenn Pfad b):**
+
+1. **Modell-File holen:** sollte in Drive unter `MyDrive/pace-algo/artifacts/models/` liegen (NB14f-v2-Output). Falls **nicht vorhanden**: kurzer Re-Train mit `seed=7 / deterministic=True` über NB14f-Pipeline. Cluster-Cutoff aus VAL extrahieren (≈ 0.40, exact via `extract_premium_cluster()`).
+2. **`core/export/pine_codegen.py` bauen** (NEU, schlank): nimmt LightGBM `.txt` oder `.pkl`, generiert nested-if-else Pine-Snippet für 30 Trees, gibt es als String zurück. Klein halten — eine Funktion `lgbm_to_pine_cascade(model, feature_names) -> str`.
+3. **Placeholder ersetzen** in `deploy_pine/pace_algo_v1_skeleton.pine` Layer 1 (Funktion `f_signal_probability_placeholder()` → durch echte Tree-Cascade ersetzen).
+4. **Cutoffs eintragen:** `CUTOFF_STANDARD/HIGH/PREMIUM` mit echten Werten aus NB14f-v2 (statt 0.50/0.55/0.65 Placeholder).
+5. **Bit-exact Validation:** kurzes Notebook oder Python-Script — 10k Test-Samples durch Python-Modell + Pine-Cascade-Reimplementierung in Python, Diff muss < 1e-5 sein. (Nicht in Pine ausführen lassen — Python-Simulation reicht für Build-2-Validation.)
+6. **Non-Repaint-Check:** in Pine prüfen dass `request.security(..., barmerge.lookahead_off)` für alle Layer-2-Aufrufe gesetzt ist (sind sie bereits). Signal-Logic darf nur auf `close` referenzieren, nicht auf `high/low` von aktuellem Bar.
+
+**Was NICHT machen:**
+- ❌ Keine neuen ANN-Files
+- ❌ Kein `core/market_regime/`-Python-Modul (Dashboard läuft Pine-nativ)
+- ❌ Keine zusätzlichen Validation-Notebooks als Pflichtschritt
+- ❌ Keine "ein bisschen Optimierung an Layer X" — bei jeder Idee Produkt-First-Filter anwenden
+
+**Bei Unsicherheit → Nico fragen, nicht eskalieren.**
+
+---
 
 **Strategic context (LOCKED 2026-05-27):** Optimieren auf Robustheit, Cross-Asset-Generalisierung, Multi-TF-Stabilität. NICHT auf besten Single-Asset-PF, NICHT auf schnellen Release. FX-only PF 2.015 = Research-Baseline, nicht Produktziel.
 
