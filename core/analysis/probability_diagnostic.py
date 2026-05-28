@@ -452,3 +452,177 @@ def classify_verdict(
         "findings":       findings,
         "recommendations": rec,
     }
+
+
+# ---------------------------------------------------------------------------
+# CLUSTER-BASED PREMIUM EXTRACTION (ANN-013 lock)
+# ---------------------------------------------------------------------------
+
+def extract_premium_cluster(
+    proba: np.ndarray,
+    decimal_places: int = 4,
+    min_cluster_size_pct: float = 0.5,
+) -> dict[str, Any]:
+    """
+    Extract the highest-value probability cluster that meets a minimum size threshold.
+
+    This is the V1 Premium-Tier-Detection-Mechanik per ANN-013.
+    Replaces hardcoded probability thresholds.
+
+    Args:
+        proba: probability array (typically from VAL set)
+        decimal_places: rounding precision for cluster detection (4dp = standard)
+        min_cluster_size_pct: minimum cluster size as % of total bars
+                              (e.g. 0.5 means cluster must have >= 0.5% of bars)
+
+    Returns:
+        dict with:
+            "premium_cluster_value":   float — der gelockte cutoff value
+            "premium_cluster_size":    int — anzahl bars in diesem cluster
+            "premium_cluster_pct":     float — % of total bars
+            "premium_cluster_rank":    int — 0=highest, 1=second-highest, ...
+            "all_qualifying_clusters": list[dict] — alle cluster die min_size erfüllen, sortiert nach value DESC
+            "rejected_clusters":       list[dict] — cluster die zu klein waren (< min_size)
+            "success":                 bool — True wenn mindestens 1 qualifizierender cluster gefunden
+
+    Examples:
+        >>> p = np.array([0.3965]*60 + [0.3993]*20 + [0.4018]*15 + [0.4096]*2)
+        >>> result = extract_premium_cluster(p, min_cluster_size_pct=2.0)
+        >>> result['premium_cluster_value']
+        0.4018  # 0.4096 verworfen weil zu klein (nur 2% bei threshold 2%)
+    """
+    if len(proba) == 0:
+        return {"error": "empty array", "success": False}
+
+    n_total = len(proba)
+    min_count = max(1, int(n_total * min_cluster_size_pct / 100))
+
+    rounded = np.round(proba, decimal_places)
+    counter = Counter(rounded.tolist())
+
+    # Alle clusters (auch kleine) sortiert nach Value absteigend
+    all_clusters = sorted(
+        [(v, c) for v, c in counter.items()],
+        key=lambda x: x[0],
+        reverse=True,
+    )
+
+    qualifying: list[dict] = []
+    rejected: list[dict] = []
+    for v, c in all_clusters:
+        info = {
+            "value":     float(v),
+            "count":     int(c),
+            "pct":       float(c / n_total * 100),
+        }
+        if c >= min_count:
+            qualifying.append(info)
+        else:
+            rejected.append(info)
+
+    if not qualifying:
+        return {
+            "error":          f"no cluster with >= {min_cluster_size_pct}% size",
+            "min_count_required": min_count,
+            "all_clusters":   [{"value": float(v), "count": int(c)} for v, c in all_clusters[:20]],
+            "success":        False,
+        }
+
+    # Highest qualifying cluster = Premium
+    premium = qualifying[0]
+    return {
+        "premium_cluster_value":   premium["value"],
+        "premium_cluster_size":    premium["count"],
+        "premium_cluster_pct":     premium["pct"],
+        "premium_cluster_rank":    0,
+        "all_qualifying_clusters": qualifying,
+        "rejected_clusters":       rejected[:10],
+        "n_qualifying":            len(qualifying),
+        "min_cluster_size_pct":    min_cluster_size_pct,
+        "min_count_required":      min_count,
+        "decimal_places":          decimal_places,
+        "success":                 True,
+    }
+
+
+def apply_cluster_cutoff_mask(
+    proba: np.ndarray,
+    cluster_value: float,
+    decimal_places: int = 4,
+) -> np.ndarray:
+    """
+    Boolean mask: True where proba is at or above the cluster_value.
+
+    Uses rounded-comparison to match the cluster-detection rounding.
+    Equivalent to "this bar is in the premium-cluster or higher".
+    """
+    rounded = np.round(proba, decimal_places)
+    return rounded >= cluster_value
+
+
+def cluster_stability_test_multi_seed(
+    train_fn: Callable[..., Any],
+    predict_fn: Callable[[Any, np.ndarray], np.ndarray],
+    X_train: np.ndarray, y_train: np.ndarray,
+    X_val:   np.ndarray, y_val:   np.ndarray,
+    base_params: dict,
+    seeds: list[int] = (42, 1, 7),
+    min_cluster_size_pct: float = 0.5,
+    decimal_places: int = 4,
+) -> dict[str, Any]:
+    """
+    Trainiere Modell mit verschiedenen seeds und extrahiere höchsten Premium-Cluster.
+    Test ob der Cluster-Value stabil bleibt (mean ± std).
+
+    Returns dict mit:
+      "per_seed_results": list of {seed, premium_cluster_value, premium_cluster_pct, ...}
+      "cluster_values":   list of premium-cluster values across seeds
+      "value_mean":       float
+      "value_std":        float
+      "value_drift":      float (max - min)
+      "is_stable":        bool (drift < 0.001 — ANN-013 requirement)
+      "interpretation":   str
+    """
+    results = []
+    for seed in seeds:
+        params = dict(base_params)
+        params["seed"] = seed
+        model = train_fn(X_train, y_train, X_val, y_val, params=params)
+        proba_val = predict_fn(model, X_val)
+        extraction = extract_premium_cluster(
+            proba_val, decimal_places=decimal_places,
+            min_cluster_size_pct=min_cluster_size_pct,
+        )
+        results.append({
+            "seed":                  seed,
+            "success":               extraction.get("success", False),
+            "premium_cluster_value": extraction.get("premium_cluster_value"),
+            "premium_cluster_pct":   extraction.get("premium_cluster_pct"),
+            "n_qualifying_clusters": extraction.get("n_qualifying", 0),
+        })
+
+    successful = [r for r in results if r["success"]]
+    if not successful:
+        return {
+            "per_seed_results": results,
+            "is_stable":        False,
+            "error":            "no successful cluster extraction in any seed",
+        }
+
+    values = [r["premium_cluster_value"] for r in successful]
+    drift = max(values) - min(values)
+
+    return {
+        "per_seed_results":  results,
+        "cluster_values":    values,
+        "value_mean":        float(np.mean(values)),
+        "value_std":         float(np.std(values)),
+        "value_drift":       float(drift),
+        "n_runs":            len(successful),
+        "is_stable":         bool(drift < 0.001),
+        "interpretation": (
+            f"Cluster stability: drift={drift:.4f}, std={np.std(values):.4f}. "
+            f"is_stable=True wenn drift < 0.001 — ANN-013 Lock-Requirement."
+        ),
+    }
+

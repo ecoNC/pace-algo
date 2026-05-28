@@ -1,9 +1,10 @@
 # ANN-012: V1 Tier-Architektur — Premium Core + Secondary Filters
 
-**Status:** Active — **supersedes Profile-Map in ANN-011** (Profile-Mechanik), ANN-011 V1-TF-Lock bleibt gültig
+**Status:** Active (Filter-Stack-Konzept gültig — **Cutoff-Mechanik durch [ANN-013](ANN-013-cluster-based-premium-detection.md) superseded**)
 **Datum:** 2026-05-27
 **Locked-By:** Nico-Decision nach NB14b R-14 Cutoff-Konvergenz-Beweis
-**Related:** [[ANN-009]] (Router) [[ANN-010]] (Quality-Anchor) [[ANN-011]] (V1-TF + Whitelist) [[ANN-006]] (Robustheits-Mantra)
+**Related:** [[ANN-009]] (Router) [[ANN-010]] (Quality-Anchor) [[ANN-011]] (V1-TF + Whitelist) [[ANN-006]] (Robustheits-Mantra) [[ANN-013]] (Cluster-Based Premium Detection)
+**Superseded BY ANN-013 für:** Premium-Cutoff-Mechanik. Statt fixer Probability-Threshold (`>= 0.4096`) wird nun der höchste stabile Probability-Cluster als Premium-Tier extrahiert (Cluster-Detection bei jedem Training). Filter-Stack (Premium + HTF + NY-Session) bleibt unverändert.
 
 ---
 

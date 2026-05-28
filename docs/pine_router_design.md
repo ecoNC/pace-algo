@@ -3,7 +3,8 @@
 **Lock-Basis:**
 - [ANN-009 Multi-Model Router Architecture](decisions/ANN-009-multi-model-router-architecture.md) — Router-Skelett
 - [ANN-011 V1 Timeframe + Profile Setup](decisions/ANN-011-v1-timeframe-and-profile-setup.md) — V1 Single-TF-Lock (5m), User-Settings-Whitelist
-- [ANN-012 V1 Tier-Architektur](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md) — Profile = Premium Core + Secondary Filters (supersedes Profile-Map aus ANN-011 §0b)
+- [ANN-012 V1 Tier-Architektur](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md) — Filter-Stack-Konzept (Premium + HTF + NY-Session)
+- [ANN-013 Cluster-Based Premium Detection](decisions/ANN-013-cluster-based-premium-detection.md) — **Premium-Cutoff = höchster stabiler Cluster** (NB14d-data-driven, supersedes ANN-012 Cutoff-Mechanik)
 
 Dieses Dokument beschreibt **wie der Router in Pine Script v6 funktioniert** — nicht ob (das ist in ANN-009 gelocked).
 
@@ -35,33 +36,37 @@ Begründung NB14: 15m PF 1.23 / MDD 34%, 30m und 1h MDD > 100% (Kapital-Wipeouts
 
 ---
 
-## 0b. V1 Profile-Mapping (gelockt durch ANN-012 — supersedes vorheriges Probability-Cutoff-Konzept)
+## 0b. V1 Profile-Mapping (Filter-Stack aus ANN-012, Cluster-Cutoff aus ANN-013)
 
-**Hintergrund:** NB14b hat datenbelegt gezeigt, dass die LightGBM-Probability-Verteilung KEINE drei sauber trennbaren Cutoffs zulässt — Aggressive + Balanced kollabieren auf identischen Cutoff (0.4067) in allen getesteten Strategien. Premium-Tier (≥ 0.4096) ist der einzige sauber differenzierbare Tier (PF 2.0 in-sample / 2.39 Hold-Out). Volle Analyse in [ANN-012](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md).
+**Hintergrund (zwei Iterationen):**
+1. **NB14b** widerlegte Probability-Cutoff-Tiers (3-Cutoff-Konzept kollabierte — Aggressive/Balanced fielen auf gleichen Cutoff).
+2. **NB14d** widerlegte den fixen Premium-Cutoff `0.4096` von ANN-012 — das ist ein nicht-reproduzierbarer Phantom-Wert. Diagnostik zeigte: Modell-Probability-Distribution ist **ultra-discrete** (top-3 Cluster = 92.4%), aber **stable + kalibriert**. Volle Analyse in [ANN-013](decisions/ANN-013-cluster-based-premium-detection.md).
 
-**Neue V1-Mechanik: Premium Core + Secondary Filters.** Alle 3 Profile nutzen denselben Premium-Cutoff. Profile differenzieren via Filter-Stack:
+**V1-Mechanik:** Premium-Tier wird via **Cluster-Detection** identifiziert (höchster stabiler Probability-Cluster bei jedem Training). Profile differenzieren via Filter-Stack auf diesem dynamisch extrahierten Cutoff.
 
-| Profile | Filter-Stack | erwartete Sigs/Tag |
+| Profile | Filter-Stack | erwartete Sigs/Tag (NB14e-validiert) |
 |---|---|---:|
-| Aggressive | Premium pur (Probability ≥ 0.4096) | ~3.5 |
-| Balanced | Premium + HTF-Confirmation (1h-Trend stimmt mit Signal überein) | ~3.0 |
-| Conservative | Premium + HTF-Confirmation + NY-Session-Filter (13:00–22:00 UTC) | ~1.5 |
+| Aggressive | Premium-Cluster pur | TBD |
+| Balanced | Premium-Cluster + HTF-Confirmation (1h-Trend stimmt mit Signal überein) | TBD |
+| Conservative | Premium-Cluster + HTF + NY-Session-Filter (13:00–22:00 UTC) | TBD |
 
-In Pine als Input + Filter-Stack:
+In Pine als Input + Filter-Stack (Cluster-Value wird vom Codegen aus dem aktuellen Modell extrahiert):
 
 ```pine
-// === V1 TIER ENGINE (per ANN-012) ===
-PREMIUM_CUTOFF = 0.4096   // gelocked durch NB14/NB14b — ein Cutoff für alle Profile
+// === V1 TIER ENGINE (per ANN-012 Filter-Stack + ANN-013 Cluster-Cutoff) ===
+// PREMIUM_CLUSTER_VALUE wird vom Pine-Codegen aus dem aktuellen Modell extrahiert
+// (siehe core.analysis.probability_diagnostic.extract_premium_cluster).
+// Bei jedem Re-Training wird er neu berechnet — kein hartcoded Phantom-Wert.
+PREMIUM_CLUSTER_VALUE = <extracted_at_codegen_time>   // z.B. 0.4018
 
 probability = fx_model_predict(features)
-in_premium  = probability >= PREMIUM_CUTOFF
+in_premium  = probability >= PREMIUM_CLUSTER_VALUE
 
 // Profile-Definition via Filter-Stack
 profile = input.string("Balanced", "Signal-Profil",
                         options=["Aggressive", "Balanced", "Conservative"])
 
-htf_trend_aligns = (high > high[1] and request.security(syminfo.tickerid, "60", close > ta.ema(close, 50))) or
-                   (low  < low[1]  and request.security(syminfo.tickerid, "60", close < ta.ema(close, 50)))
+htf_trend_aligns = ...
 in_ny_session    = hour(time, "UTC") >= 13 and hour(time, "UTC") < 22
 
 signal_active = in_premium and (
@@ -71,11 +76,18 @@ signal_active = in_premium and (
 )
 ```
 
-**Wichtige Eigenschaften (per ANN-012):**
-1. **Edge bleibt PF ~2.0 über alle Profile** — Filter selektieren, verwässern nicht
-2. **Pine-Budget reduziert** (1 Cutoff statt 3, plus 2 boolesche Filter)
-3. **R-13 (NY-Konzentration 66.6%) wird transparent als Conservative-Feature genutzt**
-4. **V2-ready** — gleiche Filter-Mechanik skaliert für Crypto/Indices/Commodity-Modelle
+**Wichtige Eigenschaften:**
+1. **Cluster-Cutoff statt Phantom-Threshold** — Cluster-Detection liefert reproduzierbaren Wert
+2. **Edge bleibt stabil über alle Profile** — Filter selektieren, verwässern nicht
+3. **V1.5-ready** — bei Continuous Retraining wird Cluster automatisch neu extrahiert
+4. **V2-Asset-Klassen kompatibel** — gleiche Cluster-Detection-Mechanik für Crypto/Indices/Commodity-Modelle
+5. **Pine-Code wird vom Codegen geschrieben** mit aktuellem Cluster-Value — kein Maintenance-Bug durch hartcoded Werte
+
+**Produkt-Sprache (per ANN-013):**
+- ❌ Nicht: "höhere Wahrscheinlichkeit eines Wins"
+- ✅ Sondern: "bestätigtes Premium-Pattern erkannt"
+
+Das entspricht der tatsächlichen Modell-Struktur (diskreter Pattern-Classifier, kein Confidence-Ranker).
 
 ---
 
