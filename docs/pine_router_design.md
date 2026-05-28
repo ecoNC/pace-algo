@@ -11,7 +11,45 @@ Dieses Dokument beschreibt **wie der Router in Pine Script v6 funktioniert** —
 
 ---
 
-## ARCHITEKTUR-INVARIANTE: Core Engine vs User Layer (ANN-016 Lock 4)
+## ARCHITEKTUR-INVARIANTE: 4-Layer-System (ANN-018 Lock — 2026-05-28)
+
+**Lock-Basis:** [ANN-018 Decision-Assisted Architecture](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md).
+
+Pine-Code wird in **4 Layern** strukturiert (nicht-verhandelbar):
+
+```
+Layer 1: CORE SIGNAL ENGINE
+  ├── Asset-Detector (Router)
+  ├── Feature-Computation
+  ├── Model-Inference (per Asset-Klasse)
+  └── Cluster + Tier-Mechanik
+  Output: Probability + Tier-Label
+
+Layer 2: MARKET REGIME DASHBOARD (NEU per ANN-018)
+  ├── Per-TF Trend/Strength/Range (1m / 5m / 15m / 1h / 4h)
+  ├── TF-gewichteter Aggregat-Score
+  └── Overall-Market-State (bullish / bearish / neutral / mixed)
+  Output: Market-Context-Object
+
+Layer 3: INTERACTION LAYER (NEU per ANN-018)
+  ├── Filter-Combination-Registry pro Pair/Asset/Regime
+  ├── Empirisch validierte AND-/OR-/Veto-Logik
+  └── USDCHF-artige Exceptions sauber gehandhabt
+  Output: Final-Trade-Decision + Confidence-Label
+
+Layer 4: BACKTEST + PARAMETER TRANSPARENCY (NEU per ANN-018)
+  ├── "Current Settings" vs "Backtested Settings"
+  ├── Live PF/WR/MDD auf visible bars
+  ├── Multi-TF Ergebnisübersicht
+  └── Walk-Forward / Regime-Split Display (optional)
+  Output: User-sichtbares Transparency-Panel
+```
+
+Jede Schicht ist replicable über Asset-Klassen — V2-Crypto/Indices/Commodity nutzt **dieselbe Pine-Struktur**, nur Layer 1 wechselt Modell-Branch.
+
+---
+
+## CORE ENGINE vs USER LAYER (ANN-016 Lock 4)
 
 Diese Schichtung ist nicht-verhandelbar in jedem Pine-Code-Decision:
 

@@ -42,6 +42,7 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-014](ANN-014-per-model-relative-cluster-behavioral-stability.md) | **Per-Model Relative Cluster + Behavioral Stability** | Active | 2026-05-28 |
 | [ANN-015](ANN-015-v1-training-pool-expansion-robustness-revalidation.md) | V1 Training-Pool Expansion + Robustness Re-Validation *(Phase C.6 abgeschlossen — USDCHF-Strukturbefund triggert ANN-016)* | Active | 2026-05-28 |
 | [ANN-016](ANN-016-fx-as-reference-blueprint-industrialization-first.md) | **FX as Reference Blueprint — Industrialization-First Strategy** (V1-Definition verschärft: ≥ 2 Asset-Klassen über Blueprint nötig) | Active | 2026-05-28 |
+| [ANN-018](ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) | **Decision-Assisted Architecture + Multi-Timeframe Market Dashboard** (4-Layer-System, ersetzt Single-Signal-Modell) | Active | 2026-05-28 |
 
 ## Was hier NICHT hingehört
 
