@@ -1,0 +1,1064 @@
+{
+  "experiment_id": "nb14f_2026-05-28T11-29-30Z_81f2316",
+  "run_date": "2026-05-28",
+  "git_commit": "81f2316",
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "verdict": {
+    "lock_basis": "ANN-014 Per-Model Relative Cluster + Behavioral Stability",
+    "production_seed": 1,
+    "production_cluster_value": 0.4054,
+    "profiles_best_seed": [
+      {
+        "profile": "Aggressive",
+        "is_pf": 1.2369668246445498,
+        "is_sigs_day": 3.4504935129430754,
+        "is_mdd": 22.5,
+        "ho_pf": 0.9910714285714286,
+        "ho_wr": 0.3978494623655914,
+        "ho_n_trades": 281
+      },
+      {
+        "profile": "Balanced",
+        "is_pf": 1.7647058823529411,
+        "is_sigs_day": 0.3307467875100875,
+        "is_mdd": 5.0,
+        "ho_pf": 2.25,
+        "ho_wr": 0.6,
+        "ho_n_trades": 40
+      },
+      {
+        "profile": "Conservative",
+        "is_pf": 2.25,
+        "is_sigs_day": 0.17878204730275002,
+        "is_mdd": 3.0,
+        "ho_pf": 0.0,
+        "ho_wr": 0.0,
+        "ho_n_trades": 3
+      }
+    ],
+    "all_profiles_behavioral_stable": false,
+    "pair_summary": [
+      {
+        "symbol": "GBPUSD",
+        "profile": "Aggressive",
+        "pf": 0.9656,
+        "wr": 0.3916,
+        "n_trades": 565,
+        "avg_sigs_per_day": 3.5329
+      },
+      {
+        "symbol": "GBPUSD",
+        "profile": "Balanced",
+        "pf": 1.4094,
+        "wr": 0.4844,
+        "n_trades": 293,
+        "avg_sigs_per_day": 1.8321
+      },
+      {
+        "symbol": "GBPUSD",
+        "profile": "Conservative",
+        "pf": 1.2708,
+        "wr": 0.4586,
+        "n_trades": 135,
+        "avg_sigs_per_day": 0.8441
+      },
+      {
+        "symbol": "AUDUSD",
+        "profile": "Aggressive",
+        "pf": 0.8571,
+        "wr": 0.3636,
+        "n_trades": 556,
+        "avg_sigs_per_day": 3.3175
+      },
+      {
+        "symbol": "AUDUSD",
+        "profile": "Balanced",
+        "pf": 0.8017,
+        "wr": 0.3483,
+        "n_trades": 361,
+        "avg_sigs_per_day": 2.154
+      },
+      {
+        "symbol": "AUDUSD",
+        "profile": "Conservative",
+        "pf": 0.5708,
+        "wr": 0.2756,
+        "n_trades": 159,
+        "avg_sigs_per_day": 0.9487
+      },
+      {
+        "symbol": "USDCHF",
+        "profile": "Aggressive",
+        "pf": 0.7048,
+        "wr": 0.3197,
+        "n_trades": 479,
+        "avg_sigs_per_day": 2.8242
+      },
+      {
+        "symbol": "USDCHF",
+        "profile": "Balanced",
+        "pf": 0.9966,
+        "wr": 0.3992,
+        "n_trades": 255,
+        "avg_sigs_per_day": 1.5035
+      },
+      {
+        "symbol": "USDCHF",
+        "profile": "Conservative",
+        "pf": 0.8478,
+        "wr": 0.3611,
+        "n_trades": 156,
+        "avg_sigs_per_day": 0.9198
+      }
+    ],
+    "seeds_tested": [
+      42,
+      1,
+      7
+    ]
+  },
+  "per_seed_clusters": {
+    "42": {
+      "premium_cluster_value": 0.4018,
+      "premium_cluster_size": 180,
+      "premium_cluster_pct": 2.0699172033118676,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4018,
+          "count": 180,
+          "pct": 2.0699172033118676
+        },
+        {
+          "value": 0.3993,
+          "count": 1648,
+          "pct": 18.951241950321986
+        },
+        {
+          "value": 0.3972,
+          "count": 485,
+          "pct": 5.577276908923643
+        },
+        {
+          "value": 0.3965,
+          "count": 5519,
+          "pct": 63.46596136154554
+        },
+        {
+          "value": 0.395,
+          "count": 864,
+          "pct": 9.935602575896963
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 5,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    },
+    "1": {
+      "premium_cluster_value": 0.4054,
+      "premium_cluster_size": 171,
+      "premium_cluster_pct": 1.966421343146274,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4054,
+          "count": 171,
+          "pct": 1.966421343146274
+        },
+        {
+          "value": 0.3993,
+          "count": 2300,
+          "pct": 26.448942042318308
+        },
+        {
+          "value": 0.3972,
+          "count": 3699,
+          "pct": 42.53679852805888
+        },
+        {
+          "value": 0.3964,
+          "count": 2107,
+          "pct": 24.229530818767252
+        },
+        {
+          "value": 0.3931,
+          "count": 334,
+          "pct": 3.840846366145354
+        },
+        {
+          "value": 0.3853,
+          "count": 85,
+          "pct": 0.9774609015639375
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 6,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    },
+    "7": {
+      "premium_cluster_value": 0.4025,
+      "premium_cluster_size": 57,
+      "premium_cluster_pct": 0.6554737810487581,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4025,
+          "count": 57,
+          "pct": 0.6554737810487581
+        },
+        {
+          "value": 0.4009,
+          "count": 648,
+          "pct": 7.451701931922723
+        },
+        {
+          "value": 0.3979,
+          "count": 1221,
+          "pct": 14.040938362465502
+        },
+        {
+          "value": 0.3977,
+          "count": 4845,
+          "pct": 55.71527138914444
+        },
+        {
+          "value": 0.3973,
+          "count": 576,
+          "pct": 6.6237350505979755
+        },
+        {
+          "value": 0.3952,
+          "count": 896,
+          "pct": 10.303587856485741
+        },
+        {
+          "value": 0.3933,
+          "count": 453,
+          "pct": 5.209291628334867
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 7,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    }
+  },
+  "in_sample_per_seed": [
+    {
+      "n_trades": 939,
+      "wins": 363,
+      "losses": 540,
+      "pf": 1.0083333333333333,
+      "wr": 0.4019933554817276,
+      "sigs_per_day_per_symbol": 8.393817120864114,
+      "mdd": 53.0,
+      "avg_duration": 6.264110756123536,
+      "seed": 42,
+      "profile": "Aggressive",
+      "cluster_value": 0.4018
+    },
+    {
+      "n_trades": 648,
+      "wins": 266,
+      "losses": 361,
+      "pf": 1.105263157894737,
+      "wr": 0.42424242424242425,
+      "sigs_per_day_per_symbol": 5.792538332609101,
+      "mdd": 55.0,
+      "avg_duration": 6.007716049382716,
+      "seed": 42,
+      "profile": "Balanced",
+      "cluster_value": 0.4018
+    },
+    {
+      "n_trades": 236,
+      "wins": 109,
+      "losses": 119,
+      "pf": 1.3739495798319328,
+      "wr": 0.4780701754385965,
+      "sigs_per_day_per_symbol": 2.10962815817245,
+      "mdd": 36.5,
+      "avg_duration": 6.190677966101695,
+      "seed": 42,
+      "profile": "Conservative",
+      "cluster_value": 0.4018
+    },
+    {
+      "n_trades": 386,
+      "wins": 174,
+      "losses": 211,
+      "pf": 1.2369668246445498,
+      "wr": 0.45194805194805193,
+      "sigs_per_day_per_symbol": 3.4504935129430754,
+      "mdd": 22.5,
+      "avg_duration": 4.55440414507772,
+      "seed": 1,
+      "profile": "Aggressive",
+      "cluster_value": 0.4054
+    },
+    {
+      "n_trades": 37,
+      "wins": 20,
+      "losses": 17,
+      "pf": 1.7647058823529411,
+      "wr": 0.5405405405405406,
+      "sigs_per_day_per_symbol": 0.3307467875100875,
+      "mdd": 5.0,
+      "avg_duration": 3.675675675675676,
+      "seed": 1,
+      "profile": "Balanced",
+      "cluster_value": 0.4054
+    },
+    {
+      "n_trades": 20,
+      "wins": 12,
+      "losses": 8,
+      "pf": 2.25,
+      "wr": 0.6,
+      "sigs_per_day_per_symbol": 0.17878204730275002,
+      "mdd": 3.0,
+      "avg_duration": 3.7,
+      "seed": 1,
+      "profile": "Conservative",
+      "cluster_value": 0.4054
+    },
+    {
+      "n_trades": 401,
+      "wins": 167,
+      "losses": 218,
+      "pf": 1.1490825688073394,
+      "wr": 0.43376623376623374,
+      "sigs_per_day_per_symbol": 3.5845800484201376,
+      "mdd": 24.0,
+      "avg_duration": 5.987531172069826,
+      "seed": 7,
+      "profile": "Aggressive",
+      "cluster_value": 0.4025
+    },
+    {
+      "n_trades": 288,
+      "wins": 128,
+      "losses": 155,
+      "pf": 1.238709677419355,
+      "wr": 0.45229681978798586,
+      "sigs_per_day_per_symbol": 2.5744614811596,
+      "mdd": 17.0,
+      "avg_duration": 5.461805555555555,
+      "seed": 7,
+      "profile": "Balanced",
+      "cluster_value": 0.4025
+    },
+    {
+      "n_trades": 106,
+      "wins": 59,
+      "losses": 43,
+      "pf": 2.058139534883721,
+      "wr": 0.5784313725490197,
+      "sigs_per_day_per_symbol": 0.9475448507045751,
+      "mdd": 16.0,
+      "avg_duration": 7.037735849056604,
+      "seed": 7,
+      "profile": "Conservative",
+      "cluster_value": 0.4025
+    }
+  ],
+  "holdout_per_seed": [
+    {
+      "n_trades": 304,
+      "wins": 114,
+      "losses": 179,
+      "pf": 0.9553072625698324,
+      "wr": 0.3890784982935154,
+      "sigs_per_day_per_symbol": 5.702598840617469,
+      "mdd": 32.0,
+      "avg_duration": 6.578947368421052,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 213,
+      "wins": 98,
+      "losses": 111,
+      "pf": 1.3243243243243243,
+      "wr": 0.4688995215311005,
+      "sigs_per_day_per_symbol": 3.9955708981957923,
+      "mdd": 21.5,
+      "avg_duration": 6.056338028169014,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 112,
+      "wins": 51,
+      "losses": 59,
+      "pf": 1.2966101694915255,
+      "wr": 0.4636363636363636,
+      "sigs_per_day_per_symbol": 2.1009574675959097,
+      "mdd": 21.5,
+      "avg_duration": 6.901785714285714,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 285,
+      "wins": 107,
+      "losses": 174,
+      "pf": 0.9224137931034483,
+      "wr": 0.3807829181494662,
+      "sigs_per_day_per_symbol": 5.10162222636584,
+      "mdd": 25.0,
+      "avg_duration": 5.814035087719298,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 216,
+      "wins": 81,
+      "losses": 132,
+      "pf": 0.9204545454545454,
+      "wr": 0.38028169014084506,
+      "sigs_per_day_per_symbol": 3.866492634719373,
+      "mdd": 25.5,
+      "avg_duration": 5.726851851851852,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 104,
+      "wins": 38,
+      "losses": 65,
+      "pf": 0.8769230769230769,
+      "wr": 0.36893203883495146,
+      "sigs_per_day_per_symbol": 1.8616446019019204,
+      "mdd": 21.0,
+      "avg_duration": 6.1826923076923075,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 283,
+      "wins": 94,
+      "losses": 176,
+      "pf": 0.8011363636363636,
+      "wr": 0.34814814814814815,
+      "sigs_per_day_per_symbol": 5.005773246529911,
+      "mdd": 62.0,
+      "avg_duration": 5.628975265017668,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 178,
+      "wins": 74,
+      "losses": 95,
+      "pf": 1.168421052631579,
+      "wr": 0.4378698224852071,
+      "sigs_per_day_per_symbol": 3.148507554354502,
+      "mdd": 22.5,
+      "avg_duration": 6.224719101123595,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 104,
+      "wins": 39,
+      "losses": 56,
+      "pf": 1.0446428571428572,
+      "wr": 0.4105263157894737,
+      "sigs_per_day_per_symbol": 1.8395774474880235,
+      "mdd": 17.5,
+      "avg_duration": 7.471153846153846,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 160,
+      "wins": 76,
+      "losses": 82,
+      "pf": 1.3902439024390243,
+      "wr": 0.4810126582278481,
+      "sigs_per_day_per_symbol": 3.0013678108512996,
+      "mdd": 15.5,
+      "avg_duration": 4.6,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 30,
+      "wins": 21,
+      "losses": 9,
+      "pf": 3.5,
+      "wr": 0.7,
+      "sigs_per_day_per_symbol": 0.5627564645346186,
+      "mdd": 4.0,
+      "avg_duration": 5.733333333333333,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 2,
+      "wins": 0,
+      "losses": 2,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.03751709763564124,
+      "mdd": 1.0,
+      "avg_duration": 2.5,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 39,
+      "wins": 13,
+      "losses": 26,
+      "pf": 0.75,
+      "wr": 0.3333333333333333,
+      "sigs_per_day_per_symbol": 0.6981167257132201,
+      "mdd": 14.5,
+      "avg_duration": 3.8974358974358974,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 5,
+      "wins": 2,
+      "losses": 3,
+      "pf": 1.0,
+      "wr": 0.4,
+      "sigs_per_day_per_symbol": 0.08950214432220771,
+      "mdd": 2.0,
+      "avg_duration": 3.4,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 1,
+      "wins": 0,
+      "losses": 1,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.017900428864441542,
+      "mdd": 0.0,
+      "avg_duration": 3.0,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 82,
+      "wins": 22,
+      "losses": 60,
+      "pf": 0.55,
+      "wr": 0.2682926829268293,
+      "sigs_per_day_per_symbol": 1.4504360643655572,
+      "mdd": 34.0,
+      "avg_duration": 3.073170731707317,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 5,
+      "wins": 1,
+      "losses": 4,
+      "pf": 0.375,
+      "wr": 0.2,
+      "sigs_per_day_per_symbol": 0.08844122343692422,
+      "mdd": 3.0,
+      "avg_duration": 4.2,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 101,
+      "wins": 25,
+      "losses": 73,
+      "pf": 0.5136986301369864,
+      "wr": 0.25510204081632654,
+      "sigs_per_day_per_symbol": 1.8946134305998827,
+      "mdd": 39.5,
+      "avg_duration": 7.594059405940594,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 50,
+      "wins": 21,
+      "losses": 29,
+      "pf": 1.0862068965517242,
+      "wr": 0.42,
+      "sigs_per_day_per_symbol": 0.9379274408910311,
+      "mdd": 8.0,
+      "avg_duration": 5.8,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 21,
+      "wins": 10,
+      "losses": 11,
+      "pf": 1.3636363636363635,
+      "wr": 0.47619047619047616,
+      "sigs_per_day_per_symbol": 0.393929525174233,
+      "mdd": 5.0,
+      "avg_duration": 7.523809523809524,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 232,
+      "wins": 80,
+      "losses": 150,
+      "pf": 0.8,
+      "wr": 0.34782608695652173,
+      "sigs_per_day_per_symbol": 4.152899496550438,
+      "mdd": 38.0,
+      "avg_duration": 5.685344827586207,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 140,
+      "wins": 41,
+      "losses": 97,
+      "pf": 0.634020618556701,
+      "wr": 0.2971014492753623,
+      "sigs_per_day_per_symbol": 2.506060041021816,
+      "mdd": 41.5,
+      "avg_duration": 5.857142857142857,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 54,
+      "wins": 5,
+      "losses": 47,
+      "pf": 0.1595744680851064,
+      "wr": 0.09615384615384616,
+      "sigs_per_day_per_symbol": 0.9666231586798433,
+      "mdd": 41.5,
+      "avg_duration": 7.462962962962963,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 114,
+      "wins": 32,
+      "losses": 79,
+      "pf": 0.6075949367088608,
+      "wr": 0.2882882882882883,
+      "sigs_per_day_per_symbol": 2.016459894361872,
+      "mdd": 35.5,
+      "avg_duration": 6.307017543859649,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 72,
+      "wins": 22,
+      "losses": 47,
+      "pf": 0.7021276595744681,
+      "wr": 0.3188405797101449,
+      "sigs_per_day_per_symbol": 1.2735536174917086,
+      "mdd": 24.5,
+      "avg_duration": 7.027777777777778,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 52,
+      "wins": 13,
+      "losses": 36,
+      "pf": 0.5416666666666666,
+      "wr": 0.2653061224489796,
+      "sigs_per_day_per_symbol": 0.9197887237440118,
+      "mdd": 25.0,
+      "avg_duration": 8.057692307692308,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    }
+  ],
+  "pair_summary": [
+    {
+      "symbol": "GBPUSD",
+      "profile": "Aggressive",
+      "pf": 0.9656,
+      "wr": 0.3916,
+      "n_trades": 565,
+      "avg_sigs_per_day": 3.5329
+    },
+    {
+      "symbol": "GBPUSD",
+      "profile": "Balanced",
+      "pf": 1.4094,
+      "wr": 0.4844,
+      "n_trades": 293,
+      "avg_sigs_per_day": 1.8321
+    },
+    {
+      "symbol": "GBPUSD",
+      "profile": "Conservative",
+      "pf": 1.2708,
+      "wr": 0.4586,
+      "n_trades": 135,
+      "avg_sigs_per_day": 0.8441
+    },
+    {
+      "symbol": "AUDUSD",
+      "profile": "Aggressive",
+      "pf": 0.8571,
+      "wr": 0.3636,
+      "n_trades": 556,
+      "avg_sigs_per_day": 3.3175
+    },
+    {
+      "symbol": "AUDUSD",
+      "profile": "Balanced",
+      "pf": 0.8017,
+      "wr": 0.3483,
+      "n_trades": 361,
+      "avg_sigs_per_day": 2.154
+    },
+    {
+      "symbol": "AUDUSD",
+      "profile": "Conservative",
+      "pf": 0.5708,
+      "wr": 0.2756,
+      "n_trades": 159,
+      "avg_sigs_per_day": 0.9487
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Aggressive",
+      "pf": 0.7048,
+      "wr": 0.3197,
+      "n_trades": 479,
+      "avg_sigs_per_day": 2.8242
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Balanced",
+      "pf": 0.9966,
+      "wr": 0.3992,
+      "n_trades": 255,
+      "avg_sigs_per_day": 1.5035
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Conservative",
+      "pf": 0.8478,
+      "wr": 0.3611,
+      "n_trades": 156,
+      "avg_sigs_per_day": 0.9198
+    }
+  ],
+  "best_seed_profiles": [
+    {
+      "profile": "Aggressive",
+      "is_pf": 1.2369668246445498,
+      "is_sigs_day": 3.4504935129430754,
+      "is_mdd": 22.5,
+      "ho_pf": 0.9910714285714286,
+      "ho_wr": 0.3978494623655914,
+      "ho_n_trades": 281
+    },
+    {
+      "profile": "Balanced",
+      "is_pf": 1.7647058823529411,
+      "is_sigs_day": 0.3307467875100875,
+      "is_mdd": 5.0,
+      "ho_pf": 2.25,
+      "ho_wr": 0.6,
+      "ho_n_trades": 40
+    },
+    {
+      "profile": "Conservative",
+      "is_pf": 2.25,
+      "is_sigs_day": 0.17878204730275002,
+      "is_mdd": 3.0,
+      "ho_pf": 0.0,
+      "ho_wr": 0.0,
+      "ho_n_trades": 3
+    }
+  ],
+  "behavioral_per_profile": {
+    "Aggressive": {
+      "per_seed_behaviors": [
+        {
+          "seed": 42,
+          "sigs_per_day": 8.393817120864114,
+          "is_pf": 1.0083333333333333,
+          "holdout_pf": 0.8931947069943289,
+          "cluster_pct": 2.0699172033118676,
+          "mdd": 53.0
+        },
+        {
+          "seed": 1,
+          "sigs_per_day": 3.4504935129430754,
+          "is_pf": 1.2369668246445498,
+          "holdout_pf": 0.9910714285714286,
+          "cluster_pct": 1.966421343146274,
+          "mdd": 22.5
+        },
+        {
+          "seed": 7,
+          "sigs_per_day": 3.5845800484201376,
+          "is_pf": 1.1490825688073394,
+          "holdout_pf": 0.6804635761589404,
+          "cluster_pct": 0.6554737810487581,
+          "mdd": 24.0
+        }
+      ],
+      "stability": {
+        "per_metric_status": {
+          "signal_frequency_cv": {
+            "value": 0.44708702792773475,
+            "threshold": 0.3,
+            "passed": false,
+            "n_seeds": 3
+          },
+          "in_sample_pf_cv": {
+            "value": 0.08322626402472323,
+            "threshold": 0.4,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "holdout_pf_mean": {
+            "value": 0.8549099039082325,
+            "threshold": 1.3,
+            "passed": false,
+            "n_seeds": 3
+          },
+          "cluster_frequency_std": {
+            "value": 0.6437688593504326,
+            "threshold": 1.5,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "mdd_relative_std": {
+            "value": 0.4232456620953883,
+            "threshold": 0.5,
+            "passed": true,
+            "n_seeds": 3
+          }
+        },
+        "all_passed": false,
+        "critical_failures": [
+          "signal_frequency_cv",
+          "holdout_pf_mean"
+        ],
+        "n_seeds_input": 3,
+        "thresholds_used": {
+          "max_sigs_cv": 0.3,
+          "max_is_pf_cv": 0.4,
+          "min_holdout_pf_mean": 1.3,
+          "max_cluster_pct_std": 1.5,
+          "max_mdd_std_pct_of_mean": 0.5
+        },
+        "interpretation": "Behavioral Stability per ANN-014. all_passed=True wenn alle 5 Metriken die Thresholds erf\u00fcllen. NICHT eine absolute probability comparison \u2014 wir pr\u00fcfen ob das MODELL-VERHALTEN \u00fcber mehrere Seeds stabil bleibt."
+      }
+    },
+    "Balanced": {
+      "per_seed_behaviors": [
+        {
+          "seed": 42,
+          "sigs_per_day": 5.792538332609101,
+          "is_pf": 1.105263157894737,
+          "holdout_pf": 1.1227810650887573,
+          "cluster_pct": 2.0699172033118676,
+          "mdd": 55.0
+        },
+        {
+          "seed": 1,
+          "sigs_per_day": 0.3307467875100875,
+          "is_pf": 1.7647058823529411,
+          "holdout_pf": 2.25,
+          "cluster_pct": 1.966421343146274,
+          "mdd": 5.0
+        },
+        {
+          "seed": 7,
+          "sigs_per_day": 2.5744614811596,
+          "is_pf": 1.238709677419355,
+          "holdout_pf": 0.7283236994219653,
+          "cluster_pct": 0.6554737810487581,
+          "mdd": 17.0
+        }
+      ],
+      "stability": {
+        "per_metric_status": {
+          "signal_frequency_cv": {
+            "value": 0.7731530053368701,
+            "threshold": 0.3,
+            "passed": false,
+            "n_seeds": 3
+          },
+          "in_sample_pf_cv": {
+            "value": 0.20785679649918892,
+            "threshold": 0.4,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "holdout_pf_mean": {
+            "value": 1.3670349215035742,
+            "threshold": 1.3,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "cluster_frequency_std": {
+            "value": 0.6437688593504326,
+            "threshold": 1.5,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "mdd_relative_std": {
+            "value": 0.830356746137443,
+            "threshold": 0.5,
+            "passed": false,
+            "n_seeds": 3
+          }
+        },
+        "all_passed": false,
+        "critical_failures": [
+          "signal_frequency_cv",
+          "mdd_relative_std"
+        ],
+        "n_seeds_input": 3,
+        "thresholds_used": {
+          "max_sigs_cv": 0.3,
+          "max_is_pf_cv": 0.4,
+          "min_holdout_pf_mean": 1.3,
+          "max_cluster_pct_std": 1.5,
+          "max_mdd_std_pct_of_mean": 0.5
+        },
+        "interpretation": "Behavioral Stability per ANN-014. all_passed=True wenn alle 5 Metriken die Thresholds erf\u00fcllen. NICHT eine absolute probability comparison \u2014 wir pr\u00fcfen ob das MODELL-VERHALTEN \u00fcber mehrere Seeds stabil bleibt."
+      }
+    },
+    "Conservative": {
+      "per_seed_behaviors": [
+        {
+          "seed": 42,
+          "sigs_per_day": 2.10962815817245,
+          "is_pf": 1.3739495798319328,
+          "holdout_pf": 1.0666666666666667,
+          "cluster_pct": 2.0699172033118676,
+          "mdd": 36.5
+        },
+        {
+          "seed": 1,
+          "sigs_per_day": 0.17878204730275002,
+          "is_pf": 2.25,
+          "holdout_pf": 0.0,
+          "cluster_pct": 1.966421343146274,
+          "mdd": 3.0
+        },
+        {
+          "seed": 7,
+          "sigs_per_day": 0.9475448507045751,
+          "is_pf": 2.058139534883721,
+          "holdout_pf": 0.44680851063829785,
+          "cluster_pct": 0.6554737810487581,
+          "mdd": 16.0
+        }
+      ],
+      "stability": {
+        "per_metric_status": {
+          "signal_frequency_cv": {
+            "value": 0.7358236637186913,
+            "threshold": 0.3,
+            "passed": false,
+            "n_seeds": 3
+          },
+          "in_sample_pf_cv": {
+            "value": 0.19851905423856872,
+            "threshold": 0.4,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "holdout_pf_mean": {
+            "value": 0.5044917257683216,
+            "threshold": 1.3,
+            "passed": false,
+            "n_seeds": 3
+          },
+          "cluster_frequency_std": {
+            "value": 0.6437688593504326,
+            "threshold": 1.5,
+            "passed": true,
+            "n_seeds": 3
+          },
+          "mdd_relative_std": {
+            "value": 0.7454104357995532,
+            "threshold": 0.5,
+            "passed": false,
+            "n_seeds": 3
+          }
+        },
+        "all_passed": false,
+        "critical_failures": [
+          "signal_frequency_cv",
+          "holdout_pf_mean",
+          "mdd_relative_std"
+        ],
+        "n_seeds_input": 3,
+        "thresholds_used": {
+          "max_sigs_cv": 0.3,
+          "max_is_pf_cv": 0.4,
+          "min_holdout_pf_mean": 1.3,
+          "max_cluster_pct_std": 1.5,
+          "max_mdd_std_pct_of_mean": 0.5
+        },
+        "interpretation": "Behavioral Stability per ANN-014. all_passed=True wenn alle 5 Metriken die Thresholds erf\u00fcllen. NICHT eine absolute probability comparison \u2014 wir pr\u00fcfen ob das MODELL-VERHALTEN \u00fcber mehrere Seeds stabil bleibt."
+      }
+    }
+  }
+}

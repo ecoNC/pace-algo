@@ -1,0 +1,10 @@
+symbol,profile,pf,wr,n_trades,avg_sigs_per_day
+GBPUSD,Aggressive,0.9656,0.3916,565,3.5329
+GBPUSD,Balanced,1.4094,0.4844,293,1.8321
+GBPUSD,Conservative,1.2708,0.4586,135,0.8441
+AUDUSD,Aggressive,0.8571,0.3636,556,3.3175
+AUDUSD,Balanced,0.8017,0.3483,361,2.154
+AUDUSD,Conservative,0.5708,0.2756,159,0.9487
+USDCHF,Aggressive,0.7048,0.3197,479,2.8242
+USDCHF,Balanced,0.9966,0.3992,255,1.5035
+USDCHF,Conservative,0.8478,0.3611,156,0.9198

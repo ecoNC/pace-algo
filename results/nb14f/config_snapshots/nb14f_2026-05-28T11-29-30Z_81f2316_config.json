@@ -1,0 +1,42 @@
+{
+  "experiment_id": "nb14f_2026-05-28T11-29-30Z_81f2316",
+  "run_date": "2026-05-28",
+  "git_commit": "81f2316",
+  "base_params": {
+    "objective": "binary",
+    "metric": "binary_logloss",
+    "num_leaves": 7,
+    "max_depth": 3,
+    "min_data_in_leaf": 200,
+    "learning_rate": 0.05,
+    "num_iterations": 100,
+    "lambda_l2": 1.0,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 5,
+    "is_unbalance": true,
+    "verbose": -1,
+    "n_jobs": -1
+  },
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "min_cluster_size_pct": 0.5,
+  "profiles": {
+    "Aggressive": {
+      "require_htf": false,
+      "require_ny": false
+    },
+    "Balanced": {
+      "require_htf": true,
+      "require_ny": false
+    },
+    "Conservative": {
+      "require_htf": true,
+      "require_ny": true
+    }
+  },
+  "lock_basis": "ANN-014"
+}
