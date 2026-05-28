@@ -1730,11 +1730,27 @@ Means session is ending on the current machine.
 
 ---
 
-## 19a. OPEN DECISION nach NB14b — Nicos Wahl steht aus
+## 19a. DECISION nach NB14b — ✅ RESOLVED 2026-05-27 → Option A locked
 
-**Kontext:** NB14b hat bewiesen dass die LightGBM-Probability-Distribution keine 3 sauber getrennten Tier-Cutoffs zulässt. Aggressive und Balanced kollabieren in allen 3 Strategien auf identischen Cutoff `0.4067`. Premium-Tier (`≥ 0.4096`) ist der einzige sauber differenzierbare Tier (PF 2.0 in-sample, PF 2.39 Hold-Out).
+**Entscheidung:** Nico hat **Option A** gelockt am 2026-05-27 (Arbeits-PC). Volle Begründung + Mechanik in [ANN-012](docs/decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md).
 
-**3 Optionen, eine zu locken durch Nico:**
+**V1-Tier-Architektur:** Premium Core + Secondary Filters
+- Aggressive = Premium pur (~3.5 Sigs/Tag)
+- Balanced = Premium + HTF-Confirmation (~3.0 Sigs/Tag)
+- Conservative = Premium + HTF-Confirmation + NY-Session (~1.5 Sigs/Tag)
+
+**Strategische Reframing-Aussage (per Nico):**
+> Das Modell verhält sich wie ein **harter Pattern-Detector**, nicht wie ein kontinuierlicher Confidence-Ranker. Das ist KEIN Fehler — das passt zu einem hochwertigen Signalprodukt. Wir verkaufen keine "mehr Signale", wir verkaufen **bessere Marktselektion + Kontextfilterung + höhere Konsistenz**.
+
+**Next concrete:** NB14c bauen (Secondary-Filter Validation, ~10-15 min Run) — locked die finalen Sigs/Tag-Zahlen pro Profil mit echten Hold-Out-Daten. Danach Pine-Router-V1-Validation (Phase D / NB15).
+
+---
+
+### Archived: Ursprüngliche 3-Optionen-Liste (für Audit-Trail)
+
+NB14b hat bewiesen dass die LightGBM-Probability-Distribution keine 3 sauber getrennten Tier-Cutoffs zulässt. Aggressive und Balanced kollabieren in allen 3 Strategien auf identischen Cutoff `0.4067`. Premium-Tier (`≥ 0.4096`) ist der einzige sauber differenzierbare Tier (PF 2.0 in-sample, PF 2.39 Hold-Out).
+
+**Optionen die Nico zur Auswahl hatte:**
 
 ### Option A — Tier via Sekundär-Filter (Claude-Empfehlung)
 
@@ -1819,5 +1835,6 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-27 | heim-pc | home | **NB14-Analyse + ANN-011 + Doku-Sync.** Nico-Direktive: V1 = 5m-only, Multi-Model-Router bleibt Zielarchitektur, Profile = Tier-Cutoffs (NICHT TFs), User-Settings-Whitelist gelockt. Geschrieben: `docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md` (V1 TF-Lock + Profile-Map + User-Settings-Whitelist + V1-Priority-Order). Aktualisiert: `research/timeframe_comparisons.md` (Sections 3/4/5 mit NB14-Daten), `docs/roadmap.md` (Phase C ABGESCHLOSSEN, Phase D als Architecture-Validation ACTIVE), `docs/model_registry.md` (FX-Modell-Slot mit tf:5m gelockt + Performance-Snapshot), `docs/pine_router_design.md` (V1-Restriction-Block + Profile-Mapping + User-Settings-Whitelist), `docs/decisions/README.md` (ANN-011 in Index), `research/feature_experiments.md` (R-12/R-13/R-14/R-15 als Research-Items detailliert). HANDOFF Section 16 + 16a (R-11 bis R-14 ergänzt) + 19 updated. | `68f8b3d` | **NEXT: R-14 Cutoff-Konvergenz fixen** (NB14b minimaler Run nur für VAL-Cutoff-Recalibration, ~10 min) ODER **NB15 starten** (Pine-Router-V1-Validation). Nico entscheidet Reihenfolge. |
 | 2026-05-27 | heim-pc | home | **NB14b gebaut + R-14 Calibration-Discovery-Layer.** Constraint-basierter Solver mit 3 Strategien (linear-quantile / logit-space-quantile / density-target). 4 Constraints: PF-Schwellen pro Tier (Agg≥1.3/Bal≥1.5/Cons≥1.8), Sigs/Tag-Range (15-30/5-10/1-4), Cutoff-Separation ≥0.005, Cross-Asset-Stabilität ±20%. Winner-Auswahl ist NICHT 'max PF' sondern 'alle 4 Constraints konsistent erfüllt'. 27 Cells, 12 Sections. AST + JSON validiert. | `bea36ce` | Nico Colab-Run. |
 | 2026-05-27 | colab → heim-pc | home | **NB14b Run abgeschlossen + Analyse.** Auto-Push erfolgreich. Run-ID `nb14b_2026-05-27T16-48-52Z_81f2316`. **ALLE 3 Strategien FAILED.** Winner `density` (6/11 constraints), aber Aggressive- und Balanced-Cutoffs sind in ALLEN 3 Strategien IDENTISCH bei 0.4067. Root-Cause: LightGBM-Probability-Distribution ist nicht graduell sondern hat 3 diskrete Bänder (<0.4067 / Cluster bei 0.4067 / >0.4096). 30 Trees × Depth 3 mit is_unbalance=True saturiert die Outputs. **Per-Symbol Calibration auch FAILED:** EURUSD + AUDUSD haben Agg=Bal=Cons ALLE auf 0.4067 — vollständiger Kollaps. Strategien-Vergleich:<br><br>linear: agg=0.4067 / bal=0.4067 / con=0.4096<br>logit: agg=0.4067 / bal=0.4067 / con=0.4096 (logit half nicht)<br>density: agg=0.4067 / bal=0.4067 / con=0.4203 (nur Con-shift)<br><br>**Strategischer Schluss:** Wir haben EINEN echten Tier (Premium ~0.4096, PF 2.0), nicht drei. 3-Profile-Konzept via Probability-Cutoffs ist fundamental kaputt mit aktueller Modell-Architektur. | `5a3576b` (NB14b results auto-push) | 3 Optionen liegen vor Nico zur Entscheidung — siehe Section 19a unten. |
-| 2026-05-27 | heim-pc → arbeits-pc | home → work | **WORKSTATION-SWITCH zum Arbeits-PC.** Nico signalisiert Wechsel. NB14b Run + Analyse abgeschlossen, 3 Optionen für R-14-Resolution liegen vor (Option A / B / C — siehe Section 19a). HANDOFF + Section 16/16a noch nicht aktualisiert mit der NB14b-Erkenntnis — Sibling-Claude (Arbeits-PC) macht das nach Nicos Entscheidung. | (dieser HANDOFF-Commit) | **Sibling-Claude auf Arbeits-PC:** Lies Section 19a unten und präsentiere Nico die 3 Optionen. Nicos Entscheidung lockt die V1-Tier-Architektur. ANN-011 muss dann updated/superseded werden je nach gewählter Option. |
+| 2026-05-27 | heim-pc → arbeits-pc | home → work | **WORKSTATION-SWITCH zum Arbeits-PC.** Nico signalisiert Wechsel. NB14b Run + Analyse abgeschlossen, 3 Optionen für R-14-Resolution liegen vor (Option A / B / C — siehe Section 19a). HANDOFF + Section 16/16a noch nicht aktualisiert mit der NB14b-Erkenntnis — Sibling-Claude (Arbeits-PC) macht das nach Nicos Entscheidung. | `298e4d2` | **Sibling-Claude auf Arbeits-PC:** Lies Section 19a unten und präsentiere Nico die 3 Optionen. Nicos Entscheidung lockt die V1-Tier-Architektur. ANN-011 muss dann updated/superseded werden je nach gewählter Option. |
+| 2026-05-27 | arbeits-pc | work | **OPTION A LOCKED — V1 Tier-Architektur: Premium Core + Secondary Filters.** Nico-Decision nach NB14b: Probability-basierte Multi-Tier-Cutoffs sind fundamental kaputt mit aktueller LightGBM-Architektur (3 diskrete Bänder statt Gradient). Profile differenzieren via Filter-Stack auf Premium-Tier: Aggressive=Premium pur (~3.5/Tag), Balanced=Premium+HTF-Confirm (~3.0/Tag), Conservative=Premium+HTF+NY-Session (~1.5/Tag). Edge bleibt PF ~2.0 über alle Profile. Strategisches Reframing: Modell ist "hard pattern detector", nicht confidence-ranker — kein Fehler, passt zu Premium-Produkt. Geschrieben: `ANN-012` (V1-Tier-Architektur, supersedes ANN-011 Profile-Map, V1-TF-Lock + Whitelist aus ANN-011 bleibt gültig). Doku-Sync: `ANN-011` cross-reference, `pine_router_design.md` §0b mit Filter-Mechanik, `roadmap.md` Phase C.5 NB14c als ACTIVE, `decisions/README.md` Index. HANDOFF Section 19a archiviert (Decision-Marker), Section 19 Log. | (next commit) | **NB14c bauen** — Secondary-Filter Validation, ~10-15 min Colab-Run, lockt finale Sigs/Tag-Zahlen mit echten Hold-Out-Daten. Danach Phase D (NB15 Pine-Router-V1-Validation). |
 

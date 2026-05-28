@@ -2,7 +2,8 @@
 
 **Lock-Basis:**
 - [ANN-009 Multi-Model Router Architecture](decisions/ANN-009-multi-model-router-architecture.md) — Router-Skelett
-- [ANN-011 V1 Timeframe + Profile Setup](decisions/ANN-011-v1-timeframe-and-profile-setup.md) — V1 Single-TF-Lock (5m), Profile = Tier-Cutoffs
+- [ANN-011 V1 Timeframe + Profile Setup](decisions/ANN-011-v1-timeframe-and-profile-setup.md) — V1 Single-TF-Lock (5m), User-Settings-Whitelist
+- [ANN-012 V1 Tier-Architektur](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md) — Profile = Premium Core + Secondary Filters (supersedes Profile-Map aus ANN-011 §0b)
 
 Dieses Dokument beschreibt **wie der Router in Pine Script v6 funktioniert** — nicht ob (das ist in ANN-009 gelocked).
 
@@ -34,28 +35,47 @@ Begründung NB14: 15m PF 1.23 / MDD 34%, 30m und 1h MDD > 100% (Kapital-Wipeouts
 
 ---
 
-## 0b. V1 Profile-Mapping (gelockt durch ANN-011)
+## 0b. V1 Profile-Mapping (gelockt durch ANN-012 — supersedes vorheriges Probability-Cutoff-Konzept)
 
-**Profile = Tier-Cutoffs auf 5m**, NICHT verschiedene TFs:
+**Hintergrund:** NB14b hat datenbelegt gezeigt, dass die LightGBM-Probability-Verteilung KEINE drei sauber trennbaren Cutoffs zulässt — Aggressive + Balanced kollabieren auf identischen Cutoff (0.4067) in allen getesteten Strategien. Premium-Tier (≥ 0.4096) ist der einzige sauber differenzierbare Tier (PF 2.0 in-sample / 2.39 Hold-Out). Volle Analyse in [ANN-012](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md).
 
-| Profile | Tier-Cutoff (VAL-derived) | erwartete Sigs/Tag/Symbol |
+**Neue V1-Mechanik: Premium Core + Secondary Filters.** Alle 3 Profile nutzen denselben Premium-Cutoff. Profile differenzieren via Filter-Stack:
+
+| Profile | Filter-Stack | erwartete Sigs/Tag |
 |---|---|---:|
-| Aggressive | Standard (Top 10%) | ~35 |
-| Balanced | High (Top 3%) | ~10 |
-| Conservative | Premium (Top 1%) | ~3.5 |
+| Aggressive | Premium pur (Probability ≥ 0.4096) | ~3.5 |
+| Balanced | Premium + HTF-Confirmation (1h-Trend stimmt mit Signal überein) | ~3.0 |
+| Conservative | Premium + HTF-Confirmation + NY-Session-Filter (13:00–22:00 UTC) | ~1.5 |
 
-In Pine als Input:
+In Pine als Input + Filter-Stack:
 
 ```pine
+// === V1 TIER ENGINE (per ANN-012) ===
+PREMIUM_CUTOFF = 0.4096   // gelocked durch NB14/NB14b — ein Cutoff für alle Profile
+
+probability = fx_model_predict(features)
+in_premium  = probability >= PREMIUM_CUTOFF
+
+// Profile-Definition via Filter-Stack
 profile = input.string("Balanced", "Signal-Profil",
                         options=["Aggressive", "Balanced", "Conservative"])
 
-cutoff = profile == "Aggressive"  ? cutoff_standard
-       : profile == "Balanced"    ? cutoff_high
-       :                            cutoff_premium
+htf_trend_aligns = (high > high[1] and request.security(syminfo.tickerid, "60", close > ta.ema(close, 50))) or
+                   (low  < low[1]  and request.security(syminfo.tickerid, "60", close < ta.ema(close, 50)))
+in_ny_session    = hour(time, "UTC") >= 13 and hour(time, "UTC") < 22
 
-signal_active = probability >= cutoff
+signal_active = in_premium and (
+      profile == "Aggressive"  ? true
+    : profile == "Balanced"    ? htf_trend_aligns
+    :                            htf_trend_aligns and in_ny_session
+)
 ```
+
+**Wichtige Eigenschaften (per ANN-012):**
+1. **Edge bleibt PF ~2.0 über alle Profile** — Filter selektieren, verwässern nicht
+2. **Pine-Budget reduziert** (1 Cutoff statt 3, plus 2 boolesche Filter)
+3. **R-13 (NY-Konzentration 66.6%) wird transparent als Conservative-Feature genutzt**
+4. **V2-ready** — gleiche Filter-Mechanik skaliert für Crypto/Indices/Commodity-Modelle
 
 ---
 

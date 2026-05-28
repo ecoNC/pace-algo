@@ -1,10 +1,11 @@
 # ANN-011: V1 Timeframe Lock + Profile Setup + User-Settings Whitelist
 
-**Status:** Active
+**Status:** Active (V1-TF-Lock + Settings-Whitelist gültig — **Profile-Mechanik durch [ANN-012](ANN-012-v1-tier-architecture-premium-core-plus-filters.md) superseded**)
 **Datum:** 2026-05-27
 **Locked-By:** Nico-Decision nach NB14-Multi-TF-Deep-Dive
-**Related:** [[ANN-006]] (Robustheits-Mantra) [[ANN-009]] (Multi-Model-Router) [[ANN-010]] (Quality-Anchor)
+**Related:** [[ANN-006]] (Robustheits-Mantra) [[ANN-009]] (Multi-Model-Router) [[ANN-010]] (Quality-Anchor) [[ANN-012]] (V1-Tier-Architektur — Premium + Filters)
 **Supersedes:** Profile-Annahmen in ANN-005 (V1-Scope) — User-Profile sind jetzt Tier-basiert, nicht TF-basiert
+**Superseded BY ANN-012 für:** Profile-Map-Mechanik §0b (Probability-Cutoffs → Filter-Stack). V1-TF-Lock auf 5m + User-Settings-Whitelist §0c bleiben gültig.
 
 ---
 

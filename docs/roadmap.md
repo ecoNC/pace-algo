@@ -60,13 +60,44 @@ Volle Analyse: [/research/model_battery_results.md](../research/model_battery_re
 - Auf 1h verschwindet die `hour_sin`-Edge komplett — `adx_14` wird Top-1 (anderes Edge-Paradigma)
 - Pooled-Modell schlägt Single-TF auf allen 4 TFs (+0.08 bis +0.20 PF) — Kandidat für V1.5+
 
-**User-Profile-Mapping REVIDIERT:** Profile sind NICHT verschiedene TFs sondern verschiedene Tier-Cutoffs auf 5m. Aggressive=Standard / Balanced=High / Conservative=Premium. Locked in [ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md).
+**User-Profile-Mapping (FINALE V1-Version per [ANN-012](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md)):** Probability-Cutoff-Profile wurden durch NB14b falsifiziert (alle 3 Strategien failed, Aggressive+Balanced kollabieren auf identischen Cutoff). **Neue Mechanik: Premium Core + Secondary Filters.**
 
-**Volle Analyse:** [/research/timeframe_comparisons.md](../research/timeframe_comparisons.md). **ADR:** [ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md).
+| Profil | Filter-Stack | Sigs/Tag |
+|---|---|---:|
+| Aggressive | Premium pur | ~3.5 |
+| Balanced | Premium + HTF-Confirmation | ~3.0 |
+| Conservative | Premium + HTF-Confirmation + NY-Session | ~1.5 |
+
+Alle Profile teilen denselben Premium-Cutoff (0.4096). Edge bleibt PF ~2.0 über alle Profile. NB14c (anstehend) validiert finale Sigs/Tag-Zahlen und schließt R-14 ab.
+
+**Volle Analyse:** [/research/timeframe_comparisons.md](../research/timeframe_comparisons.md). **ADRs:** [ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md) (V1-TF + Whitelist), [ANN-012](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md) (Tier-Architektur).
 
 ---
 
-## Phase D — Architecture Decision (NB15) 🟡 NEXT — ACTIVE
+## Phase C.5 — Secondary-Filter Validation (NB14c) 🟡 NEXT — ACTIVE
+
+**Frage:** Halten die geplanten Sigs/Tag-Zahlen (~3.5 / ~3.0 / ~1.5) auf Hold-Out und behält jedes Profil PF ≥ 1.5 (Quality-Anchor strict)?
+
+**Setup:**
+- Modell: V1-FX-LightGBM aus NB14, Premium-Cutoff 0.4096 fix
+- Filter-Kombinationen testen auf 5 FX-Symbolen × 5m (Hold-Out + In-Sample):
+  - Premium pur (Aggressive)
+  - Premium + HTF-Confirm (Balanced)
+  - Premium + HTF-Confirm + NY-Session (Conservative)
+  - + Sanity: HTF-only / Session-only (für Zerlegung)
+- Pro Filter-Kombi: PF / WR / MDD / Sigs/Tag / Stability-CV / Quality-Anchor-Check
+- Final: locke 3 Profile mit echten Hold-Out-Zahlen
+
+**Output:**
+- `/results/nb14c/secondary_filters_{date}.csv`
+- `/results/nb14c/profile_calibration_{date}.json`
+- ANN-012 Update mit echten Sigs/Tag-Zahlen aus Hold-Out
+
+**Erwartete Laufzeit:** ~10–15 min (reuse vom NB14-Modell + Filter-Anwendung, kein Re-Train).
+
+---
+
+## Phase D — Pine-Router-V1-Validation (NB15) ⚪ NEXT+1
 
 **Status nach NB13/NB14:** Architektur ist bereits gelockt via [ANN-009](decisions/ANN-009-multi-model-router-architecture.md) (Multi-Model Router). NB15 ist daher kein "A vs B vs C"-Entscheidung mehr, sondern **Architecture-Validation** für V1:
 

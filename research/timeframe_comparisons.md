@@ -1,9 +1,12 @@
-# Timeframe Comparisons — Phase C (NB14)
+# Timeframe Comparisons — Phase C (NB14) + Phase C.5 (NB14b/c)
 
-**Status:** ✅ ABGESCHLOSSEN — NB14 Run 1 am 2026-05-27, Verdict in [ANN-011](../docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md)
+**Status:** ✅ Phase C ABGESCHLOSSEN — V1=5m gelocked ([ANN-011](../docs/decisions/ANN-011-v1-timeframe-and-profile-setup.md))
+**Status:** ✅ NB14b ABGESCHLOSSEN — Probability-Cutoff-Tier-Konzept widerlegt, Option A gelocked ([ANN-012](../docs/decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md))
+**Status:** 🟡 NB14c NEXT — Secondary-Filter Validation für die finalen Sigs/Tag-Zahlen pro Profil
 **Decision-Framework:** [/docs/_phase_decision_template.md](../docs/_phase_decision_template.md)
 **Architektur-Lock:** [ANN-009 Multi-Model Router](../docs/decisions/ANN-009-multi-model-router-architecture.md) — NB14 fokussiert auf **FX-Modell** (V1-Scope), Crypto/Indices/Commodity separat
 **Quality-Anchor:** [ANN-010](../docs/decisions/ANN-010-quality-anchor.md) — Premium PF ~2.0 ist Vergleichspunkt
+**V1-Tier-Mechanik (FINAL):** Premium Core + Secondary Filters per ANN-012 — Profile differenzieren via HTF-Confirm + NY-Session-Filter, NICHT via Probability-Cutoffs
 
 ---
 
