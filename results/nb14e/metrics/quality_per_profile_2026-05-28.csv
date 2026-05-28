@@ -1,0 +1,4 @@
+profile,is_pf_mean,ho_pf_mean,is_pf_std,ho_pf_std,ho_sigs_per_day,severity
+Aggressive,0.4123,0.3304,0.7142,0.5722,0.5722,BLOCKED
+Balanced,0.5882,0.75,1.0189,1.299,0.0823,BLOCKED
+Conservative,0.75,0.0,1.299,0.0,0.0062,BLOCKED

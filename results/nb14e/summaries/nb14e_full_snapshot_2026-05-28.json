@@ -1,0 +1,773 @@
+{
+  "experiment_id": "nb14e_2026-05-28T07-14-09Z_81f2316",
+  "run_date": "2026-05-28",
+  "git_commit": "81f2316",
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "pine_export_ready": {
+    "lock_basis": "ANN-013 Cluster-Based Premium Detection",
+    "model": "fx_lgbm_v1",
+    "tf": "5m",
+    "premium_cluster_value": 0.40323333333333333,
+    "cluster_drift": 0.003599999999999992,
+    "cluster_std": 0.001558489297008119,
+    "cluster_is_stable": false,
+    "seeds_tested": [
+      42,
+      1,
+      7
+    ],
+    "min_cluster_size_pct": 0.5,
+    "decimal_places": 4,
+    "profile_definitions": {
+      "Aggressive": {
+        "require_htf": false,
+        "require_ny": false
+      },
+      "Balanced": {
+        "require_htf": true,
+        "require_ny": false
+      },
+      "Conservative": {
+        "require_htf": true,
+        "require_ny": true
+      }
+    },
+    "ny_session_utc": [
+      13,
+      22
+    ],
+    "quality_per_profile": [
+      {
+        "profile": "Aggressive",
+        "is_pf_mean": 0.4123,
+        "ho_pf_mean": 0.3304,
+        "is_pf_std": 0.7142,
+        "ho_pf_std": 0.5722,
+        "ho_sigs_per_day": 0.5722,
+        "severity": "BLOCKED"
+      },
+      {
+        "profile": "Balanced",
+        "is_pf_mean": 0.5882,
+        "ho_pf_mean": 0.75,
+        "is_pf_std": 1.0189,
+        "ho_pf_std": 1.299,
+        "ho_sigs_per_day": 0.0823,
+        "severity": "BLOCKED"
+      },
+      {
+        "profile": "Conservative",
+        "is_pf_mean": 0.75,
+        "ho_pf_mean": 0,
+        "is_pf_std": 1.299,
+        "ho_pf_std": 0,
+        "ho_sigs_per_day": 0.0062,
+        "severity": "BLOCKED"
+      }
+    ],
+    "all_profiles_v1_ready": false
+  },
+  "per_seed_clusters": {
+    "42": {
+      "premium_cluster_value": 0.4018,
+      "premium_cluster_size": 180,
+      "premium_cluster_pct": 2.0699172033118676,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4018,
+          "count": 180,
+          "pct": 2.0699172033118676
+        },
+        {
+          "value": 0.3993,
+          "count": 1648,
+          "pct": 18.951241950321986
+        },
+        {
+          "value": 0.3972,
+          "count": 485,
+          "pct": 5.577276908923643
+        },
+        {
+          "value": 0.3965,
+          "count": 5519,
+          "pct": 63.46596136154554
+        },
+        {
+          "value": 0.395,
+          "count": 864,
+          "pct": 9.935602575896963
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 5,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    },
+    "1": {
+      "premium_cluster_value": 0.4054,
+      "premium_cluster_size": 171,
+      "premium_cluster_pct": 1.966421343146274,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4054,
+          "count": 171,
+          "pct": 1.966421343146274
+        },
+        {
+          "value": 0.3993,
+          "count": 2300,
+          "pct": 26.448942042318308
+        },
+        {
+          "value": 0.3972,
+          "count": 3699,
+          "pct": 42.53679852805888
+        },
+        {
+          "value": 0.3964,
+          "count": 2107,
+          "pct": 24.229530818767252
+        },
+        {
+          "value": 0.3931,
+          "count": 334,
+          "pct": 3.840846366145354
+        },
+        {
+          "value": 0.3853,
+          "count": 85,
+          "pct": 0.9774609015639375
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 6,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    },
+    "7": {
+      "premium_cluster_value": 0.4025,
+      "premium_cluster_size": 57,
+      "premium_cluster_pct": 0.6554737810487581,
+      "premium_cluster_rank": 0,
+      "all_qualifying_clusters": [
+        {
+          "value": 0.4025,
+          "count": 57,
+          "pct": 0.6554737810487581
+        },
+        {
+          "value": 0.4009,
+          "count": 648,
+          "pct": 7.451701931922723
+        },
+        {
+          "value": 0.3979,
+          "count": 1221,
+          "pct": 14.040938362465502
+        },
+        {
+          "value": 0.3977,
+          "count": 4845,
+          "pct": 55.71527138914444
+        },
+        {
+          "value": 0.3973,
+          "count": 576,
+          "pct": 6.6237350505979755
+        },
+        {
+          "value": 0.3952,
+          "count": 896,
+          "pct": 10.303587856485741
+        },
+        {
+          "value": 0.3933,
+          "count": 453,
+          "pct": 5.209291628334867
+        }
+      ],
+      "rejected_clusters": [],
+      "n_qualifying": 7,
+      "min_cluster_size_pct": 0.5,
+      "min_count_required": 43,
+      "decimal_places": 4,
+      "success": true
+    }
+  },
+  "in_sample_per_seed": [
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Aggressive"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Balanced"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Conservative"
+    },
+    {
+      "n_trades": 386,
+      "wins": 174,
+      "losses": 211,
+      "pf": 1.2369668246445498,
+      "wr": 0.45194805194805193,
+      "sigs_per_day_per_symbol": 3.4504935129430754,
+      "mdd": 22.5,
+      "avg_duration": 4.55440414507772,
+      "seed": 1,
+      "profile": "Aggressive"
+    },
+    {
+      "n_trades": 37,
+      "wins": 20,
+      "losses": 17,
+      "pf": 1.7647058823529411,
+      "wr": 0.5405405405405406,
+      "sigs_per_day_per_symbol": 0.3307467875100875,
+      "mdd": 5.0,
+      "avg_duration": 3.675675675675676,
+      "seed": 1,
+      "profile": "Balanced"
+    },
+    {
+      "n_trades": 20,
+      "wins": 12,
+      "losses": 8,
+      "pf": 2.25,
+      "wr": 0.6,
+      "sigs_per_day_per_symbol": 0.17878204730275002,
+      "mdd": 3.0,
+      "avg_duration": 3.7,
+      "seed": 1,
+      "profile": "Conservative"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Aggressive"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Balanced"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Conservative"
+    }
+  ],
+  "in_sample_aggregate": [
+    {
+      "profile": "Aggressive",
+      "pf_mean": 0.41232227488151657,
+      "pf_std": 0.7141631291871674,
+      "wr_mean": 0.15064935064935064,
+      "wr_std": 0.26093232945193473,
+      "sigs_per_day_mean": 1.1501645043143585,
+      "sigs_per_day_std": 1.9921433585347421,
+      "mdd_mean": 7.5,
+      "mdd_std": 12.99038105676658,
+      "n_trades_mean": 128.66666666666666
+    },
+    {
+      "profile": "Balanced",
+      "pf_mean": 0.5882352941176471,
+      "pf_std": 1.0188534162169867,
+      "wr_mean": 0.1801801801801802,
+      "wr_std": 0.3120812265889869,
+      "sigs_per_day_mean": 0.11024892917002917,
+      "sigs_per_day_std": 0.190956746802553,
+      "mdd_mean": 1.6666666666666667,
+      "mdd_std": 2.8867513459481287,
+      "n_trades_mean": 12.333333333333334
+    },
+    {
+      "profile": "Conservative",
+      "pf_mean": 0.75,
+      "pf_std": 1.299038105676658,
+      "wr_mean": 0.19999999999999998,
+      "wr_std": 0.34641016151377546,
+      "sigs_per_day_mean": 0.05959401576758334,
+      "sigs_per_day_std": 0.10321986313651513,
+      "mdd_mean": 1.0,
+      "mdd_std": 1.7320508075688772,
+      "n_trades_mean": 6.666666666666667
+    }
+  ],
+  "holdout_per_seed": [
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 42,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 160,
+      "wins": 76,
+      "losses": 82,
+      "pf": 1.3902439024390243,
+      "wr": 0.4810126582278481,
+      "sigs_per_day_per_symbol": 3.0013678108512996,
+      "mdd": 15.5,
+      "avg_duration": 4.6,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 30,
+      "wins": 21,
+      "losses": 9,
+      "pf": 3.5,
+      "wr": 0.7,
+      "sigs_per_day_per_symbol": 0.5627564645346186,
+      "mdd": 4.0,
+      "avg_duration": 5.733333333333333,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 2,
+      "wins": 0,
+      "losses": 2,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.03751709763564124,
+      "mdd": 1.0,
+      "avg_duration": 2.5,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 39,
+      "wins": 13,
+      "losses": 26,
+      "pf": 0.75,
+      "wr": 0.3333333333333333,
+      "sigs_per_day_per_symbol": 0.6981167257132201,
+      "mdd": 14.5,
+      "avg_duration": 3.8974358974358974,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 5,
+      "wins": 2,
+      "losses": 3,
+      "pf": 1.0,
+      "wr": 0.4,
+      "sigs_per_day_per_symbol": 0.08950214432220771,
+      "mdd": 2.0,
+      "avg_duration": 3.4,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 1,
+      "wins": 0,
+      "losses": 1,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.017900428864441542,
+      "mdd": 0.0,
+      "avg_duration": 3.0,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 82,
+      "wins": 22,
+      "losses": 60,
+      "pf": 0.55,
+      "wr": 0.2682926829268293,
+      "sigs_per_day_per_symbol": 1.4504360643655572,
+      "mdd": 34.0,
+      "avg_duration": 3.073170731707317,
+      "seed": 1,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 5,
+      "wins": 1,
+      "losses": 4,
+      "pf": 0.375,
+      "wr": 0.2,
+      "sigs_per_day_per_symbol": 0.08844122343692422,
+      "mdd": 3.0,
+      "avg_duration": 4.2,
+      "seed": 1,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 1,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "GBPUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "AUDUSD"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Aggressive",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Balanced",
+      "symbol": "USDCHF"
+    },
+    {
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration": 0.0,
+      "seed": 7,
+      "profile": "Conservative",
+      "symbol": "USDCHF"
+    }
+  ],
+  "holdout_aggregate": [
+    {
+      "profile": "Aggressive",
+      "pf_mean": 0.33035714285714285,
+      "pf_std": 0.5721953560718613,
+      "wr_mean": 0.13261648745519714,
+      "wr_std": 0.22969849419372207,
+      "n_trades_mean": 93.66666666666667,
+      "sigs_per_day_mean": 0.5722134001033419,
+      "sigs_per_day_std": 0.9911026817507264,
+      "mdd_mean": 11.333333333333334
+    },
+    {
+      "profile": "Balanced",
+      "pf_mean": 0.75,
+      "pf_std": 1.299038105676658,
+      "wr_mean": 0.19999999999999998,
+      "wr_std": 0.34641016151377546,
+      "n_trades_mean": 13.333333333333334,
+      "sigs_per_day_mean": 0.08229998136597227,
+      "sigs_per_day_std": 0.14254774918783583,
+      "mdd_mean": 1.3333333333333333
+    },
+    {
+      "profile": "Conservative",
+      "pf_mean": 0.0,
+      "pf_std": 0.0,
+      "wr_mean": 0.0,
+      "wr_std": 0.0,
+      "n_trades_mean": 1.0,
+      "sigs_per_day_mean": 0.0061575029444536425,
+      "sigs_per_day_std": 0.010665107947548672,
+      "mdd_mean": 0.3333333333333333
+    }
+  ],
+  "quality_anchor": [
+    {
+      "profile": "Aggressive",
+      "is_pf_mean": 0.4123,
+      "ho_pf_mean": 0.3304,
+      "is_pf_std": 0.7142,
+      "ho_pf_std": 0.5722,
+      "ho_sigs_per_day": 0.5722,
+      "severity": "BLOCKED"
+    },
+    {
+      "profile": "Balanced",
+      "is_pf_mean": 0.5882,
+      "ho_pf_mean": 0.75,
+      "is_pf_std": 1.0189,
+      "ho_pf_std": 1.299,
+      "ho_sigs_per_day": 0.0823,
+      "severity": "BLOCKED"
+    },
+    {
+      "profile": "Conservative",
+      "is_pf_mean": 0.75,
+      "ho_pf_mean": 0,
+      "is_pf_std": 1.299,
+      "ho_pf_std": 0,
+      "ho_sigs_per_day": 0.0062,
+      "severity": "BLOCKED"
+    }
+  ]
+}
