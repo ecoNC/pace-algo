@@ -54,6 +54,12 @@ def train_lgbm(
             "is_unbalance":         True,   # class weight balanced
             "verbose":              -1,
             "n_jobs":               -1,
+            # Reproducibility — kritisch für ANN-012 Cutoff-Lock (siehe NB14c Run 2 Debug).
+            # Ohne diese Flags variiert das Modell zwischen Runs durch feature_fraction +
+            # bagging_fraction Stochastik → VAL-top-1% Cutoff schwankt um ~0.005-0.01 →
+            # bricht ANN-012's Premium-Cutoff-Lock.
+            "seed":                 42,
+            "deterministic":        True,
         }
 
     train_data = lgb.Dataset(X_train, label=y_train)

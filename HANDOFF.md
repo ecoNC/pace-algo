@@ -1459,6 +1459,7 @@ Pivot zur Multi-Model-Architektur hat neue Risiken generiert. Diese werden hier 
 | R-13 | NY-Session-Konzentration 66.6% aller Premium-Signale | hoch (Marketing) | offen | Research | Per-Session-SHAP + Bid/Ask-Test, Marketing-Sprache anpassen falls echter Effekt |
 | R-14 | Tier-Cutoff-Konvergenz auf 5m (Standard=High identisch) | hoch (V1 UX-blockend) | offen | Code | NB14b-Cutoff-Recalibration (logit-transform oder fixed-density-cutoffs) vor V1-Release |
 | R-15 | WR-Boost-Suche 57% → 60%+ ohne PF-Verlust | niedrig | tracked | Research | V1.5-Optuna-Tuning der Hyperparams im Pine-Budget |
+| R-16 | **train_lgbm() war STOCHASTISCH bis 2026-05-28** — kein seed/deterministic in default params | hoch (Audit) | **MITIGIERT** | Code | `core/train/lgbm_trainer.py` jetzt mit `seed=42 + deterministic=True`. ABER: alle bisherigen NB12/13/14/14b-Zahlen sind Run-spezifisch, nicht exakt reproduzierbar. NB14c Run 2 produzierte Cutoff 0.4022 statt 0.4096 → fiel ins 0.4067-Cluster → Edge zerstört. Locked NB14b-Cutoff `0.4096` ist Artefakt eines Glücks-Runs. Mitigation in NB14c: PREMIUM_CUTOFF mit Floor 0.4070 schützt vor Cluster-Fall. **V1.5+ Anforderung:** Cutoff bei jedem Re-Training neu kalibrieren, nicht hartcoded |
 
 2. ✅ **Strategische Erkenntnis gelocked:** Consensus-Filter (LGBM+XGB+Cat) liefert PF 2.93 auf GBPUSD vs LGBM-Alone 2.54 — V1.5-Backend-Gold, NICHT V1-Pine. Siehe [ANN-004](docs/decisions/ANN-004-consensus-filter-v1.5-not-v1.md).
 
