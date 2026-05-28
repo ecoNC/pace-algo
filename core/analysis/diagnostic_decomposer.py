@@ -276,11 +276,24 @@ def per_regime_metrics(
     signal_mask: np.ndarray,
     labels_triple: np.ndarray,
     R: float = 1.5,
+    regime_labels: tuple[str, ...] | None = None,
 ) -> pd.DataFrame:
-    """PF/WR/n pro Regime-Label."""
+    """
+    PF/WR/n pro Regime-Label. Generic — funktioniert für Vol-Regimes
+    (low/mid/high), Macro-Regimes (bull/bear/sideways) oder beliebige
+    andere Labels.
+
+    Bug-Fix 2026-05-28 (NB15a): vorher hardcoded ('low', 'mid', 'high', 'unknown'),
+    was DXY-Regime ('bull', 'bear', 'sideways') nie matchte → alle 0/0/0.
+    Jetzt: regime_labels optional — wenn None, werden unique values aus dem
+    Array verwendet.
+    """
+    if regime_labels is None:
+        # auto-detect unique labels (sortiert für Konsistenz)
+        regime_labels = tuple(sorted(set(regimes.tolist())))
     rows = []
     total_n = int(signal_mask.sum())
-    for r in ("low", "mid", "high", "unknown"):
+    for r in regime_labels:
         sub_mask = signal_mask & (regimes == r)
         labs = labels_triple[sub_mask]
         m = _pf_wr_n(labs, R)
@@ -288,6 +301,57 @@ def per_regime_metrics(
         m["share_of_signals"] = (m["n"] / total_n) if total_n > 0 else 0.0
         rows.append(m)
     return pd.DataFrame(rows)[["regime", "pf", "wr", "n", "wins", "losses", "share_of_signals"]]
+
+
+def filter_interaction_score(marginal_df: pd.DataFrame) -> dict:
+    """
+    Misst ob die HTF + Session Filter additiv oder destruktiv sind.
+
+    Definition (per Nico-Direktive 2026-05-28):
+        interaction_score = both_pf - max(htf_pf, session_pf)
+
+    Interpretation:
+        > +0.1  : additiv (Filter verstärken sich)
+        -0.1 to +0.1 : neutral (Filter unabhängig)
+        < -0.1  : destruktiv (Filter heben sich auf)
+
+    Args:
+        marginal_df: Output von filter_marginal_contributions() (pro Pair)
+
+    Returns: dict mit
+        - base_pf, htf_pf, session_pf, both_pf
+        - max_single_pf
+        - interaction_score
+        - lift_vs_base   (both_pf - base_pf, der "Stack-Total-Lift")
+        - verdict        ('additive' | 'neutral' | 'destructive')
+    """
+    by_config = marginal_df.set_index("config")
+    base_pf    = float(by_config.loc["base",            "pf"]) if "base"            in by_config.index else 0.0
+    htf_pf     = float(by_config.loc["base_+htf",       "pf"]) if "base_+htf"       in by_config.index else 0.0
+    session_pf = float(by_config.loc["base_+session",   "pf"]) if "base_+session"   in by_config.index else 0.0
+    both_pf    = float(by_config.loc["base_+htf_+sess", "pf"]) if "base_+htf_+sess" in by_config.index else 0.0
+
+    max_single = max(htf_pf, session_pf)
+    interaction = both_pf - max_single
+    lift_vs_base = both_pf - base_pf
+
+    if interaction > 0.10:
+        verdict = "additive"
+    elif interaction < -0.10:
+        verdict = "destructive"
+    else:
+        verdict = "neutral"
+
+    return {
+        "base_pf":           base_pf,
+        "htf_pf":            htf_pf,
+        "session_pf":        session_pf,
+        "both_pf":           both_pf,
+        "max_single_pf":     max_single,
+        "interaction_score": interaction,
+        "lift_vs_base":      lift_vs_base,
+        "verdict":           verdict,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -429,6 +493,31 @@ def diagnose_pair_inversion(
             scores["session_filter_inversion"] = 0.0
             notes.append(f"session_filter_inversion: Δpf = {delta_sess:+.3f} (Session neutral oder positiv)")
 
+        # === destructive_filter_interaction (NEU 2026-05-28 per Nico nach NB15a) ===
+        # Filter sind individuell positiv (jeder >= base+0.1) ABER zusammen NICHT
+        # so gut wie der bessere einzeln. Das war exakt das USDCHF-Muster.
+        both_pf = marginal_df[marginal_df["config"] == "base_+htf_+sess"]["pf"].values[0] if len(marginal_df[marginal_df["config"] == "base_+htf_+sess"]) else 0
+        max_single = max(htf_pf, sess_pf)
+        interaction_delta = both_pf - max_single
+        individual_helps = (htf_pf > base_pf + 0.05) or (sess_pf > base_pf + 0.05)
+        if individual_helps and interaction_delta < -0.05:
+            # destruction = wie viel Lift wird durch Combination zerstoert
+            destruction_magnitude = abs(interaction_delta)
+            score = min(1.0, destruction_magnitude / 0.5)
+            scores["destructive_filter_interaction"] = round(score, 3)
+            notes.append(
+                f"destructive_filter_interaction: Δ(both vs max(htf,sess)) = "
+                f"{interaction_delta:+.3f}  "
+                f"(base={base_pf:.2f} htf={htf_pf:.2f} sess={sess_pf:.2f} both={both_pf:.2f}) "
+                f"→ Filter heben sich auf"
+            )
+        else:
+            scores["destructive_filter_interaction"] = 0.0
+            notes.append(
+                f"destructive_filter_interaction: Δ(both vs max(htf,sess)) = "
+                f"{interaction_delta:+.3f} (additiv oder neutral)"
+            )
+
     # === regime_dependency ===
     if per_regime_df is not None and len(per_regime_df) >= 3:
         regime_filt = per_regime_df[per_regime_df["regime"].isin(["low", "mid", "high"])]
@@ -455,12 +544,17 @@ def diagnose_pair_inversion(
             notes.append(f"macro_regime_dependency: PF range across macro regimes = {pf_min:.2f}–{pf_max:.2f}")
 
     # === feature_signature_diff ===
+    # NB15a (2026-05-28) zeigte: Threshold 0.05 ist zu sensitiv — alle Pairs
+    # erreichen Score 1.0, nicht diskriminierend. Temporär deaktiviert bis
+    # bessere Calibration verfügbar (z.B. relative to baseline-pair statt
+    # absolute threshold).
     if shap_winning_vs_losing is not None and len(shap_winning_vs_losing) > 0:
         top_deltas = shap_winning_vs_losing["signed_delta"].abs().head(5).sum()
-        # Wenn Top-5 Feature-Deltas zusammen > 0.05 = signifikante Signatur-Verschiebung
-        score = min(1.0, top_deltas / 0.05)
-        scores["feature_signature_diff"] = round(score, 3)
-        notes.append(f"feature_signature_diff: top-5 signed-shap deltas sum = {top_deltas:.4f}")
+        scores["feature_signature_diff"] = 0.0  # DISABLED — siehe Kommentar
+        notes.append(
+            f"feature_signature_diff: top-5 signed-shap deltas sum = {top_deltas:.4f} "
+            f"(score DISABLED — Threshold-Calibration nicht diskriminierend zwischen Pairs)"
+        )
 
     # === structural_pair_issue (residual) ===
     explained = sum(v for v in scores.values()) / max(1, len(scores))
