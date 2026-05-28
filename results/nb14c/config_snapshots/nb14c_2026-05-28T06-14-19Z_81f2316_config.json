@@ -1,0 +1,35 @@
+{
+  "experiment_id": "nb14c_2026-05-28T06-14-19Z_81f2316",
+  "run_date": "2026-05-28",
+  "git_commit": "81f2316",
+  "random_seed": 42,
+  "tf": "5m",
+  "premium_cutoff": 0.4096,
+  "ny_session_utc": [
+    13,
+    22
+  ],
+  "profiles": {
+    "Aggressive": {
+      "require_htf": false,
+      "require_ny": false
+    },
+    "Balanced": {
+      "require_htf": true,
+      "require_ny": false
+    },
+    "Conservative": {
+      "require_htf": true,
+      "require_ny": true
+    }
+  },
+  "train_symbols": [
+    "EURUSD",
+    "USDJPY"
+  ],
+  "holdout_symbols": [
+    "GBPUSD",
+    "AUDUSD",
+    "USDCHF"
+  ]
+}
