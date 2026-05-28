@@ -160,8 +160,9 @@ Siehe [/docs/feature_registry.md](../docs/feature_registry.md) für vollständig
 | **R-13** | **NY-Session-Konzentration: 66.6% aller Premium-Signale** | hoch (Marketing-relevant) | Feature-Bug oder echter Markt-Effekt? Decomposition-Test pro Session |
 | **R-14** | **Tier-Cutoff-Konvergenz: Standard- und High-Tier kollabieren auf 5m** | hoch (V1 UX-blockend) | VAL-Verteilung-Analyse + Re-Stratifikation vor V1-Release |
 | **R-15** | **WR-Boost-Suche 57% → 60%+ ohne PF-Verlust** | V1.5 | Optuna-Tuning der Hyperparams im Pine-Budget |
+| **R-20** | **Training-Pool-Breite als Behavioral-Stability-Treiber** (NB14f v1 → ANN-015) | hoch (V1-blockend) | NB14f v2 mit erweitertem Pool (NZDUSD ins Training, USDCAD ins Hold-Out). Wenn `signal_frequency_cv` < 0.30 + `holdout_pf_mean` ≥ 1.3 auf ≥ 2 Profilen → These bestätigt, Pool-Breite war Hebel. Wenn weiterhin FAIL → Eskalation zu Feature-Engineering oder Pair-Spezialisierung. |
 
-**Hinweis zur R-Nummerierung:** R-11 = Quality-Anchor SOFT_ONLY (WR-Marketing) ist in HANDOFF Section 16a getrackt, hier nicht als Forschungs-Item geführt (es ist Marketing-Operationalisierung, kein Research-Plan).
+**Hinweis zur R-Nummerierung:** R-11 = Quality-Anchor SOFT_ONLY (WR-Marketing) ist in HANDOFF Section 16a getrackt, hier nicht als Forschungs-Item geführt (es ist Marketing-Operationalisierung, kein Research-Plan). R-16 bis R-19 sind Risiken (kein Research) — in HANDOFF Section 16a getrackt.
 
 ---
 
@@ -235,6 +236,35 @@ Premium-Edge ist faktisch ein **NY-Session-Detector**. London nahezu null trotz 
 4. **Verschiedene Test-Period-Splits:** Re-Sampling der VAL-Periode
 
 **Sofortmaßnahme:** NB14b-Run nur für Cutoff-Recalibration. ~10 Minuten Aufwand, klärt R-14.
+
+---
+
+### R-20: Training-Pool-Breite als Behavioral-Stability-Treiber
+
+**Beobachtung NB14f v1 (2026-05-28, commit `2845025`):**
+- Per-Model Relative Cluster (ANN-014) hat technisch sauber funktioniert (keine 0-Trade-Bugs wie NB14e)
+- ABER: Behavioral Stability FAILED auf allen 3 Profilen
+  - Aggressive: `signal_frequency_cv = 0.45` (Threshold 0.30) FAIL
+  - Balanced: `signal_frequency_cv = 0.77` FAIL, `mdd_relative_std = 0.83` (Threshold 0.50) FAIL
+  - Conservative: `signal_frequency_cv = 0.74` FAIL, `holdout_pf_mean = 0.50` (Threshold 1.30) FAIL, `mdd_relative_std = 0.75` FAIL
+- Per-Symbol Pair-Aggregat zeigt nur GBPUSD-Balanced mit PF ≥ 1.4 (1.41), AUDUSD + USDCHF unsupported
+- Trade-Count-Variation zwischen Seeds: 939 (seed 42) / 386 (seed 1) / 401 (seed 7) Aggressive in-sample — 2.4× Range
+
+**Hypothese (Nico-Lock 2026-05-28):** Trainings-Pool ist zu schmal (`EURUSD + USDJPY` only). Cluster-Mechanik braucht mehr Marktregime im Training um Cluster-Größen über Seeds zu stabilisieren. NB13 hat empirisch belegt dass FX-Edge generalisiert auf 5+ Symbole — aber mit `top-1%`-Cutoff, nicht Cluster-Cutoff. Cluster-Cutoffs sind breiter und stellen höhere Anforderungen an Pool-Diversität.
+
+**Test-Plan (ANN-015):**
+- FX_TRAIN_SYMBOLS: + NZDUSD (Asia-Pacific Session, RBNZ-Macro, Antipoden-Pair zu AUDUSD)
+- FX_HOLDOUT_SYMBOLS: + USDCAD (NY-Overlap, Öl-Macro)
+- NB14f komplett re-runnen mit identischem Setup sonst (Features, Hyperparams, Mechanik unverändert)
+- Erwartung: signal_frequency_cv sinkt unter 0.30, holdout_pf_mean steigt über 1.3, hour/session-Dominanz schwächer
+
+**Wichtig (Nico-Direktive):** Wir interpretieren NB14f v1 nicht als "Modell broken". Frame ist "Produkt-Robustheits-Stabilisierung läuft". Grundmodell hat echten FX-Edge (NB13 belegt). Wir testen jetzt sauber ob Pool-Breite die fehlende Variable ist BEVOR wir auf Feature-Engineering oder Pair-Spezialisierung pivotieren.
+
+**Fail-Eskalation (falls Re-Run auch FAILED):**
+1. Entweder FX braucht wirklich Pair-Spezialisierung (R-19 als V1-Standard)
+2. Oder die aktuelle Cluster/Tiering-Mechanik ist grundsätzlich zu fragil (Feature-Engineering NB16 oder Optuna)
+
+→ Eskalation nicht vorab entscheiden, mit Daten aus Re-Run.
 
 ---
 

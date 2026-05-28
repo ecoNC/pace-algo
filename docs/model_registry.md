@@ -10,14 +10,14 @@
 
 | Slot | V1 Status | Modell | TF | Premium PF (OOS) | Hold-Out PF | Quality-Anchor | Notiz |
 |---|---|---|---|---:|---:|---|---|
-| **fx_model** | ✅ Aktiv | LightGBM 30×3 | **5m only** | 2.00 in-sample | **2.39 (3 sym)** | SOFT_ONLY ✓ | V1-Sieger, NB14-locked ([ANN-011](decisions/ANN-011-v1-timeframe-and-profile-setup.md)) |
+| **fx_model** | 🟡 Pending Re-Validation | LightGBM 30×3 | **5m only** | 2.00 in-sample (NB14 v1) | 2.39 (3 sym, NB14 v1) | SOFT_ONLY ✓ (NB14 v1) | Re-Validation per [ANN-015](decisions/ANN-015-v1-training-pool-expansion-robustness-revalidation.md) — NB14f-v1 Behavioral-Stability-FAIL, Pool-Expansion läuft |
 | **crypto_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | NB13c Test ausstehend |
 | **indices_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | braucht Polygon-Aktivierung |
 | **commodity_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | Gold Phase 1 = random (ANN-003) |
 
 In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Badge "🚧 V2 coming". Router-Skelett ist ready, kein Refactor-Bedarf für V2.
 
-### V1 FX-Modell — Gelockte Konfiguration (ANN-011)
+### V1 FX-Modell — Gelockte Konfiguration (ANN-011, expanded via ANN-015)
 
 | Parameter | Wert |
 |---|---|
@@ -25,16 +25,19 @@ In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Ba
 | Trees | 30 |
 | Max Depth | 3 |
 | Features (27) | Phase-1-Winner-Set (Baseline 15 + HTF-Interaction 12) |
-| Training Symbols | EURUSD, USDJPY (Walk-Forward 2020-01 → 2024-01) |
+| Training Symbols | EURUSD, USDJPY, **NZDUSD (NEU per ANN-015)** (Walk-Forward 2020-01 → 2024-01) |
 | Validation Window | 2024-01 → 2024-07 |
 | Test Window | 2024-07 → 2026-05 |
-| Hold-Out Symbols | GBPUSD, AUDUSD, USDCHF |
+| Hold-Out Symbols | GBPUSD, AUDUSD, USDCHF, **USDCAD (NEU per ANN-015)** |
 | Primary TF | **5m only** |
 | HTF Context | 1h, 4h (mit `shift(1)` Anti-Look-Ahead) |
-| Tier Cutoffs (VAL-derived) | Standard top 10% / High top 3% / Premium top 1% |
-| Random Seed | 42 (deterministic=True) |
+| Cutoff-Mechanik | Per-Model Relative Cluster (ANN-014) — Production-Cluster wird aus NB14f-v2 BEST_SEED extrahiert |
+| Filter-Stack (Profile) | Aggressive=Premium-pur, Balanced=Premium+HTF, Conservative=Premium+HTF+NY (ANN-012) |
+| Random Seed | TBD nach NB14f-v2 (BEST_SEED via Behavioral Stability) |
 
-### V1 FX-Modell — Performance Snapshot
+### V1 FX-Modell — Performance Snapshots
+
+#### Historical: NB14 v1 (commit `6c2aed4`, 2 Train-Symbole, top-1%-Cutoff)
 
 **5m TEST (in-sample, 596k train rows):**
 - Premium PF 2.00 · WR 57.2% · MDD 2.9% · n_trades 3,354
@@ -45,8 +48,22 @@ In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Ba
 - USDCHF: PF 2.12 / WR 58.6%
 - **Mean: PF 2.39 / WR 60.9%**
 
-**Yearly Stability:**
-- 2024 PF 1.79 / 2025 PF 2.04 / 2026 PF 2.52 (CV 0.145, Edge wird besser)
+**Yearly Stability:** 2024 PF 1.79 / 2025 PF 2.04 / 2026 PF 2.52 (CV 0.145)
+
+> Diese Zahlen waren auf `top-1%`-VAL-Cutoff. Cluster-basierte Cutoffs (ANN-013/14) sind breiter und liefern andere Zahlen — siehe NB14f v1 unten.
+
+#### Historical: NB14f v1 (commit `2845025`, 2 Train-Symbole, Cluster-Cutoff)
+
+**Pair-Aggregat (3 Seeds, Cluster-Cutoff ~0.405):**
+- GBPUSD Balanced PF **1.41** (n=293) — einziges Symbol mit PF ≥ 1.4
+- AUDUSD alle Profile PF < 1.0
+- USDCHF alle Profile PF ≤ 1.0
+- Behavioral Stability: **FAIL** auf allen 3 Profilen (signal_frequency_cv 0.45–0.77, threshold 0.30)
+- Snapshot: [`results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json`](../results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json)
+
+#### Pending: NB14f v2 (Pool-Expansion per ANN-015)
+
+Numbers werden eingefügt nach Re-Run. Pass-Kriterien: ANN-015 §3.
 
 ---
 

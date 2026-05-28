@@ -24,10 +24,16 @@ ARTIFACTS_PINE = PROJECT_ROOT / "artifacts" / "pine_exports"
 # ---------------------------------------------------------------------------
 # Expanded 2026-05-27 (Phase B prep, ANN-006 Mantra): wider coverage to test
 # universal generalization across asset classes.
+#
+# Expanded 2026-05-28 per ANN-015 (V1 Training-Pool Expansion + Robustness
+# Re-Validation): NZDUSD added to training pool, USDCAD added as new unseen
+# hold-out symbol. Goal: NB14f-v2 re-run with broader regime coverage to test
+# whether behavioral stability failures (signal_frequency_cv 0.45-0.77 across
+# profiles) were a pool-width artifact vs. a deeper architectural issue.
 
 # FX — sauber getrennt in Train vs Hold-Out
-FX_TRAIN_SYMBOLS    = ["EURUSD", "USDJPY"]                       # core training pool
-FX_HOLDOUT_SYMBOLS  = ["GBPUSD", "AUDUSD", "USDCHF"]             # never trained on
+FX_TRAIN_SYMBOLS    = ["EURUSD", "USDJPY", "NZDUSD"]                       # core training pool (ANN-015: +NZDUSD)
+FX_HOLDOUT_SYMBOLS  = ["GBPUSD", "AUDUSD", "USDCHF", "USDCAD"]             # never trained on (ANN-015: +USDCAD)
 FX_SYMBOLS          = FX_TRAIN_SYMBOLS + FX_HOLDOUT_SYMBOLS
 
 # Crypto — 24/7 markets, different volatility regimes

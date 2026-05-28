@@ -74,32 +74,51 @@ Alle Profile teilen denselben Premium-Cutoff (0.4096). Edge bleibt PF ~2.0 über
 
 ---
 
-## Phase C.5 — Secondary-Filter Validation (NB14c) 🟡 NEXT — ACTIVE
+## Phase C.5 — Secondary-Filter Validation (NB14c/d/e/f) ✅ DIAGNOSTIC ABGESCHLOSSEN 2026-05-28
 
-**Frage:** Halten die geplanten Sigs/Tag-Zahlen (~3.5 / ~3.0 / ~1.5) auf Hold-Out und behält jedes Profil PF ≥ 1.5 (Quality-Anchor strict)?
+**Iterations-Verlauf (volle Decision-Kette in [HANDOFF Section 19](../HANDOFF.md)):**
 
-**Setup:**
-- Modell: V1-FX-LightGBM aus NB14, Premium-Cutoff 0.4096 fix
-- Filter-Kombinationen testen auf 5 FX-Symbolen × 5m (Hold-Out + In-Sample):
-  - Premium pur (Aggressive)
-  - Premium + HTF-Confirm (Balanced)
-  - Premium + HTF-Confirm + NY-Session (Conservative)
-  - + Sanity: HTF-only / Session-only (für Zerlegung)
-- Pro Filter-Kombi: PF / WR / MDD / Sigs/Tag / Stability-CV / Quality-Anchor-Check
-- Final: locke 3 Profile mit echten Hold-Out-Zahlen
+- **NB14c:** Filter-Validation lieferte widersprüchliche Ergebnisse über 3 Runs (0 Trades / PF 1.01 / 0 Trades). Stopped.
+- **NB14d:** Pure Diagnostik → Verdict **Ultra-discrete Distribution** (top-3 Cluster 92.4%, stable + kalibriert). NB14b's `0.4096` als Phantom-Wert identifiziert.
+- **NB14e:** Cluster-basierte Premium-Detection. Run lieferte seed=1 GBPUSD Hold-Out Balanced PF **3.50** — aber methodischer Bug entdeckt: globaler Mean-Cluster auf alle Seeds appliziert ergab 0-Trades auf seeds 42+7. **[ANN-013](decisions/ANN-013-cluster-based-premium-detection.md)** locked Cluster-Mechanik, **[ANN-014](decisions/ANN-014-per-model-relative-cluster-behavioral-stability.md)** korrigiert zu Per-Model Relative Cluster + Behavioral Stability.
+- **NB14f (`2845025`):** Per-Model-Relative-Cluster + Behavioral-Stability-Check sauber implementiert. Verdict: **`all_profiles_behavioral_stable: false`** — `signal_frequency_cv` 0.45–0.77 (Threshold 0.30) und `holdout_pf_mean` 0.50–0.85 (Threshold 1.30) FAIL auf allen 3 Profilen. Pair-Aggregat: nur GBPUSD-Balanced erreicht PF ≥ 1.4 (1.41 bei n=293).
 
-**Output:**
-- `/results/nb14c/secondary_filters_{date}.csv`
-- `/results/nb14c/profile_calibration_{date}.json`
-- ANN-012 Update mit echten Sigs/Tag-Zahlen aus Hold-Out
-
-**Erwartete Laufzeit:** ~10–15 min (reuse vom NB14-Modell + Filter-Anwendung, kein Re-Train).
+**Quality-Gate aus ANN-014 hat sauber gegriffen** — kein V1-Lock auf ein nicht-stabiles Modell. NB14f-Daten zeigen klar: das Modell hat echten Edge auf GBPUSD, aber Trainings-Pool ist zu schmal (`EURUSD + USDJPY` only) um stabile Cluster-Größen über Seeds zu produzieren.
 
 ---
 
-## Phase D — Pine-Router-V1-Validation (NB15) ⚪ NEXT+1
+## Phase C.6 — Training-Pool Expansion + Robustness Re-Validation 🟡 ACTIVE (ANN-015)
 
-**Status nach NB13/NB14:** Architektur ist bereits gelockt via [ANN-009](decisions/ANN-009-multi-model-router-architecture.md) (Multi-Model Router). NB15 ist daher kein "A vs B vs C"-Entscheidung mehr, sondern **Architecture-Validation** für V1:
+**Lock:** [ANN-015 V1 Training-Pool Expansion + Robustness Re-Validation](decisions/ANN-015-v1-training-pool-expansion-robustness-revalidation.md).
+
+**Hypothese:** NB14f-Behavioral-Stability-FAIL ist Folge zu schmalen Trainings-Pools — nicht fundamentaler Architektur-Bug. NB13 hat FX-Generalisierung auf 5+ Symbolen belegt (`top-1%`-Cutoff). Cluster-basierte Cutoffs (breiter, ~2%) brauchen breiteren Pool um gleiche Robustheit zu erreichen.
+
+**Setup:**
+- `FX_TRAIN_SYMBOLS`: EURUSD, USDJPY, **+ NZDUSD**
+- `FX_HOLDOUT_SYMBOLS`: GBPUSD, AUDUSD, USDCHF, **+ USDCAD**
+- Feature-Set, Hyperparams, Cluster-Mechanik, Behavioral-Thresholds: **alle unverändert** (saubere isolierte Variable)
+
+**Pipeline:**
+1. NB01 re-run für NZDUSD + USDCAD Fetcher (Dukascopy)
+2. NB04 re-run für Triple-Barrier-Labels auf neuen Symbolen × 4 TFs
+3. NB14f re-run (komplett, mit erweitertem Pool)
+
+**Pass-Kriterien (deterministisch in ANN-015 §3 dokumentiert):**
+- `all_profiles_behavioral_stable: true` (alle 5 Behavioral-Metriken passed auf allen 3 Profilen)
+- Mean Hold-Out Premium-PF ≥ 1.4 auf ≥ 3 von 4 Symbolen
+- Pair-Tiering: ≥ 3 Symbole "supported" per ANN-014 §5
+
+**Erwartete Laufzeit:** ~25–35 min Colab (NB01 ~10 min + NB04 ~5-10 min + NB14f ~12-15 min).
+
+**Fail-Eskalation:** Architektur-Vertiefung (Feature-Engineering / Optuna / Pair-Spezialisierung als V1-Standard).
+
+---
+
+## Phase D — Pine-Router-V1-Validation (NB15) 🔴 BLOCKED auf Phase C.6 Pass
+
+**Status nach NB13/NB14:** Architektur ist bereits gelockt via [ANN-009](decisions/ANN-009-multi-model-router-architecture.md) (Multi-Model Router). NB15 ist daher kein "A vs B vs C"-Entscheidung mehr, sondern **Architecture-Validation** für V1.
+
+**Aktuelle Blockade:** ANN-015 lockt Phase D auf Phase C.6 Pass. Es macht keinen Sinn, Pine-Router gegen ein nicht-behavioral-stabiles Python-Modell zu validieren. NB15-Bau startet erst nach NB14f-v2-Pass.
 
 **Frage NB15:** Funktioniert das Router-Skelett im Pine-Code-Stub korrekt mit dem 5m-FX-Modell als einzigem aktiven Branch?
 

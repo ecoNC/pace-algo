@@ -202,3 +202,37 @@ Das ist eine **wichtige Marketing-Korrektur** vor V1-Launch. Hätten wir das Cro
 3. **XGBoost + CatBoost** für H5/H6-Test (Consensus + per-Asset-Lift)
 4. **Polygon-Aktivierung** für Indices Cross-Asset-Test
 5. **NB14 Multi-TF Deep-Dive** — was passiert auf 4H und Daily?
+
+---
+
+## Re-Validation Path nach NB14f v1 (ANN-015)
+
+**Kontext:** NB14f v1 (commit `2845025`, 2026-05-28) hat mit der neuen Cluster-basierten Cutoff-Mechanik (ANN-013/14) Behavioral-Stability-FAIL geliefert. Per-Symbol-Pair-Aggregat:
+
+| Symbol | Aggressive PF | Balanced PF | Conservative PF | Pair-Klassifikation (ANN-014 §5) |
+|---|---:|---:|---:|---|
+| GBPUSD | 0.97 | 1.41 (n=293) | 1.27 | supported (mit Vorbehalt — unter Quality-Anchor 2.0) |
+| AUDUSD | 0.86 | 0.80 | 0.57 | unsupported |
+| USDCHF | 0.70 | 1.00 | 0.85 | unsupported |
+
+**Methodische Diskrepanz zu NB13-Run:** NB13 zeigte GBPUSD/AUDUSD/USDCHF Premium-PF 2.58–2.66 mit `top-1%`-VAL-Cutoff. NB14f-Cluster-Cutoff ist breiter (~2% der Bars im höchsten qualifizierten Cluster) → mehr Trades, niedrigere PF. Die zwei Setups sind **nicht direkt vergleichbar**.
+
+**These (ANN-015):** Trainings-Pool-Breite ist der Hebel. Mit nur 2 Symbolen (EURUSD + USDJPY) im Training schwankt die Cluster-Größe über Seeds zu stark → `signal_frequency_cv` 0.45–0.77 (Threshold 0.30). Mehr Pool-Diversität sollte das stabilisieren.
+
+**Re-Validation-Plan:**
+
+| Pool | Vorher (NB14f v1) | Nachher (NB14f v2 per ANN-015) |
+|---|---|---|
+| FX_TRAIN_SYMBOLS | EURUSD, USDJPY | EURUSD, USDJPY, **NZDUSD** |
+| FX_HOLDOUT_SYMBOLS | GBPUSD, AUDUSD, USDCHF | GBPUSD, AUDUSD, USDCHF, **USDCAD** |
+
+NZDUSD bringt Asia-Pacific-Session + RBNZ-Macro ins Training. USDCAD bringt NY-Session-Overlap + Öl-Macro als Hold-Out — testet ob FX-Edge mit anderem Macro-Driver hält.
+
+**Pass-Kriterien (in [ANN-015 §3](../docs/decisions/ANN-015-v1-training-pool-expansion-robustness-revalidation.md) deterministisch):**
+- `all_profiles_behavioral_stable: true`
+- Mean Hold-Out Premium-PF ≥ 1.4 auf ≥ 3 von 4 Symbolen
+- ≥ 3 Symbole "supported" per ANN-014 §5
+
+**Wenn PASS:** V1 wird Re-Validated. Cluster-Detection-Mechanik bleibt + Pool-Expansion war die fehlende Variable. Phase D (NB15) wird freigegeben.
+
+**Wenn FAIL:** ANN-015 §3 lockt Eskalationspfad (Feature-Engineering ODER Pair-Tiering als V1-Standard).
