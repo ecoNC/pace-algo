@@ -1,0 +1,17 @@
+symbol,config,mean_pf,std_pf,cv_pf,n_seeds
+GBPUSD,base,1.633,0.017,0.01,3
+GBPUSD,base_+htf,1.575,0.057,0.036,3
+GBPUSD,base_+session,2.177,0.059,0.027,3
+GBPUSD,base_+htf_+sess,2.148,0.105,0.049,3
+AUDUSD,base,1.641,0.017,0.01,3
+AUDUSD,base_+htf,1.69,0.059,0.035,3
+AUDUSD,base_+session,1.772,0.029,0.017,3
+AUDUSD,base_+htf_+sess,2.275,0.159,0.07,3
+USDCHF,base,1.541,0.017,0.011,3
+USDCHF,base_+htf,1.669,0.008,0.005,3
+USDCHF,base_+session,1.68,0.043,0.025,3
+USDCHF,base_+htf_+sess,1.559,0.027,0.017,3
+USDCAD,base,1.685,0.021,0.013,3
+USDCAD,base_+htf,1.798,0.032,0.018,3
+USDCAD,base_+session,2.753,0.081,0.029,3
+USDCAD,base_+htf_+sess,2.877,0.138,0.048,3

@@ -1,0 +1,5 @@
+symbol,n_seeds,mean_interaction,std_interaction,min_interaction,max_interaction
+GBPUSD,3,-0.029,0.047,-0.079,0.013
+AUDUSD,3,0.5,0.138,0.407,0.658
+USDCHF,3,-0.131,0.008,-0.14,-0.125
+USDCAD,3,0.125,0.063,0.059,0.184
