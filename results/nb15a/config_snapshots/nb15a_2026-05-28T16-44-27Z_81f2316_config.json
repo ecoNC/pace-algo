@@ -1,0 +1,10 @@
+{
+  "experiment_id": "nb15a_2026-05-28T16-44-27Z_81f2316",
+  "production_seed": 7,
+  "tf": "5m",
+  "focus_pairs": [
+    "USDCHF",
+    "USDCAD",
+    "GBPUSD"
+  ]
+}

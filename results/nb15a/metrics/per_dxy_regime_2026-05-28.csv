@@ -1,0 +1,13 @@
+dxy_regime,pf,wr,n,wins,losses,share,symbol
+bear_or_unmapped,0.0,0.0,0,0,0,0.0,USDCHF
+sideways_or_unmapped,0.0,0.0,0,0,0,0.0,USDCHF
+bull_or_unmapped,0.0,0.0,0,0,0,0.0,USDCHF
+unknown,0.0,0.0,0,0,0,0.0,USDCHF
+bear_or_unmapped,0.0,0.0,0,0,0,0.0,USDCAD
+sideways_or_unmapped,0.0,0.0,0,0,0,0.0,USDCAD
+bull_or_unmapped,0.0,0.0,0,0,0,0.0,USDCAD
+unknown,0.0,0.0,0,0,0,0.0,USDCAD
+bear_or_unmapped,0.0,0.0,0,0,0,0.0,GBPUSD
+sideways_or_unmapped,0.0,0.0,0,0,0,0.0,GBPUSD
+bull_or_unmapped,0.0,0.0,0,0,0,0.0,GBPUSD
+unknown,0.0,0.0,0,0,0,0.0,GBPUSD

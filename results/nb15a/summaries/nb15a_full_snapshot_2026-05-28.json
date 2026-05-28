@@ -1,0 +1,1834 @@
+{
+  "experiment_id": "nb15a_2026-05-28T16-44-27Z_81f2316",
+  "run_date": "2026-05-28",
+  "git_commit": "81f2316",
+  "production_seed": 7,
+  "production_cluster": 0.4977,
+  "cluster_info": {
+    "premium_cluster_value": 0.4977,
+    "premium_cluster_size": 646,
+    "premium_cluster_pct": 0.5790969315034109,
+    "premium_cluster_rank": 0,
+    "all_qualifying_clusters": [
+      {
+        "value": 0.4977,
+        "count": 646,
+        "pct": 0.5790969315034109
+      },
+      {
+        "value": 0.4939,
+        "count": 1350,
+        "pct": 1.2101870859591406
+      },
+      {
+        "value": 0.4927,
+        "count": 1509,
+        "pct": 1.3527202316387725
+      },
+      {
+        "value": 0.4925,
+        "count": 935,
+        "pct": 0.8381666113865158
+      },
+      {
+        "value": 0.4918,
+        "count": 1151,
+        "pct": 1.0317965451399782
+      },
+      {
+        "value": 0.4877,
+        "count": 751,
+        "pct": 0.6732225937446774
+      },
+      {
+        "value": 0.4862,
+        "count": 640,
+        "pct": 0.5737183222324814
+      },
+      {
+        "value": 0.4852,
+        "count": 993,
+        "pct": 0.8901598343388344
+      },
+      {
+        "value": 0.4842,
+        "count": 1611,
+        "pct": 1.4441565892445745
+      },
+      {
+        "value": 0.484,
+        "count": 804,
+        "pct": 0.7207336423045548
+      },
+      {
+        "value": 0.4839,
+        "count": 592,
+        "pct": 0.5306894480650453
+      },
+      {
+        "value": 0.4837,
+        "count": 834,
+        "pct": 0.7476266886592023
+      },
+      {
+        "value": 0.4833,
+        "count": 621,
+        "pct": 0.5566860595412046
+      },
+      {
+        "value": 0.4832,
+        "count": 670,
+        "pct": 0.6006113685871289
+      },
+      {
+        "value": 0.4831,
+        "count": 811,
+        "pct": 0.7270086864539725
+      },
+      {
+        "value": 0.4829,
+        "count": 3189,
+        "pct": 2.8587308274990364
+      },
+      {
+        "value": 0.4828,
+        "count": 1499,
+        "pct": 1.34375588285389
+      },
+      {
+        "value": 0.4826,
+        "count": 931,
+        "pct": 0.8345808718725627
+      },
+      {
+        "value": 0.4825,
+        "count": 635,
+        "pct": 0.5692361478400402
+      },
+      {
+        "value": 0.4824,
+        "count": 836,
+        "pct": 0.7494195584161789
+      },
+      {
+        "value": 0.4823,
+        "count": 1425,
+        "pct": 1.2774197018457594
+      },
+      {
+        "value": 0.4821,
+        "count": 1451,
+        "pct": 1.300727008686454
+      },
+      {
+        "value": 0.482,
+        "count": 820,
+        "pct": 0.7350766003603668
+      },
+      {
+        "value": 0.4814,
+        "count": 950,
+        "pct": 0.8516131345638396
+      },
+      {
+        "value": 0.4813,
+        "count": 697,
+        "pct": 0.6248151103063119
+      },
+      {
+        "value": 0.4812,
+        "count": 1513,
+        "pct": 1.3563059711527257
+      },
+      {
+        "value": 0.4811,
+        "count": 3761,
+        "pct": 3.371491577994316
+      },
+      {
+        "value": 0.4809,
+        "count": 2005,
+        "pct": 1.7973519313689457
+      },
+      {
+        "value": 0.4803,
+        "count": 606,
+        "pct": 0.5432395363638809
+      },
+      {
+        "value": 0.4799,
+        "count": 1508,
+        "pct": 1.3518237967602844
+      },
+      {
+        "value": 0.4791,
+        "count": 1038,
+        "pct": 0.9304994038708058
+      },
+      {
+        "value": 0.4779,
+        "count": 563,
+        "pct": 0.504692836588886
+      },
+      {
+        "value": 0.4718,
+        "count": 1171,
+        "pct": 1.0497252427097434
+      },
+      {
+        "value": 0.4708,
+        "count": 571,
+        "pct": 0.511864315616792
+      },
+      {
+        "value": 0.4707,
+        "count": 863,
+        "pct": 0.7736233001353616
+      },
+      {
+        "value": 0.4697,
+        "count": 634,
+        "pct": 0.568339712961552
+      },
+      {
+        "value": 0.4635,
+        "count": 644,
+        "pct": 0.5773040617464344
+      },
+      {
+        "value": 0.463,
+        "count": 1139,
+        "pct": 1.0210393265981192
+      },
+      {
+        "value": 0.4628,
+        "count": 3013,
+        "pct": 2.700958288885104
+      },
+      {
+        "value": 0.4621,
+        "count": 568,
+        "pct": 0.5091750109813273
+      },
+      {
+        "value": 0.4616,
+        "count": 1438,
+        "pct": 1.2890733552661067
+      },
+      {
+        "value": 0.4577,
+        "count": 576,
+        "pct": 0.5163464900092333
+      }
+    ],
+    "rejected_clusters": [
+      {
+        "value": 0.649,
+        "count": 66,
+        "pct": 0.05916470198022465
+      },
+      {
+        "value": 0.6415,
+        "count": 9,
+        "pct": 0.00806791390639427
+      },
+      {
+        "value": 0.6409,
+        "count": 8,
+        "pct": 0.007171479027906018
+      },
+      {
+        "value": 0.6407,
+        "count": 9,
+        "pct": 0.00806791390639427
+      },
+      {
+        "value": 0.6396,
+        "count": 3,
+        "pct": 0.0026893046354647568
+      },
+      {
+        "value": 0.6354,
+        "count": 55,
+        "pct": 0.04930391831685387
+      },
+      {
+        "value": 0.6333,
+        "count": 2,
+        "pct": 0.0017928697569765046
+      },
+      {
+        "value": 0.6325,
+        "count": 1,
+        "pct": 0.0008964348784882523
+      },
+      {
+        "value": 0.632,
+        "count": 2,
+        "pct": 0.0017928697569765046
+      },
+      {
+        "value": 0.6315,
+        "count": 4,
+        "pct": 0.003585739513953009
+      }
+    ],
+    "n_qualifying": 42,
+    "min_cluster_size_pct": 0.5,
+    "min_count_required": 557,
+    "decimal_places": 4,
+    "success": true
+  },
+  "focus_pairs": [
+    "USDCHF",
+    "USDCAD",
+    "GBPUSD"
+  ],
+  "all_holdout": [
+    "GBPUSD",
+    "AUDUSD",
+    "USDCHF",
+    "USDCAD"
+  ],
+  "feature_cols": [
+    "hour_sin",
+    "dist_to_swing_low_atr",
+    "htf_1h_rsi_14",
+    "realized_vol_20",
+    "atr_percentile_100",
+    "atr_pct",
+    "dist_to_swing_high_atr",
+    "volume_z_score",
+    "ema_20_slope_atr",
+    "hour_cos",
+    "momentum_composite",
+    "rvol_20",
+    "adx_14",
+    "ema_20_dist_atr",
+    "htf_1h_atr_percentile_100",
+    "htf_ltf_agree_bull",
+    "htf_ltf_agree_bear",
+    "htf_ltf_counter_trend",
+    "htf_ltf_alignment_score",
+    "ltf_rsi_minus_htf_rsi",
+    "both_rsi_oversold",
+    "both_rsi_overbought",
+    "vol_pct_diff_htf",
+    "both_high_vol",
+    "both_low_vol",
+    "pullback_in_bull",
+    "pullback_in_bear"
+  ],
+  "per_session": [
+    {
+      "session": "asia",
+      "pf": 1.1303879310344827,
+      "wr": 0.42974190905366655,
+      "n": 2466,
+      "wins": 1049,
+      "losses": 1392,
+      "share_of_total": 0.42487939352170917,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "london",
+      "pf": 1.0,
+      "wr": 0.4,
+      "n": 51,
+      "wins": 20,
+      "losses": 30,
+      "share_of_total": 0.008787043418332184,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "ny",
+      "pf": 2.1833976833976836,
+      "wr": 0.5927672955974843,
+      "n": 1946,
+      "wins": 1131,
+      "losses": 777,
+      "share_of_total": 0.3352860096485183,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "ldn_ny_kz",
+      "pf": 2.25,
+      "wr": 0.6,
+      "n": 10,
+      "wins": 6,
+      "losses": 4,
+      "share_of_total": 0.0017229496898690559,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "eu_open",
+      "pf": 1.75,
+      "wr": 0.5384615384615384,
+      "n": 14,
+      "wins": 7,
+      "losses": 6,
+      "share_of_total": 0.002412129565816678,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "us_close",
+      "pf": 2.2035573122529644,
+      "wr": 0.5949839914621131,
+      "n": 1912,
+      "wins": 1115,
+      "losses": 759,
+      "share_of_total": 0.3294279807029635,
+      "symbol": "GBPUSD"
+    },
+    {
+      "session": "asia",
+      "pf": 1.2484076433121019,
+      "wr": 0.4542294322132097,
+      "n": 1740,
+      "wins": 784,
+      "losses": 942,
+      "share_of_total": 0.3722721437740693,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "london",
+      "pf": 2.357142857142857,
+      "wr": 0.6111111111111112,
+      "n": 18,
+      "wins": 11,
+      "losses": 7,
+      "share_of_total": 0.0038510911424903724,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "ny",
+      "pf": 1.7727272727272727,
+      "wr": 0.5416666666666666,
+      "n": 1734,
+      "wins": 923,
+      "losses": 781,
+      "share_of_total": 0.37098844672657255,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "ldn_ny_kz",
+      "pf": 1.875,
+      "wr": 0.5555555555555556,
+      "n": 9,
+      "wins": 5,
+      "losses": 4,
+      "share_of_total": 0.0019255455712451862,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "eu_open",
+      "pf": Infinity,
+      "wr": 1.0,
+      "n": 9,
+      "wins": 9,
+      "losses": 0,
+      "share_of_total": 0.0019255455712451862,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "us_close",
+      "pf": 1.7732558139534884,
+      "wr": 0.5417406749555951,
+      "n": 1719,
+      "wins": 915,
+      "losses": 774,
+      "share_of_total": 0.36777920410783055,
+      "symbol": "AUDUSD"
+    },
+    {
+      "session": "asia",
+      "pf": 1.1484593837535013,
+      "wr": 0.4336329984135378,
+      "n": 1930,
+      "wins": 820,
+      "losses": 1071,
+      "share_of_total": 0.352898153227281,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "london",
+      "pf": 0.75,
+      "wr": 0.3333333333333333,
+      "n": 6,
+      "wins": 2,
+      "losses": 4,
+      "share_of_total": 0.0010970927043335162,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "ny",
+      "pf": 1.6976987447698744,
+      "wr": 0.5309126594700687,
+      "n": 2077,
+      "wins": 1082,
+      "losses": 956,
+      "share_of_total": 0.3797769244834522,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "ldn_ny_kz",
+      "pf": 1.5,
+      "wr": 0.5,
+      "n": 4,
+      "wins": 2,
+      "losses": 2,
+      "share_of_total": 0.0007313951362223441,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "eu_open",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 5,
+      "wins": 0,
+      "losses": 5,
+      "share_of_total": 0.0009142439202779302,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "us_close",
+      "pf": 1.6987381703470033,
+      "wr": 0.5310650887573964,
+      "n": 2065,
+      "wins": 1077,
+      "losses": 951,
+      "share_of_total": 0.3775827390747852,
+      "symbol": "USDCHF"
+    },
+    {
+      "session": "asia",
+      "pf": 1.1102150537634408,
+      "wr": 0.4253347064881565,
+      "n": 1965,
+      "wins": 826,
+      "losses": 1116,
+      "share_of_total": 0.3660581222056632,
+      "symbol": "USDCAD"
+    },
+    {
+      "session": "london",
+      "pf": 0.96,
+      "wr": 0.3902439024390244,
+      "n": 43,
+      "wins": 16,
+      "losses": 25,
+      "share_of_total": 0.00801043219076006,
+      "symbol": "USDCAD"
+    },
+    {
+      "session": "ny",
+      "pf": 2.806603773584906,
+      "wr": 0.651697699890471,
+      "n": 1945,
+      "wins": 1190,
+      "losses": 636,
+      "share_of_total": 0.3623323397913562,
+      "symbol": "USDCAD"
+    },
+    {
+      "session": "ldn_ny_kz",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 6,
+      "wins": 0,
+      "losses": 4,
+      "share_of_total": 0.0011177347242921013,
+      "symbol": "USDCAD"
+    },
+    {
+      "session": "eu_open",
+      "pf": 1.875,
+      "wr": 0.5555555555555556,
+      "n": 9,
+      "wins": 5,
+      "losses": 4,
+      "share_of_total": 0.0016766020864381521,
+      "symbol": "USDCAD"
+    },
+    {
+      "session": "us_close",
+      "pf": 2.833068362480127,
+      "wr": 0.6538249862410567,
+      "n": 1934,
+      "wins": 1188,
+      "losses": 629,
+      "share_of_total": 0.3602831594634873,
+      "symbol": "USDCAD"
+    }
+  ],
+  "marginal_contributions": [
+    {
+      "config": "base",
+      "n": 5804,
+      "pf": 1.631434830230011,
+      "wr": 0.5209863588667366,
+      "wins": 2979,
+      "losses": 2739,
+      "pct_of_base": 1.0,
+      "pf_delta_vs_base": 0.0,
+      "wr_delta_vs_base": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "config": "base_+htf",
+      "n": 2357,
+      "pf": 1.5650442477876105,
+      "wr": 0.5106106539627544,
+      "wins": 1179,
+      "losses": 1130,
+      "pct_of_base": 0.4060992419021365,
+      "pf_delta_vs_base": -0.06639058244240048,
+      "wr_delta_vs_base": -0.010375704903982208,
+      "symbol": "GBPUSD"
+    },
+    {
+      "config": "base_+session",
+      "n": 1946,
+      "pf": 2.1833976833976836,
+      "wr": 0.5927672955974843,
+      "wins": 1131,
+      "losses": 777,
+      "pct_of_base": 0.3352860096485183,
+      "pf_delta_vs_base": 0.5519628531676726,
+      "wr_delta_vs_base": 0.0717809367307477,
+      "symbol": "GBPUSD"
+    },
+    {
+      "config": "base_+htf_+sess",
+      "n": 812,
+      "pf": 2.1640866873065017,
+      "wr": 0.5906210392902408,
+      "wins": 466,
+      "losses": 323,
+      "pct_of_base": 0.13990351481736732,
+      "pf_delta_vs_base": 0.5326518570764907,
+      "wr_delta_vs_base": 0.06963468042350418,
+      "symbol": "GBPUSD"
+    },
+    {
+      "config": "base",
+      "n": 4674,
+      "pf": 1.6291122127084272,
+      "wr": 0.5206308057895874,
+      "wins": 2410,
+      "losses": 2219,
+      "pct_of_base": 1.0,
+      "pf_delta_vs_base": 0.0,
+      "wr_delta_vs_base": 0.0,
+      "symbol": "AUDUSD"
+    },
+    {
+      "config": "base_+htf",
+      "n": 1959,
+      "pf": 1.632400430570506,
+      "wr": 0.5211340206185567,
+      "wins": 1011,
+      "losses": 929,
+      "pct_of_base": 0.4191270860077022,
+      "pf_delta_vs_base": 0.0032882178620787794,
+      "wr_delta_vs_base": 0.0005032148289693117,
+      "symbol": "AUDUSD"
+    },
+    {
+      "config": "base_+session",
+      "n": 1734,
+      "pf": 1.7727272727272727,
+      "wr": 0.5416666666666666,
+      "wins": 923,
+      "losses": 781,
+      "pct_of_base": 0.37098844672657255,
+      "pf_delta_vs_base": 0.1436150600188455,
+      "wr_delta_vs_base": 0.021035860877079204,
+      "symbol": "AUDUSD"
+    },
+    {
+      "config": "base_+htf_+sess",
+      "n": 717,
+      "pf": 2.1794425087108014,
+      "wr": 0.5923295454545454,
+      "wins": 417,
+      "losses": 287,
+      "pct_of_base": 0.1534017971758665,
+      "pf_delta_vs_base": 0.5503302960023742,
+      "wr_delta_vs_base": 0.07169873966495799,
+      "symbol": "AUDUSD"
+    },
+    {
+      "config": "base",
+      "n": 5469,
+      "pf": 1.5516849678152216,
+      "wr": 0.5084682672622372,
+      "wins": 2732,
+      "losses": 2641,
+      "pct_of_base": 1.0,
+      "pf_delta_vs_base": 0.0,
+      "wr_delta_vs_base": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "config": "base_+htf",
+      "n": 1971,
+      "pf": 1.6653930131004366,
+      "wr": 0.5261251939989653,
+      "wins": 1017,
+      "losses": 916,
+      "pct_of_base": 0.3603949533735601,
+      "pf_delta_vs_base": 0.11370804528521505,
+      "wr_delta_vs_base": 0.01765692673672814,
+      "symbol": "USDCHF"
+    },
+    {
+      "config": "base_+session",
+      "n": 2077,
+      "pf": 1.6976987447698744,
+      "wr": 0.5309126594700687,
+      "wins": 1082,
+      "losses": 956,
+      "pct_of_base": 0.3797769244834522,
+      "pf_delta_vs_base": 0.14601377695465279,
+      "wr_delta_vs_base": 0.022444392207831565,
+      "symbol": "USDCHF"
+    },
+    {
+      "config": "base_+htf_+sess",
+      "n": 702,
+      "pf": 1.5580357142857142,
+      "wr": 0.5094890510948905,
+      "wins": 349,
+      "losses": 336,
+      "pct_of_base": 0.1283598464070214,
+      "pf_delta_vs_base": 0.0063507464704926075,
+      "wr_delta_vs_base": 0.0010207838326533603,
+      "symbol": "USDCHF"
+    },
+    {
+      "config": "base",
+      "n": 5368,
+      "pf": 1.7040395713107996,
+      "wr": 0.5318409880355075,
+      "wins": 2756,
+      "losses": 2426,
+      "pct_of_base": 1.0,
+      "pf_delta_vs_base": 0.0,
+      "wr_delta_vs_base": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "config": "base_+htf",
+      "n": 2079,
+      "pf": 1.79672131147541,
+      "wr": 0.5450024863252113,
+      "wins": 1096,
+      "losses": 915,
+      "pct_of_base": 0.38729508196721313,
+      "pf_delta_vs_base": 0.09268174016461028,
+      "wr_delta_vs_base": 0.01316149828970381,
+      "symbol": "USDCAD"
+    },
+    {
+      "config": "base_+session",
+      "n": 1945,
+      "pf": 2.806603773584906,
+      "wr": 0.651697699890471,
+      "wins": 1190,
+      "losses": 636,
+      "pct_of_base": 0.3623323397913562,
+      "pf_delta_vs_base": 1.1025642022741062,
+      "wr_delta_vs_base": 0.1198567118549635,
+      "symbol": "USDCAD"
+    },
+    {
+      "config": "base_+htf_+sess",
+      "n": 810,
+      "pf": 2.9365384615384613,
+      "wr": 0.6618985695708712,
+      "wins": 509,
+      "losses": 260,
+      "pct_of_base": 0.15089418777943367,
+      "pf_delta_vs_base": 1.2324988902276617,
+      "wr_delta_vs_base": 0.13005758153536373,
+      "symbol": "USDCAD"
+    }
+  ],
+  "per_vol_regime": [
+    {
+      "regime": "low",
+      "pf": 1.264166001596169,
+      "wr": 0.4573408401905587,
+      "n": 2321,
+      "wins": 1056,
+      "losses": 1253,
+      "share_of_signals": 0.42439202779301516,
+      "symbol": "USDCHF"
+    },
+    {
+      "regime": "mid",
+      "pf": 1.8243243243243243,
+      "wr": 0.5487804878048781,
+      "n": 2683,
+      "wins": 1440,
+      "losses": 1184,
+      "share_of_signals": 0.49058328762113734,
+      "symbol": "USDCHF"
+    },
+    {
+      "regime": "high",
+      "pf": 1.7352941176470589,
+      "wr": 0.5363636363636364,
+      "n": 465,
+      "wins": 236,
+      "losses": 204,
+      "share_of_signals": 0.0850246845858475,
+      "symbol": "USDCHF"
+    },
+    {
+      "regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share_of_signals": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "regime": "low",
+      "pf": 1.6389473684210527,
+      "wr": 0.5221327967806841,
+      "n": 3076,
+      "wins": 1557,
+      "losses": 1425,
+      "share_of_signals": 0.5730253353204173,
+      "symbol": "USDCAD"
+    },
+    {
+      "regime": "mid",
+      "pf": 1.7510799136069115,
+      "wr": 0.5386148480318884,
+      "n": 2086,
+      "wins": 1081,
+      "losses": 926,
+      "share_of_signals": 0.38859910581222057,
+      "symbol": "USDCAD"
+    },
+    {
+      "regime": "high",
+      "pf": 2.36,
+      "wr": 0.6113989637305699,
+      "n": 206,
+      "wins": 118,
+      "losses": 75,
+      "share_of_signals": 0.038375558867362144,
+      "symbol": "USDCAD"
+    },
+    {
+      "regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share_of_signals": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "regime": "low",
+      "pf": 1.7472885032537961,
+      "wr": 0.5380761523046093,
+      "n": 3021,
+      "wins": 1611,
+      "losses": 1383,
+      "share_of_signals": 0.5205031013094418,
+      "symbol": "GBPUSD"
+    },
+    {
+      "regime": "mid",
+      "pf": 1.6203208556149733,
+      "wr": 0.519280205655527,
+      "n": 2379,
+      "wins": 1212,
+      "losses": 1122,
+      "share_of_signals": 0.4098897312198484,
+      "symbol": "GBPUSD"
+    },
+    {
+      "regime": "high",
+      "pf": 1.0,
+      "wr": 0.4,
+      "n": 404,
+      "wins": 156,
+      "losses": 234,
+      "share_of_signals": 0.06960716747070986,
+      "symbol": "GBPUSD"
+    },
+    {
+      "regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share_of_signals": 0.0,
+      "symbol": "GBPUSD"
+    }
+  ],
+  "liquidity_proxy": [
+    {
+      "symbol": "USDCHF",
+      "session": "asia",
+      "volume_z_mean": 0.209,
+      "volume_z_abs_mean": 0.714,
+      "rvol_mean": 1.13
+    },
+    {
+      "symbol": "USDCHF",
+      "session": "london",
+      "volume_z_mean": 0.059,
+      "volume_z_abs_mean": 0.792,
+      "rvol_mean": 1.023
+    },
+    {
+      "symbol": "USDCHF",
+      "session": "ny",
+      "volume_z_mean": -0.094,
+      "volume_z_abs_mean": 0.731,
+      "rvol_mean": 0.929
+    },
+    {
+      "symbol": "USDCAD",
+      "session": "asia",
+      "volume_z_mean": 0.183,
+      "volume_z_abs_mean": 0.712,
+      "rvol_mean": 1.14
+    },
+    {
+      "symbol": "USDCAD",
+      "session": "london",
+      "volume_z_mean": 0.102,
+      "volume_z_abs_mean": 0.816,
+      "rvol_mean": 1.042
+    },
+    {
+      "symbol": "USDCAD",
+      "session": "ny",
+      "volume_z_mean": -0.101,
+      "volume_z_abs_mean": 0.759,
+      "rvol_mean": 0.924
+    },
+    {
+      "symbol": "GBPUSD",
+      "session": "asia",
+      "volume_z_mean": 0.189,
+      "volume_z_abs_mean": 0.737,
+      "rvol_mean": 1.148
+    },
+    {
+      "symbol": "GBPUSD",
+      "session": "london",
+      "volume_z_mean": 0.045,
+      "volume_z_abs_mean": 0.779,
+      "rvol_mean": 1.023
+    },
+    {
+      "symbol": "GBPUSD",
+      "session": "ny",
+      "volume_z_mean": -0.1,
+      "volume_z_abs_mean": 0.734,
+      "rvol_mean": 0.928
+    }
+  ],
+  "per_dxy_regime": [
+    {
+      "dxy_regime": "bear_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "dxy_regime": "sideways_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "dxy_regime": "bull_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "dxy_regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "dxy_regime": "bear_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "dxy_regime": "sideways_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "dxy_regime": "bull_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "dxy_regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "USDCAD"
+    },
+    {
+      "dxy_regime": "bear_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "dxy_regime": "sideways_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "dxy_regime": "bull_or_unmapped",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "dxy_regime": "unknown",
+      "pf": 0.0,
+      "wr": 0.0,
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "share": 0.0,
+      "symbol": "GBPUSD"
+    }
+  ],
+  "rolling_correlation_usdchf": [],
+  "shap_top_by_pair": {
+    "USDCHF": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap": 0.08002480269246004,
+        "mean_signed_shap": 0.07061142361141699,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap": 0.07122509164298953,
+        "mean_signed_shap": 0.06927566828141055,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap": 0.03902470589419528,
+        "mean_signed_shap": 0.034376841571262744,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap": 0.03442671550397907,
+        "mean_signed_shap": 0.02657654840184199,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap": 0.009435513784449286,
+        "mean_signed_shap": 0.0011476361272839478,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap": 0.00565037454926135,
+        "mean_signed_shap": 0.004472788774144678,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap": 0.0027918649971287995,
+        "mean_signed_shap": 0.0026369807555817215,
+        "n_samples": 3000
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap": 0.00232281622430908,
+        "mean_signed_shap": -0.0009255686267021257,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap": 0.00147170490519061,
+        "mean_signed_shap": 0.00020856123069895106,
+        "n_samples": 3000
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap": 0.00145650941772473,
+        "mean_signed_shap": 0.0011567021016331348,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap": 0.0013411930909770907,
+        "mean_signed_shap": 0.0012133246341809972,
+        "n_samples": 3000
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap": 0.000980138427372494,
+        "mean_signed_shap": 0.0005623923502172825,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap": 0.000806132542992648,
+        "mean_signed_shap": -0.00030012071593038097,
+        "n_samples": 3000
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap": 0.0006665200822816385,
+        "mean_signed_shap": 0.0006665200822816385,
+        "n_samples": 3000
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap": 0.0003544426030188661,
+        "mean_signed_shap": 0.00016809695138749248,
+        "n_samples": 3000
+      }
+    ],
+    "USDCAD": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap": 0.07525515182247057,
+        "mean_signed_shap": 0.06585607993478859,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap": 0.06596001139419133,
+        "mean_signed_shap": 0.06330209679383876,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap": 0.03741882603917984,
+        "mean_signed_shap": 0.03407730640371921,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap": 0.032394267731614725,
+        "mean_signed_shap": 0.02510550523493913,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap": 0.00895389286097299,
+        "mean_signed_shap": 0.000473656229255541,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap": 0.005627953655343451,
+        "mean_signed_shap": 0.004628846963105365,
+        "n_samples": 3000
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap": 0.002984440512320227,
+        "mean_signed_shap": -0.0016005195452710112,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap": 0.002741640671282225,
+        "mean_signed_shap": 0.0026142760518236426,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap": 0.0015899306187285433,
+        "mean_signed_shap": -5.61286600795943e-06,
+        "n_samples": 3000
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap": 0.0013916585806660216,
+        "mean_signed_shap": 0.0012207492958126052,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap": 0.001278575447045648,
+        "mean_signed_shap": 0.001132747414859463,
+        "n_samples": 3000
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap": 0.001128682267538895,
+        "mean_signed_shap": 0.0007241086448686514,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap": 0.0008291020105266684,
+        "mean_signed_shap": -0.0002503692859667055,
+        "n_samples": 3000
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap": 0.0006478876140491685,
+        "mean_signed_shap": 0.0006408379361609209,
+        "n_samples": 3000
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap": 0.00035325996602933896,
+        "mean_signed_shap": 0.00028570283011755985,
+        "n_samples": 3000
+      }
+    ],
+    "GBPUSD": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap": 0.08405551148343052,
+        "mean_signed_shap": 0.07562434059220866,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap": 0.06755941124326025,
+        "mean_signed_shap": 0.06474153958611771,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap": 0.0386295330760657,
+        "mean_signed_shap": 0.03382533248110129,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap": 0.03395990480273051,
+        "mean_signed_shap": 0.027151398603761208,
+        "n_samples": 3000
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap": 0.009898196209139622,
+        "mean_signed_shap": -0.0011376971489244902,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap": 0.005528020738302751,
+        "mean_signed_shap": 0.004948838434966995,
+        "n_samples": 3000
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap": 0.0027045097151683606,
+        "mean_signed_shap": -0.0013110650812136976,
+        "n_samples": 3000
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap": 0.002579037574152271,
+        "mean_signed_shap": 0.002416769662061711,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap": 0.001475729338290046,
+        "mean_signed_shap": 0.00025979720434753556,
+        "n_samples": 3000
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap": 0.001334506705183757,
+        "mean_signed_shap": 0.001143460531114533,
+        "n_samples": 3000
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap": 0.0012243990900154037,
+        "mean_signed_shap": 0.0010721137774434997,
+        "n_samples": 3000
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap": 0.0010522257261001418,
+        "mean_signed_shap": 0.0005561471103101435,
+        "n_samples": 3000
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap": 0.0008303715802933298,
+        "mean_signed_shap": -0.00026434285240972216,
+        "n_samples": 3000
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap": 0.0006314354446564771,
+        "mean_signed_shap": 0.0006269548248526966,
+        "n_samples": 3000
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap": 0.00037956033215016564,
+        "mean_signed_shap": 0.0002832614135820778,
+        "n_samples": 3000
+      }
+    ]
+  },
+  "shap_winning_vs_losing_delta": {
+    "USDCHF": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap_win": 0.09832553095428881,
+        "mean_signed_shap_win": 0.09002113572376805,
+        "mean_abs_shap_loss": 0.06067986016889187,
+        "mean_signed_shap_loss": 0.05002287452289323,
+        "abs_delta": 0.03764567078539694,
+        "signed_delta": 0.03999826120087482
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap_win": 0.08074287166591752,
+        "mean_signed_shap_win": 0.07922530092591402,
+        "mean_abs_shap_loss": 0.06183426809294941,
+        "mean_signed_shap_loss": 0.05963845719377027,
+        "abs_delta": 0.018908603572968113,
+        "signed_delta": 0.019586843732143755
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap_win": 0.04113917790448147,
+        "mean_signed_shap_win": 0.03795713961253268,
+        "mean_abs_shap_loss": 0.03679088517820168,
+        "mean_signed_shap_loss": 0.030736568662426394,
+        "abs_delta": 0.00434829272627979,
+        "signed_delta": 0.007220570950106284
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap_win": 0.037244253115463824,
+        "mean_signed_shap_win": 0.029487133290596976,
+        "mean_abs_shap_loss": 0.03144532330255734,
+        "mean_signed_shap_loss": 0.023511241784336157,
+        "abs_delta": 0.0057989298129064865,
+        "signed_delta": 0.0059758915062608185
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap_win": 0.009820784037133821,
+        "mean_signed_shap_win": 0.0029418803202356783,
+        "mean_abs_shap_loss": 0.009021656947312828,
+        "mean_signed_shap_loss": -0.0005256588685061982,
+        "abs_delta": 0.0007991270898209928,
+        "signed_delta": 0.0034675391887418767
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap_win": 0.0029657265787016262,
+        "mean_signed_shap_win": 0.0028618600983271346,
+        "mean_abs_shap_loss": 0.0026092903881222984,
+        "mean_signed_shap_loss": 0.0024289634606773428,
+        "abs_delta": 0.00035643619057932783,
+        "signed_delta": 0.0004328966376497918
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap_win": 0.002447657773822687,
+        "mean_signed_shap_win": -0.0011019271708020742,
+        "mean_abs_shap_loss": 0.0021890425675526386,
+        "mean_signed_shap_loss": -0.0007361365460365569,
+        "abs_delta": 0.0002586152062700486,
+        "signed_delta": -0.0003657906247655174
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap_win": 0.005857391724659069,
+        "mean_signed_shap_win": 0.004600091163182791,
+        "mean_abs_shap_loss": 0.005423799448745569,
+        "mean_signed_shap_loss": 0.004323579848168255,
+        "abs_delta": 0.0004335922759134995,
+        "signed_delta": 0.0002765113150145354
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap_win": 0.0012634391498735065,
+        "mean_signed_shap_win": 0.0011407037207828658,
+        "mean_abs_shap_loss": 0.0014336943230174423,
+        "mean_signed_shap_loss": 0.0013031614534407315,
+        "abs_delta": -0.00017025517314393584,
+        "signed_delta": -0.00016245773265786577
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap_win": 0.0013713327604633887,
+        "mean_signed_shap_win": 0.0011205303952227298,
+        "mean_abs_shap_loss": 0.0015398887685085577,
+        "mean_signed_shap_loss": 0.0012243690532735417,
+        "abs_delta": -0.00016855600804516896,
+        "signed_delta": -0.00010383865805081195
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap_win": 0.001425626045555588,
+        "mean_signed_shap_win": 0.00015347939060966247,
+        "mean_abs_shap_loss": 0.001527753281436069,
+        "mean_signed_shap_loss": 0.00025452113028050623,
+        "abs_delta": -0.00010212723588048098,
+        "signed_delta": -0.00010104173967084376
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap_win": 0.0003545582892911365,
+        "mean_signed_shap_win": 0.00013569865901657803,
+        "mean_abs_shap_loss": 0.000353358962529966,
+        "mean_signed_shap_loss": 0.00020610778724782446,
+        "abs_delta": 1.1993267611704896e-06,
+        "signed_delta": -7.040912823124643e-05
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap_win": 0.0006842484597928896,
+        "mean_signed_shap_win": 0.0006842484597928896,
+        "mean_abs_shap_loss": 0.0006488209906234271,
+        "mean_signed_shap_loss": 0.0006488209906234271,
+        "abs_delta": 3.542746916946249e-05,
+        "signed_delta": 3.542746916946249e-05
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap_win": 0.0009904627267332904,
+        "mean_signed_shap_win": 0.0005817326550649961,
+        "mean_abs_shap_loss": 0.000979648669423452,
+        "mean_signed_shap_loss": 0.0005560360124332998,
+        "abs_delta": 1.0814057309838348e-05,
+        "signed_delta": 2.5696642631696303e-05
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap_win": 0.0008011595129638493,
+        "mean_signed_shap_win": -0.00030872820100789943,
+        "mean_abs_shap_loss": 0.0008079267060935614,
+        "mean_signed_shap_loss": -0.00029327092455850396,
+        "abs_delta": -6.7671931297120635e-06,
+        "signed_delta": -1.5457276449395464e-05
+      }
+    ],
+    "USDCAD": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap_win": 0.09558552984567767,
+        "mean_signed_shap_win": 0.08738515434010466,
+        "mean_abs_shap_loss": 0.048702906012079966,
+        "mean_signed_shap_loss": 0.037562673853569754,
+        "abs_delta": 0.0468826238335977,
+        "signed_delta": 0.049822480486534905
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap_win": 0.07628051731374563,
+        "mean_signed_shap_win": 0.07411084462359334,
+        "mean_abs_shap_loss": 0.05435380107590481,
+        "mean_signed_shap_loss": 0.05141281834104417,
+        "abs_delta": 0.021926716237840822,
+        "signed_delta": 0.022698026282549168
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap_win": 0.03649178508818555,
+        "mean_signed_shap_win": 0.029191371031342124,
+        "mean_abs_shap_loss": 0.027538605785220934,
+        "mean_signed_shap_loss": 0.02118922443474844,
+        "abs_delta": 0.008953179302964614,
+        "signed_delta": 0.008002146596593682
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap_win": 0.03902855765021655,
+        "mean_signed_shap_win": 0.03618989222940571,
+        "mean_abs_shap_loss": 0.03535365744947567,
+        "mean_signed_shap_loss": 0.031585013840704036,
+        "abs_delta": 0.003674900200740884,
+        "signed_delta": 0.004604878388701675
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap_win": 0.010061101911176387,
+        "mean_signed_shap_win": 0.002018163123622656,
+        "mean_abs_shap_loss": 0.007502808988914874,
+        "mean_signed_shap_loss": -0.0008945652866375926,
+        "abs_delta": 0.002558292922261513,
+        "signed_delta": 0.0029127284102602484
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap_win": 0.003369705414619051,
+        "mean_signed_shap_win": -0.0020697807058480096,
+        "mean_abs_shap_loss": 0.002311011780204933,
+        "mean_signed_shap_loss": -0.0008182934479750828,
+        "abs_delta": 0.001058693634414118,
+        "signed_delta": -0.001251487257872927
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap_win": 0.0030543682278203845,
+        "mean_signed_shap_win": 0.0029517374187401197,
+        "mean_abs_shap_loss": 0.0023083706630164388,
+        "mean_signed_shap_loss": 0.0021838715062105734,
+        "abs_delta": 0.0007459975648039458,
+        "signed_delta": 0.0007678659125295462
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap_win": 0.0015442341874081882,
+        "mean_signed_shap_win": -8.7784375101412e-05,
+        "mean_abs_shap_loss": 0.0016458403417412963,
+        "mean_signed_shap_loss": 0.0001614946873185666,
+        "abs_delta": -0.0001016061543331081,
+        "signed_delta": -0.0002492790624199786
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap_win": 0.005962056559665859,
+        "mean_signed_shap_win": 0.004683819164180623,
+        "mean_abs_shap_loss": 0.005187418215790598,
+        "mean_signed_shap_loss": 0.004441482266936326,
+        "abs_delta": 0.000774638343875261,
+        "signed_delta": 0.00024233689724429634
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap_win": 0.0013046337082719222,
+        "mean_signed_shap_win": 0.0011441820397644809,
+        "mean_abs_shap_loss": 0.0014979132501593516,
+        "mean_signed_shap_loss": 0.001386256354142521,
+        "abs_delta": -0.00019327954188742944,
+        "signed_delta": -0.0002420743143780402
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap_win": 0.0008304270233242926,
+        "mean_signed_shap_win": -0.00020696404719168707,
+        "mean_abs_shap_loss": 0.0008224486812776411,
+        "mean_signed_shap_loss": -0.0003032951934469559,
+        "abs_delta": 7.978342046651484e-06,
+        "signed_delta": 9.633114625526884e-05
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap_win": 0.0012540931208653826,
+        "mean_signed_shap_win": 0.0010938249600317654,
+        "mean_abs_shap_loss": 0.0013045083821013172,
+        "mean_signed_shap_loss": 0.0011839831882795014,
+        "abs_delta": -5.041526123593463e-05,
+        "signed_delta": -9.015822824773594e-05
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap_win": 0.00035138490451069003,
+        "mean_signed_shap_win": 0.00026981808352137705,
+        "mean_abs_shap_loss": 0.00035588669314693045,
+        "mean_signed_shap_loss": 0.0003069184516019228,
+        "abs_delta": -4.5017886362404215e-06,
+        "signed_delta": -3.710036808054573e-05
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap_win": 0.0011229120960680598,
+        "mean_signed_shap_win": 0.0007344802721080687,
+        "mean_abs_shap_loss": 0.001119251155197844,
+        "mean_signed_shap_loss": 0.0007169793094511923,
+        "abs_delta": 3.66094087021567e-06,
+        "signed_delta": 1.750096265687646e-05
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap_win": 0.0006463295019532519,
+        "mean_signed_shap_win": 0.0006463295019532519,
+        "mean_abs_shap_loss": 0.0006461235203808675,
+        "mean_signed_shap_loss": 0.0006304691653366461,
+        "abs_delta": 2.0598157238443764e-07,
+        "signed_delta": 1.586033661660582e-05
+      }
+    ],
+    "GBPUSD": [
+      {
+        "feature": "rvol_20",
+        "mean_abs_shap_win": 0.1035303546319539,
+        "mean_signed_shap_win": 0.09605686682715177,
+        "mean_abs_shap_loss": 0.0619855988627656,
+        "mean_signed_shap_loss": 0.05248490571325799,
+        "abs_delta": 0.0415447557691883,
+        "signed_delta": 0.043571961113893776
+      },
+      {
+        "feature": "ema_20_dist_atr",
+        "mean_abs_shap_win": 0.0768528865409465,
+        "mean_signed_shap_win": 0.07463608287855295,
+        "mean_abs_shap_loss": 0.05703855831005082,
+        "mean_signed_shap_loss": 0.05354244627769661,
+        "abs_delta": 0.019814328230895684,
+        "signed_delta": 0.021093636600856336
+      },
+      {
+        "feature": "hour_sin",
+        "mean_abs_shap_win": 0.040506111916270314,
+        "mean_signed_shap_win": 0.036929105769288186,
+        "mean_abs_shap_loss": 0.03639329074067972,
+        "mean_signed_shap_loss": 0.03027784375980638,
+        "abs_delta": 0.004112821175590593,
+        "signed_delta": 0.006651262009481806
+      },
+      {
+        "feature": "dist_to_swing_low_atr",
+        "mean_abs_shap_win": 0.03689139158317792,
+        "mean_signed_shap_win": 0.02954890315009578,
+        "mean_abs_shap_loss": 0.030739170114009288,
+        "mean_signed_shap_loss": 0.02457986159421217,
+        "abs_delta": 0.00615222146916863,
+        "signed_delta": 0.00496904155588361
+      },
+      {
+        "feature": "hour_cos",
+        "mean_abs_shap_win": 0.01029224111202333,
+        "mean_signed_shap_win": 0.0005473837969872879,
+        "mean_abs_shap_loss": 0.009380218054435317,
+        "mean_signed_shap_loss": -0.003027260883829253,
+        "abs_delta": 0.0009120230575880139,
+        "signed_delta": 0.0035746446808165412
+      },
+      {
+        "feature": "dist_to_swing_high_atr",
+        "mean_abs_shap_win": 0.002871560987265065,
+        "mean_signed_shap_win": 0.0027558881523552722,
+        "mean_abs_shap_loss": 0.0022351035569182645,
+        "mean_signed_shap_loss": 0.002023085219945252,
+        "abs_delta": 0.0006364574303468003,
+        "signed_delta": 0.0007328029324100201
+      },
+      {
+        "feature": "ltf_rsi_minus_htf_rsi",
+        "mean_abs_shap_win": 0.005766438225911244,
+        "mean_signed_shap_win": 0.005213016893833082,
+        "mean_abs_shap_loss": 0.005259850963251532,
+        "mean_signed_shap_loss": 0.004632891511407409,
+        "abs_delta": 0.0005065872626597119,
+        "signed_delta": 0.0005801253824256735
+      },
+      {
+        "feature": "volume_z_score",
+        "mean_abs_shap_win": 0.0028283398981384027,
+        "mean_signed_shap_win": -0.0014191660372053193,
+        "mean_abs_shap_loss": 0.0025384284481150413,
+        "mean_signed_shap_loss": -0.0011590306264514171,
+        "abs_delta": 0.00028991145002336136,
+        "signed_delta": -0.0002601354107539021
+      },
+      {
+        "feature": "htf_1h_atr_percentile_100",
+        "mean_abs_shap_win": 0.001431073115285581,
+        "mean_signed_shap_win": 0.00016392517740971844,
+        "mean_abs_shap_loss": 0.0015206601346804027,
+        "mean_signed_shap_loss": 0.00038761104093378165,
+        "abs_delta": -8.958701939482182e-05,
+        "signed_delta": -0.0002236858635240632
+      },
+      {
+        "feature": "both_high_vol",
+        "mean_abs_shap_win": 0.001236106351741885,
+        "mean_signed_shap_win": 0.001086649002493757,
+        "mean_abs_shap_loss": 0.001433952748491296,
+        "mean_signed_shap_loss": 0.0012225546583332903,
+        "abs_delta": -0.0001978463967494109,
+        "signed_delta": -0.00013590565583953326
+      },
+      {
+        "feature": "ema_20_slope_atr",
+        "mean_abs_shap_win": 0.0011743872328291364,
+        "mean_signed_shap_win": 0.0010097621709208534,
+        "mean_abs_shap_loss": 0.001280185745254699,
+        "mean_signed_shap_loss": 0.0011454956474253807,
+        "abs_delta": -0.00010579851242556253,
+        "signed_delta": -0.00013573347650452732
+      },
+      {
+        "feature": "pullback_in_bear",
+        "mean_abs_shap_win": 0.0006580067799408483,
+        "mean_signed_shap_win": 0.0006580067799408483,
+        "mean_abs_shap_loss": 0.0005991882311312113,
+        "mean_signed_shap_loss": 0.0005893551225640257,
+        "abs_delta": 5.881854880963693e-05,
+        "signed_delta": 6.865165737682255e-05
+      },
+      {
+        "feature": "htf_ltf_agree_bull",
+        "mean_abs_shap_win": 0.0008283537189576518,
+        "mean_signed_shap_win": -0.0002512663735384403,
+        "mean_abs_shap_loss": 0.0008311731180073154,
+        "mean_signed_shap_loss": -0.000283040307711283,
+        "abs_delta": -2.819399049663689e-06,
+        "signed_delta": 3.177393417284273e-05
+      },
+      {
+        "feature": "realized_vol_20",
+        "mean_abs_shap_win": 0.00037285644431263814,
+        "mean_signed_shap_win": 0.0002761367498718233,
+        "mean_abs_shap_loss": 0.00038749313106949574,
+        "mean_signed_shap_loss": 0.00029803411269585734,
+        "abs_delta": -1.46366867568576e-05,
+        "signed_delta": -2.1897362824034052e-05
+      },
+      {
+        "feature": "atr_percentile_100",
+        "mean_abs_shap_win": 0.0010865488515831513,
+        "mean_signed_shap_win": 0.0005606849572275886,
+        "mean_abs_shap_loss": 0.0010166634941969805,
+        "mean_signed_shap_loss": 0.00056711336783504,
+        "abs_delta": 6.988535738617079e-05,
+        "signed_delta": -6.4284106074514145e-06
+      }
+    ]
+  },
+  "diagnoses": {
+    "USDCHF": {
+      "hypothesis_scores": {
+        "session_mismatch": 0.033,
+        "htf_filter_interaction": 0.0,
+        "session_filter_inversion": 0.0,
+        "regime_dependency": 0.04,
+        "feature_signature_diff": 1.0,
+        "structural_pair_issue": 0.785
+      },
+      "top_hypothesis": "feature_signature_diff",
+      "top_score": 1.0,
+      "notes": [
+        "session_mismatch: PF range across primary sessions = 1.15\u20131.70 (\u0394=0.55)",
+        "htf_filter_interaction: \u0394pf = +0.114 (HTF neutral oder positiv)",
+        "session_filter_inversion: \u0394pf = +0.146 (Session neutral oder positiv)",
+        "regime_dependency: PF range across vol regimes = 1.26\u20131.82",
+        "feature_signature_diff: top-5 signed-shap deltas sum = 0.0762",
+        "structural_pair_issue: mean other scores = 0.21 (low \u2192 residual hypothesis)"
+      ]
+    },
+    "USDCAD": {
+      "hypothesis_scores": {
+        "session_mismatch": 1.0,
+        "htf_filter_interaction": 0.0,
+        "session_filter_inversion": 0.0,
+        "regime_dependency": 0.147,
+        "feature_signature_diff": 1.0,
+        "structural_pair_issue": 0.0
+      },
+      "top_hypothesis": "session_mismatch",
+      "top_score": 1.0,
+      "notes": [
+        "session_mismatch: PF range across primary sessions = 0.96\u20132.81 (\u0394=1.85)",
+        "htf_filter_interaction: \u0394pf = +0.093 (HTF neutral oder positiv)",
+        "session_filter_inversion: \u0394pf = +1.103 (Session neutral oder positiv)",
+        "regime_dependency: PF range across vol regimes = 1.64\u20132.36",
+        "feature_signature_diff: top-5 signed-shap deltas sum = 0.0880"
+      ]
+    },
+    "GBPUSD": {
+      "hypothesis_scores": {
+        "session_mismatch": 0.456,
+        "htf_filter_interaction": 0.0,
+        "session_filter_inversion": 0.0,
+        "regime_dependency": 0.165,
+        "feature_signature_diff": 1.0,
+        "structural_pair_issue": 0.0
+      },
+      "top_hypothesis": "feature_signature_diff",
+      "top_score": 1.0,
+      "notes": [
+        "session_mismatch: PF range across primary sessions = 1.00\u20132.18 (\u0394=1.18)",
+        "htf_filter_interaction: \u0394pf = -0.066 (HTF neutral oder positiv)",
+        "session_filter_inversion: \u0394pf = +0.552 (Session neutral oder positiv)",
+        "regime_dependency: PF range across vol regimes = 1.00\u20131.75",
+        "feature_signature_diff: top-5 signed-shap deltas sum = 0.0799"
+      ]
+    }
+  },
+  "override_precheck_usdchf": {
+    "all_passed": false,
+    "checks": {
+      "1_statistical_proof": true,
+      "2_market_structure": false,
+      "3_oos_lift": false,
+      "4_reproducible": false
+    },
+    "missing": [
+      "2_market_structure",
+      "3_oos_lift",
+      "4_reproducible"
+    ],
+    "recommendation": "BLOCKED \u2014 missing: ['2_market_structure', '3_oos_lift', '4_reproducible']. Override NICHT implementieren."
+  }
+}

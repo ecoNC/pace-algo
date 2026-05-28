@@ -1,0 +1,10 @@
+symbol,session,volume_z_mean,volume_z_abs_mean,rvol_mean
+USDCHF,asia,0.209,0.714,1.13
+USDCHF,london,0.059,0.792,1.023
+USDCHF,ny,-0.094,0.731,0.929
+USDCAD,asia,0.183,0.712,1.14
+USDCAD,london,0.102,0.816,1.042
+USDCAD,ny,-0.101,0.759,0.924
+GBPUSD,asia,0.189,0.737,1.148
+GBPUSD,london,0.045,0.779,1.023
+GBPUSD,ny,-0.1,0.734,0.928
