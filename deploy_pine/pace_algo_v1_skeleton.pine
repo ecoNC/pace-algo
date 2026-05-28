@@ -1,0 +1,351 @@
+// =============================================================================
+// PaceAlgo V1 — Skeleton (ANN-018 4-Layer Decision-Assisted System)
+// =============================================================================
+// Status:    SKELETON — Layer 1 Signal Engine ist Placeholder, wird per
+//            core/export/pine_codegen.py durch echtes FX-Modell ersetzt
+//            (NB14f-v2 Production seed=7, Cluster-Cutoff 0.40).
+//
+// Layers:    1. Signal Engine        (Placeholder hier)
+//            2. Multi-TF Dashboard   (5m / 15m / 1h / 4h × Trend / Strength / Range)
+//            3. Backtest Transparency (Live PF / WR / MDD + Settings-Panel)
+//
+// User-Settings: ANN-011-Whitelist (Profile, Display-Toggles)
+// Discipline:    Keine freien ML-Thresholds, kein Curve-Fit-Zugang.
+//
+// Maintainer:    pace-algo Repo, ecoNC
+// =============================================================================
+
+//@version=6
+indicator("PaceAlgo V1", overlay=true,
+          max_boxes_count=500, max_labels_count=500, max_lines_count=500)
+
+
+// =============================================================================
+// USER INPUTS (ANN-011 Whitelist-konform — keine Curve-Fit-Parameter)
+// =============================================================================
+
+profile = input.string("Balanced", "Signal Profile",
+                        options=["Aggressive", "Balanced", "Conservative"],
+                        tooltip="Aggressive=Standard tier, Balanced=High tier, Conservative=Premium tier")
+
+show_dashboard = input.bool(true, "Show Multi-TF Dashboard", group="Display")
+show_backtest  = input.bool(true, "Show Backtest Stats",     group="Display")
+show_signals   = input.bool(true, "Show Signals on Chart",   group="Display")
+
+i_session_filter = input.string("None", "Session Filter",
+                                  options=["None", "NY only", "Exclude Asia"],
+                                  group="Filter",
+                                  tooltip="Optional: nur Signale in bestimmten Sessions")
+
+
+// =============================================================================
+// LAYER 1 — SIGNAL ENGINE (PLACEHOLDER)
+// =============================================================================
+// Wird durch core/export/pine_codegen.py durch echte LightGBM-Tree-Cascade
+// ersetzt. Aktuell: einfache EMA-Trend-Probability für Skeleton-Test.
+// =============================================================================
+
+f_signal_probability_placeholder() =>
+    ema20 = ta.ema(close, 20)
+    ema50 = ta.ema(close, 50)
+    atr14 = ta.atr(14)
+    bullish = close > ema20 and ema20 > ema50
+    bearish = close < ema20 and ema20 < ema50
+    distance_atr = atr14 > 0 ? math.abs(close - ema20) / atr14 : 0.0
+    confidence = math.min(1.0, distance_atr / 2.0)
+    bullish ? 0.50 + 0.50 * confidence
+            : bearish ? 0.50 - 0.50 * confidence
+                      : 0.50
+
+probability = f_signal_probability_placeholder()
+
+// Tier-Cutoffs aus NB14f-v2 (Cluster-Detection per ANN-013/14, Production-Seed=7)
+// PLACEHOLDER bis pine_codegen die echten Cluster pro Asset-Klasse einsetzt.
+var float CUTOFF_STANDARD = 0.50   // Aggressive trigger
+var float CUTOFF_HIGH     = 0.55   // Balanced
+var float CUTOFF_PREMIUM  = 0.65   // Conservative
+
+tier = probability >= CUTOFF_PREMIUM  ? "Premium"
+     : probability >= CUTOFF_HIGH     ? "High"
+     : probability >= CUTOFF_STANDARD ? "Standard"
+     :                                   "None"
+
+// Profile mapping (ANN-012 + ANN-018)
+profile_cutoff = profile == "Aggressive"   ? CUTOFF_STANDARD
+              : profile == "Balanced"     ? CUTOFF_HIGH
+              :                              CUTOFF_PREMIUM
+
+signal_raw = probability >= profile_cutoff
+
+// Optional Session-Filter (User-Choice, NICHT Curve-Fit)
+hour_utc = hour(time, "UTC")
+in_ny_session = hour_utc >= 13 and hour_utc < 22
+in_asia_session = hour_utc >= 23 or hour_utc < 8
+session_allowed = switch i_session_filter
+    "NY only"      => in_ny_session
+    "Exclude Asia" => not in_asia_session
+    => true
+
+signal_active = signal_raw and session_allowed
+
+
+// =============================================================================
+// LAYER 2 — MULTI-TF DASHBOARD (5m / 15m / 1h / 4h)
+// =============================================================================
+// Pro TF: Trend (EMA20 vs EMA50) / Strength (ADX14) / Range (Bollinger-Width
+//         relativ zu eigenem 50-Bar-Average).
+// Aggregat: TF-gewichtet (4h=4× / 1h=2× / 15m=1× / 5m=0.5×) → Score in [-1, +1].
+// =============================================================================
+
+// --- Per-TF Berechnungs-Funktionen (Lookahead-Off zwingend) ---
+
+f_trend_score(tf_str) =>
+    e20 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 20),
+                            barmerge.gaps_off, barmerge.lookahead_off)
+    e50 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 50),
+                            barmerge.gaps_off, barmerge.lookahead_off)
+    e20 > e50 ? 1 : e20 < e50 ? -1 : 0
+
+f_adx_value(tf_str) =>
+    request.security(syminfo.tickerid, tf_str, ta.adx(14),
+                      barmerge.gaps_off, barmerge.lookahead_off)
+
+// Bollinger-Width-Ratio: aktueller Width / SMA(Width, 50)
+// Self-contained Helper damit es in request.security passt.
+f_bb_width_ratio() =>
+    basis = ta.sma(close, 20)
+    dev = 2.0 * ta.stdev(close, 20)
+    width = basis > 0 ? (2 * dev) / basis : 0.0
+    width_avg = ta.sma(width, 50)
+    width_avg > 0 ? width / width_avg : 1.0
+
+f_range_ratio(tf_str) =>
+    request.security(syminfo.tickerid, tf_str, f_bb_width_ratio(),
+                      barmerge.gaps_off, barmerge.lookahead_off)
+
+// --- Per-TF Werte holen ---
+
+trend_5m  = f_trend_score("5")
+trend_15m = f_trend_score("15")
+trend_1h  = f_trend_score("60")
+trend_4h  = f_trend_score("240")
+
+adx_5m   = f_adx_value("5")
+adx_15m  = f_adx_value("15")
+adx_1h   = f_adx_value("60")
+adx_4h   = f_adx_value("240")
+
+range_5m  = f_range_ratio("5")
+range_15m = f_range_ratio("15")
+range_1h  = f_range_ratio("60")
+range_4h  = f_range_ratio("240")
+
+// --- Label-Konversion ---
+
+f_strength_label(adx_val) =>
+    adx_val > 25 ? "High" : adx_val > 15 ? "Med" : "Lo"
+
+f_range_label(ratio) =>
+    ratio < 0.5 ? "Strong" : ratio < 0.8 ? "Yes" : "No"
+
+f_trend_label(score) =>
+    score == 1 ? "▲ Up" : score == -1 ? "▼ Down" : "─ Neutral"
+
+f_trend_color(score) =>
+    score == 1 ? color.new(color.green, 70)
+              : score == -1 ? color.new(color.red, 70)
+                            : color.new(color.gray, 80)
+
+// --- Overall Market State (TF-gewichtet) ---
+// 4h = 4× / 1h = 2× / 15m = 1× / 5m = 0.5×  → Summe Gewichte = 7.5
+
+weighted_sum = 4.0 * trend_4h + 2.0 * trend_1h + 1.0 * trend_15m + 0.5 * trend_5m
+weight_total = 7.5
+market_state_score = weighted_sum / weight_total   // [-1, +1]
+
+market_state_label = market_state_score >  0.50 ? "Strong Bullish"
+                   : market_state_score >  0.20 ? "Bullish"
+                   : market_state_score > -0.20 ? "Neutral"
+                   : market_state_score > -0.50 ? "Bearish"
+                   :                                "Strong Bearish"
+
+market_state_color = market_state_score >  0.20 ? color.new(color.green, 60)
+                   : market_state_score < -0.20 ? color.new(color.red, 60)
+                   :                                color.new(color.gray, 70)
+
+
+// =============================================================================
+// LAYER 3 — BACKTEST / SETTINGS TRANSPARENCY
+// =============================================================================
+// Live PF/WR/MDD-Tracking auf den sichtbaren Bars (current chart period).
+// Trade-Simulation: TP = 1.5 × ATR / SL = 1.0 × ATR  (Triple-Barrier-Equivalent).
+// =============================================================================
+
+var int   bt_wins    = 0
+var int   bt_losses  = 0
+var float bt_equity  = 0.0
+var float bt_peak    = 0.0
+var float bt_max_dd  = 0.0
+
+var bool  in_trade   = false
+var float entry_px   = na
+var float tp_px      = na
+var float sl_px      = na
+
+// Reset bei Profile-Wechsel oder neuer Symbol-Session — nicht nötig hier weil
+// `var` über bars persistiert, Reset erfolgt nur bei Indicator-Re-Add.
+
+// Trade-Logic (simplified — keine Pyramiding, immer eine offene Position)
+if signal_active and not in_trade
+    entry_px := close
+    atr_now = ta.atr(14)
+    tp_px   := entry_px + 1.5 * atr_now
+    sl_px   := entry_px - 1.0 * atr_now
+    in_trade := true
+
+if in_trade
+    // TP zuerst checken bei beidem-touched-Bar = konservative Annahme SL first
+    if low <= sl_px
+        bt_losses += 1
+        bt_equity -= 1.0
+        in_trade  := false
+    else if high >= tp_px
+        bt_wins   += 1
+        bt_equity += 1.5
+        in_trade  := false
+
+// Drawdown-Tracking
+if bt_equity > bt_peak
+    bt_peak := bt_equity
+
+bt_dd_abs = bt_peak - bt_equity
+bt_dd_pct = bt_peak > 0 ? bt_dd_abs / bt_peak : 0.0
+if bt_dd_pct > bt_max_dd
+    bt_max_dd := bt_dd_pct
+
+bt_total_trades = bt_wins + bt_losses
+bt_wr  = bt_total_trades > 0 ? bt_wins / bt_total_trades : 0.0
+bt_gross_win  = bt_wins * 1.5
+bt_gross_loss = bt_losses * 1.0
+bt_pf = bt_gross_loss > 0 ? bt_gross_win / bt_gross_loss
+                          : (bt_gross_win > 0 ? 999.0 : 0.0)
+
+
+// =============================================================================
+// UI — DASHBOARD-TABELLE
+// =============================================================================
+
+if show_dashboard and barstate.islast
+    var table dash = table.new(position.top_right, 5, 6, border_width=1,
+                                border_color=color.new(color.gray, 60))
+    bg_header = color.new(color.black, 50)
+    txt_header = color.white
+
+    table.cell(dash, 0, 0, "TF",       bgcolor=bg_header, text_color=txt_header, text_size=size.small)
+    table.cell(dash, 1, 0, "Trend",    bgcolor=bg_header, text_color=txt_header, text_size=size.small)
+    table.cell(dash, 2, 0, "Strength", bgcolor=bg_header, text_color=txt_header, text_size=size.small)
+    table.cell(dash, 3, 0, "Range",    bgcolor=bg_header, text_color=txt_header, text_size=size.small)
+    table.cell(dash, 4, 0, "ADX",      bgcolor=bg_header, text_color=txt_header, text_size=size.small)
+
+    // Row: 5m
+    table.cell(dash, 0, 1, "5m",                                                                text_size=size.small)
+    table.cell(dash, 1, 1, f_trend_label(trend_5m), bgcolor=f_trend_color(trend_5m),            text_size=size.small)
+    table.cell(dash, 2, 1, f_strength_label(adx_5m),                                            text_size=size.small)
+    table.cell(dash, 3, 1, f_range_label(range_5m),                                             text_size=size.small)
+    table.cell(dash, 4, 1, str.tostring(adx_5m, "#.#"),                                         text_size=size.small)
+
+    // Row: 15m
+    table.cell(dash, 0, 2, "15m",                                                               text_size=size.small)
+    table.cell(dash, 1, 2, f_trend_label(trend_15m), bgcolor=f_trend_color(trend_15m),          text_size=size.small)
+    table.cell(dash, 2, 2, f_strength_label(adx_15m),                                           text_size=size.small)
+    table.cell(dash, 3, 2, f_range_label(range_15m),                                            text_size=size.small)
+    table.cell(dash, 4, 2, str.tostring(adx_15m, "#.#"),                                        text_size=size.small)
+
+    // Row: 1h
+    table.cell(dash, 0, 3, "1h",                                                                text_size=size.small)
+    table.cell(dash, 1, 3, f_trend_label(trend_1h), bgcolor=f_trend_color(trend_1h),            text_size=size.small)
+    table.cell(dash, 2, 3, f_strength_label(adx_1h),                                            text_size=size.small)
+    table.cell(dash, 3, 3, f_range_label(range_1h),                                             text_size=size.small)
+    table.cell(dash, 4, 3, str.tostring(adx_1h, "#.#"),                                         text_size=size.small)
+
+    // Row: 4h
+    table.cell(dash, 0, 4, "4h",                                                                text_size=size.small)
+    table.cell(dash, 1, 4, f_trend_label(trend_4h), bgcolor=f_trend_color(trend_4h),            text_size=size.small)
+    table.cell(dash, 2, 4, f_strength_label(adx_4h),                                            text_size=size.small)
+    table.cell(dash, 3, 4, f_range_label(range_4h),                                             text_size=size.small)
+    table.cell(dash, 4, 4, str.tostring(adx_4h, "#.#"),                                         text_size=size.small)
+
+    // Row: Overall State
+    table.cell(dash, 0, 5, "Overall",      bgcolor=bg_header,         text_color=txt_header,  text_size=size.small)
+    table.cell(dash, 1, 5, market_state_label, bgcolor=market_state_color, text_color=color.white, text_size=size.small)
+    table.cell(dash, 2, 5, str.tostring(market_state_score, "#.##"), bgcolor=market_state_color, text_color=color.white, text_size=size.small)
+    table.cell(dash, 3, 5, "")
+    table.cell(dash, 4, 5, "")
+
+
+// =============================================================================
+// UI — BACKTEST-STATS-TABELLE
+// =============================================================================
+
+if show_backtest and barstate.islast
+    var table stats = table.new(position.bottom_right, 2, 8, border_width=1,
+                                 border_color=color.new(color.gray, 60))
+    bg_h = color.new(color.black, 50)
+    txt_h = color.white
+
+    table.cell(stats, 0, 0, "Backtest (visible bars)", bgcolor=bg_h, text_color=txt_h, text_size=size.small)
+    table.cell(stats, 1, 0, "Value",                    bgcolor=bg_h, text_color=txt_h, text_size=size.small)
+
+    table.cell(stats, 0, 1, "Profile",                                       text_size=size.small)
+    table.cell(stats, 1, 1, profile,                                          text_size=size.small)
+
+    table.cell(stats, 0, 2, "Session Filter",                                 text_size=size.small)
+    table.cell(stats, 1, 2, i_session_filter,                                 text_size=size.small)
+
+    table.cell(stats, 0, 3, "Trades",                                         text_size=size.small)
+    table.cell(stats, 1, 3, str.tostring(bt_total_trades),                    text_size=size.small)
+
+    table.cell(stats, 0, 4, "Win Rate",                                       text_size=size.small)
+    wr_color = bt_wr >= 0.55 ? color.new(color.green, 70) :
+               bt_wr >= 0.45 ? color.new(color.gray, 80)  :
+                                color.new(color.red, 70)
+    table.cell(stats, 1, 4, str.tostring(bt_wr * 100, "#.#") + "%", bgcolor=wr_color, text_size=size.small)
+
+    table.cell(stats, 0, 5, "Profit Factor",                                  text_size=size.small)
+    pf_color = bt_pf >= 1.5 ? color.new(color.green, 70) :
+               bt_pf >= 1.0 ? color.new(color.gray, 80)  :
+                               color.new(color.red, 70)
+    table.cell(stats, 1, 5, str.tostring(bt_pf, "#.##"), bgcolor=pf_color, text_size=size.small)
+
+    table.cell(stats, 0, 6, "Max Drawdown",                                   text_size=size.small)
+    dd_color = bt_max_dd <= 0.10 ? color.new(color.green, 70) :
+               bt_max_dd <= 0.20 ? color.new(color.gray, 80)  :
+                                    color.new(color.red, 70)
+    table.cell(stats, 1, 6, str.tostring(bt_max_dd * 100, "#.#") + "%", bgcolor=dd_color, text_size=size.small)
+
+    table.cell(stats, 0, 7, "Current Equity",                                 text_size=size.small)
+    table.cell(stats, 1, 7, str.tostring(bt_equity, "#.##") + " R",           text_size=size.small)
+
+
+// =============================================================================
+// UI — SIGNAL-VISUALISIERUNG
+// =============================================================================
+
+if show_signals and signal_active and not in_trade[1]
+    label_color = tier == "Premium" ? color.yellow
+                : tier == "High"    ? color.lime
+                :                      color.aqua
+    label.new(bar_index, low, "▲ " + tier,
+              style=label.style_label_up, color=label_color,
+              textcolor=color.black, size=size.small)
+
+// TP/SL Boxen für aktuell offenen Trade
+var box current_trade_box = na
+if in_trade and not in_trade[1]
+    current_trade_box := box.new(bar_index, tp_px, bar_index, sl_px,
+                                  border_color=color.new(color.blue, 50),
+                                  bgcolor=color.new(color.blue, 90))
+
+if not in_trade and not na(current_trade_box)
+    box.set_right(current_trade_box, bar_index)
+    current_trade_box := na

@@ -1,9 +1,30 @@
 # ANN-018: Decision-Assisted Architecture + Multi-Timeframe Market Dashboard
 
-**Status:** Active — **FUNDAMENTAL ARCHITECTURE LOCK** (überstellt Single-Signal-Modell-Annahmen)
+**Status:** Active — **FINAL ARCHITECTURE LOCK** (überstellt Single-Signal-Modell-Annahmen, **KEINE weiteren Sub-ADRs**)
 **Datum:** 2026-05-28
 **Locked-By:** Nico-Direktive nach NB15b USDCHF-Bestätigung + Swift-Algo-Lessons
 **Related:** [[ANN-009]] (Multi-Model-Router) · [[ANN-011]] (User-Settings-Whitelist) · [[ANN-016]] (FX as Blueprint) — alle bleiben aktiv, werden durch ANN-018 erweitert
+
+---
+
+## 🛑 EXECUTION LOCK 2026-05-28 (Nico-Course-Correct)
+
+**ANN-018 ist die LETZTE Architektur-ADR vor V1-Build.** Keine ANN-019 / ANN-020 / ANN-021. Keine weiteren Spec-Validierungs-Notebooks als Pflichtschritt.
+
+Das 4-Layer-Konzept aus dieser ADR bleibt inhaltlich gültig — aber wir **bauen direkt**, statt jede Schicht in separate ADRs + NBs zu splitten.
+
+**Konkrete Umsetzung:** alle 3 Layer (Signal Engine + MTF-Dashboard + Backtest-Transparency) leben in **EINEM** Pine-File (`deploy_pine/pace_algo_v1_skeleton.pine`). Siehe [Roadmap Phase D](../roadmap.md) Build 1.
+
+**Verbotene Aktivitäten ab jetzt (bis V1 läuft):**
+- Weitere ANN-Splits
+- Separate `core/market_regime/`-Python-Module für Dashboard (Dashboard läuft Pine-nativ)
+- `core/eval/filter_interaction_registry.py` mit komplizierter Discipline-Pipeline
+- Zusätzliche Forschungs-Notebooks NB15c/d/e/f als Pflicht-Validation
+- Weitere Architektur-Decisions vor V1-Live-Test
+
+**Begründung:** Wir verlieren uns nicht in Framework-Komplexität. FX **ist** das Produkt, nicht der Forschungs-Blueprint. Trading-Performance + User-Verständlichkeit im Live-Chart sind die KPIs, nicht Architektur-Eleganz.
+
+---
 
 ---
 

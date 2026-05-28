@@ -119,87 +119,75 @@ NB14f-v2-Daten werden **nicht** als V1-Lock genutzt, sondern als Forschungs-Inpu
 
 ---
 
-## Phase D — FX als Reference Blueprint (4-Layer-Industrialization) 🟡 ACTIVE
+## Phase D — V1 Build (radikal vereinfacht 2026-05-28) 🟡 ACTIVE
 
-**Locks:** [ANN-016 Blueprint](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) + [ANN-018 4-Layer-Architektur](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md).
+**Lock-Hierarchie:** [ANN-018 4-Layer-Architektur](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) ist FINAL. Keine weiteren ANN-Splits, keine zusätzlichen Validations-Phasen.
 
-**Mission:** FX vollständig industrialisieren über alle 4 Layer (Signal + MTF-Dashboard + Interaction + Backtest-UI) als wiederverwendbarer Blueprint für Phase E.
+**Korrektur 2026-05-28 (Nico):** Wir verlieren uns nicht in Spec-Eskalation. FX ist nicht "Forschungs-Blueprint" sondern **das Produkt**. Phase D wird radikal vereinfacht auf 3 Builds.
 
-**Reihenfolge-Lock (ANN-018 hat D.1 verschoben):** Diagnostik aus NB15a/b wird jetzt **Input für D.3 Interaction Layer** statt isolierte Pair-Decision. ANN-017 entfällt.
+**KPI:** Trading-Performance + User-Verständlichkeit im Live-Chart. Nicht: Architektur-Eleganz oder theoretische Vollständigkeit.
 
-### D.1 — USDCHF Deep-Dive ✅ ABGESCHLOSSEN (NB15a + NB15b)
+### Build 1 — Pine-Skeleton mit allen 3 Layern 🟡 IMMEDIATE NEXT
 
-**Ergebnis NB15b (`b8e6b76`):** USDCHF interaction_score mean **-0.131 / std 0.008** — reproduzierbar destructive über 3 Seeds. Andere 3 Pairs additive/neutral. Auto-Verdict: `destructive_reproducible_single_pair`.
+**Datei:** `deploy_pine/pace_algo_v1_skeleton.pine`
 
-**Konsequenz:** USDCHF braucht Per-Pair-Behandlung — aber **NICHT** als isolierter Override. Pattern wird **Input für D.3 Interaction Layer** (siehe ANN-018 Lock 3). ANN-017 als isoliertes Decision-Dokument entfällt.
+Ein einziges Pine-File mit allen drei Layern:
 
-### D.2 — Multi-Timeframe Market Dashboard Spec 🟡 NEXT (ANN-019 + NB15c)
+```
+Layer 1: Signal Engine
+  - Stub mit Placeholder-Probability (FX-Modell-Trees kommen via Codegen später)
+  - Tier-Mechanik (Standard/High/Premium)
+  - Profile-Mapping (Aggressive/Balanced/Conservative)
 
-**Mission (ANN-018 Lock 2):** Pflicht-Layer für jedes Asset/Pair — Trend + Strength + Range pro TF, plus aggregierter Market-State.
+Layer 2: Multi-TF Dashboard (5m / 15m / 1h / 4h)
+  - Trend = EMA20 vs EMA50 (Up/Down/Neutral)
+  - Strength = ADX(14) (High >25 / Med 15-25 / Lo <15)
+  - Range = Bollinger-Width relativ (No/Yes/Strong)
+  - Overall Market State (TF-gewichtet: 4h=4× / 1h=2× / 15m=1× / 5m=0.5×)
 
-**Pflicht-Spec (ANN-019 lockt):**
-- TF-Universe: 1m / 5m / 15m / 1h / 4h (5 levels)
-- Pro TF: Trend (Up/Down/Neutral), Strength (Hi/Med/Lo), Ranging (Yes/No/Weak/Strong)
-- Aggregat-Algorithmus: TF-gewichtet (Vorschlag: 4h=4× / 1h=2× / 15m=1× / 5m=0.5× / 1m=0.25×)
-- Output: Context-Object mit per-TF-Details + Overall-Market-State (bullish/bearish/neutral/mixed)
+Layer 3: Backtest / Settings Transparency
+  - Live PF/WR/MDD auf visible bars
+  - Current-Settings-Panel
+```
 
-**NB15c (parallel):** Validation der Dashboard-Metriken auf historischen FX-Daten. Welche Trend/Strength/Range-Heuristik korreliert am stärksten mit nachfolgender Modell-Performance? Liefert Daten für ANN-019.
+**User-Inputs (ANN-011-Whitelist-konform):**
+- Profile (Aggressive / Balanced / Conservative)
+- Show Dashboard (on/off)
+- Show Backtest Stats (on/off)
+- Show Signals (on/off)
 
-**Output:** ANN-019 Lock + `core/market_regime/`-Modul (klassen-agnostisch designed).
+Keine freien Cutoffs, keine ML-Threshold-Inputs, keine Curve-Fit-Parameter.
 
-### D.3 — Interaction Layer Design + Implementation (ANN-020 + NB15d)
+### Build 2 — FX-Modell-Codegen in Layer 1 einsetzen
 
-**Mission (ANN-018 Lock 3 + Lock 5):** Filter-Combinations werden empirisch validiert pro Pair/Asset/Regime, nicht naiv linear AND.
+**Datei:** `core/export/pine_codegen.py` (NEU, schlank)
 
-**Tasks:**
-- `core/eval/filter_interaction_registry.py` — strukturierte Datenbank
-- USDCHF-Pattern als first registry entry (Source: NB15b)
-- Pflicht-Validation-Pipeline für neue Filter-Combinations:
-  - Multi-Seed (≥ 3)
-  - Per-Pair-Test
-  - Interaction-Score-Check (Δ(both vs max(single)) ≥ -0.05)
-- Override-Discipline (ANN-016 Lock 5) automatisiert geprüft
+LightGBM-Tree-Export als nested-if-else-Pine-Code. NB14f-v2-Production-Seed=7 mit Cluster-Cutoff=0.40 wird als Pine-Code eingebettet. Ersetzt den Layer-1-Stub.
 
-**Output:** ANN-020 Lock + Code-Skelett + erste Registry-Einträge.
+**Verification:** Python-Probability auf 10k Test-Samples vs Pine-Berechnung — Diff < 1e-5.
 
-### D.4 — Backtest + Parameter Transparency Spec (ANN-021 + NB15e)
+### Build 3 — Live-Test im TradingView
 
-**Mission (ANN-018 Lock 4):** Backtest-UI als first-class Pine-Component, nicht nachträglich.
+Nico öffnet den Indikator auf TradingView, prüft:
+- Dashboard wird auf 4 TFs korrekt angezeigt
+- Backtest-Stats laufen plausibel mit
+- Signale erscheinen entsprechend Profile
+- Performance ist konsistent über 4 Pairs (GBPUSD/AUDUSD/USDCAD funktionieren; USDCHF wird transparent als "schwächeres Pair" gehandhabt — keine Versteck-Logik)
 
-**Spec-Punkte:**
-- "Current Settings" vs "Backtested Settings" Vergleichs-Panel
-- Live-Re-Calc von PF/WR/MDD auf visible bars bei Setting-Änderung
-- Multi-TF Ergebnisübersicht in Dashboard
-- Walk-Forward / Regime-Split Display (Toggle)
-- Discipline: User-Settings nur in ANN-011-Whitelist-Grenzen
+Wenn alle 3 Builds funktionieren → **FX V1 Produkt steht.**
 
-**Output:** ANN-021 Lock + Pine-UI-Skelett.
+---
 
-### D.5 — Failure-Case Documentation (research/failure_cases.md)
+**Was wir NICHT machen in Phase D (gelocked 2026-05-28):**
+- ❌ ANN-019/020/021 oder weitere neue ANR-Splits
+- ❌ Separate Validation-Notebooks NB15c/d/e/f als Pflicht
+- ❌ `core/market_regime/`-Modul in Python (Dashboard läuft Pine-nativ)
+- ❌ `core/eval/filter_interaction_registry.py` mit komplizierter Discipline-Pipeline
+- ❌ Weitere Architektur-Decisions vor V1-Live-Test
 
-Was bricht das Modell? Vol-Shifts, News-Events, Session-Mismatches, Holiday-Gaps. Failure-Templates für V2-Asset-Klassen.
-
-### D.6 — Pine bit-exact Validation (NB15f, NACH D.2/D.3/D.4)
-
-Python ↔ Pine Output-Match. Verschoben hinter Architektur-Layer weil bit-exact ohne klaren Layer-Aufbau sinnlos refactoriert werden müsste.
-
-### D.7 — Non-repaint + Live-Bar Validation (NB15g)
-
-Repaint-Test, Live-Bar-Behavior-Spec, Multi-TF-`request.security`-Lookahead-Off-Validation. Wichtig vor allem für MTF-Dashboard (request.security pro TF-Level).
-
-### D.8 — Router-Integration mit allen 4 Layern (NB15h)
-
-`deploy_pine/pace_algo_v1.pine` Skelett — strukturiert über alle 4 Layer:
-- Layer 1: Signal-Engine (FX-Modell aktiv, andere "Coming Soon")
-- Layer 2: MTF-Dashboard
-- Layer 3: Interaction-Logic (USDCHF-Registry-Entry aktiv)
-- Layer 4: Backtest-UI + Settings-Panel
-
-Output: V1-Pine-Code-Blueprint für V2.
-
-### D.9 — User-Layer Constraint Tests (NB15i)
-
-Pro User-Setting (ANN-011-Whitelist) testen ob Statistik bewahrt bleibt. Plus: Backtest-UI-Settings-Comparison muss honest sein (kein Curve-Fit-Pfad).
+**Was wir machen wenn V1 läuft:**
+- USDCHF als "experimental" markieren oder ausschließen (datenbasierte Decision basierend auf Live-Verhalten)
+- Asset-Klassen-Expansion in Phase E (Crypto/Indices/Commodity) — gleiche Pine-Struktur
 
 ---
 
