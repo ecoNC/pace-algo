@@ -1,10 +1,10 @@
 # ANN-005: V1 vs V1.5 Scope-Split
 
-**Status:** Active (Single-Model-Annahmen architektonisch überstellt durch [ANN-009](ANN-009-multi-model-router-architecture.md); V1-Scope-Klauseln bleiben gelocked)
-**Datum:** 2026-05-27
-**Wichtig:** Lies ANN-009 ZUERST. Dieses ADR beschreibt den V1-Feature-Scope ("welche Features hat V1?"); ANN-009 beschreibt die Architektur ("wie sind die Features intern gebaut?"). Beide gelten.
-**Locked-By:** HANDOFF Section 12.2.9 ("Backend-compatible from day one") + 12.3.13 ("Universal first")
-**Related:** [[ANN-004]] (Consensus → V1.5) [[ANN-001]] (SMC → research only)
+**Status:** Active **(Scope verschärft durch [ANN-016](ANN-016-fx-as-reference-blueprint-industrialization-first.md))** — V1-Definition ist jetzt strenger: kein FX-only-Launch, ≥ 2 Asset-Klassen über Reference-Blueprint nötig.
+**Datum:** 2026-05-27 (V1-Definition verschärft 2026-05-28)
+**Wichtig:** Lies **ANN-016 ZUERST** für aktuelle V1-Launch-Definition, dann ANN-009 für Multi-Model-Architektur, dann dieses ADR für Feature-Scope-Trennung V1/V1.5.
+**Locked-By:** HANDOFF Section 12.2.9 ("Backend-compatible from day one") + 12.3.13 ("Universal first") + **ANN-016 Lock 3** (V1-Launch erst bei ≥ 2 Asset-Klassen über Blueprint)
+**Related:** [[ANN-016]] (V1-Definition verschärft) [[ANN-009]] (Multi-Model-Architektur) [[ANN-004]] (Consensus → V1.5) [[ANN-001]] (SMC → research only)
 
 ---
 

@@ -5,8 +5,52 @@
 - [ANN-011 V1 Timeframe + Profile Setup](decisions/ANN-011-v1-timeframe-and-profile-setup.md) — V1 Single-TF-Lock (5m), User-Settings-Whitelist
 - [ANN-012 V1 Tier-Architektur](decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md) — Filter-Stack-Konzept (Premium + HTF + NY-Session)
 - [ANN-013 Cluster-Based Premium Detection](decisions/ANN-013-cluster-based-premium-detection.md) — **Premium-Cutoff = höchster stabiler Cluster** (NB14d-data-driven, supersedes ANN-012 Cutoff-Mechanik)
+- [ANN-016 FX as Reference Blueprint](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) — **Pine-Code wird als Blueprint designed** (Replicable für V2 Crypto/Indices/Commodity), Core Engine vs User Layer Trennung gelockt
 
 Dieses Dokument beschreibt **wie der Router in Pine Script v6 funktioniert** — nicht ob (das ist in ANN-009 gelocked).
+
+---
+
+## ARCHITEKTUR-INVARIANTE: Core Engine vs User Layer (ANN-016 Lock 4)
+
+Diese Schichtung ist nicht-verhandelbar in jedem Pine-Code-Decision:
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        CORE ENGINE                                   │
+│                  (Edge-Generation, gelockt)                          │
+│                                                                      │
+│  ✓ Strikt non-repainting                                             │
+│  ✓ Pine-bit-exact (Python ↔ Pine output identisch)                   │
+│  ✓ Spezialisierte Modelle pro Asset / Pair / Regime                  │
+│  ✓ Robuste Default-Configs (Per-Asset, validiert)                    │
+│  ✓ Universelle UX via Router (User sieht EINEN Indikator)            │
+│  ✗ Keine User-Eingriffe möglich                                      │
+│  ✗ Keine freien Parameter                                            │
+└──────────────────────────────────────────────────────────────────────┘
+                              │
+                              │  Read-Only Interface
+                              ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                        USER LAYER                                    │
+│              (Personalisierung + Backtest-Display)                   │
+│                                                                      │
+│  ✓ Profile-Switch (Aggressive / Balanced / Conservative)             │
+│  ✓ Settings nur in statistisch validierten Grenzen                   │
+│  ✓ Backtest-Display (Trade-Boxes, PF/WR/MDD Dashboard)               │
+│  ✓ Ein-Indikator-Experience (universelle UX)                         │
+│  ✗ Keine freien Curve-Fit-Parameter                                  │
+│  ✗ Kein direkter Zugriff auf Modell-Probabilities/Cutoffs            │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Konkrete Pine-Code-Konsequenzen:**
+
+1. **Probabilities + Cutoffs sind interne Variablen** — User sieht nie `proba >= 0.4054`, nur "BUY/SELL" Signal mit Tier-Badge
+2. **Per-Pair-Overrides** (falls D.2 sie freigibt) leben in Core-Engine, NICHT als User-Settings
+3. **Filter-Stack-Logik** (HTF-Confirm, Session-Filter) ist Core-Engine. User wählt Profil → Profil bestimmt Filter-Stack. User kann NICHT einzelne Filter manuell togglen.
+4. **User-Settings müssen statistisch validierte Ranges haben** (D.8 testet das)
+5. **Replicable für V2:** Selbe Architektur-Schichtung für Crypto/Indices/Commodity — nur Modell-Branches im Router unterscheiden sich
 
 ---
 

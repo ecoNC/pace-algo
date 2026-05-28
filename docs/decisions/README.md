@@ -40,7 +40,8 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-012](ANN-012-v1-tier-architecture-premium-core-plus-filters.md) | V1 Tier-Architektur — Premium Core + Secondary Filters *(Cutoff-Mechanik durch ANN-013 superseded)* | Active (partial) | 2026-05-27 |
 | [ANN-013](ANN-013-cluster-based-premium-detection.md) | Cluster-Based Premium Detection *(Stability-Definition durch ANN-014 superseded)* | Active (partial) | 2026-05-28 |
 | [ANN-014](ANN-014-per-model-relative-cluster-behavioral-stability.md) | **Per-Model Relative Cluster + Behavioral Stability** | Active | 2026-05-28 |
-| [ANN-015](ANN-015-v1-training-pool-expansion-robustness-revalidation.md) | **V1 Training-Pool Expansion + Robustness Re-Validation** (Phase D BLOCKED) | Active | 2026-05-28 |
+| [ANN-015](ANN-015-v1-training-pool-expansion-robustness-revalidation.md) | V1 Training-Pool Expansion + Robustness Re-Validation *(Phase C.6 abgeschlossen — USDCHF-Strukturbefund triggert ANN-016)* | Active | 2026-05-28 |
+| [ANN-016](ANN-016-fx-as-reference-blueprint-industrialization-first.md) | **FX as Reference Blueprint — Industrialization-First Strategy** (V1-Definition verschärft: ≥ 2 Asset-Klassen über Blueprint nötig) | Active | 2026-05-28 |
 
 ## Was hier NICHT hingehört
 

@@ -1,8 +1,10 @@
-# Roadmap — Phasen A bis E + V-Releases
+# Roadmap — FX als Reference Blueprint → Multi-Asset-Plattform
 
-**Architektur-Pivot 2026-05-27 (gelocked):** "Universal UX + Specialized Intelligence" — Multi-Model Router ([ANN-009](decisions/ANN-009-multi-model-router-architecture.md)). NB13 belegt: Single-Universal-Modell funktioniert nicht (FX-Edge 2.49 / Crypto-Edge 0.99 random). V1 = FX-only mit Router-Skelett, V2 = Multi-Model aktiv.
+**Strategischer Pivot 2026-05-28 (gelocked):** [ANN-016 FX as Reference Blueprint](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md). FX wird **NICHT V1-Shortcut** sondern **Core-Blueprint** — vollständig industrialisiert, dann auf Crypto/Indices/Commodity repliziert. **V1-Launch erst wenn ≥ 2 Asset-Klassen über denselben Blueprint laufen.**
 
-**Strategische Prämisse:** Robustheit, Cross-Asset-Generalisierung, Multi-Timeframe-Stabilität, langfristige Produktqualität ([ANN-006](decisions/ANN-006-robustness-first-mantra.md) Mantra). FX-Premium-PF ~2.0 ist Quality Anchor ([ANN-010](decisions/ANN-010-quality-anchor.md)).
+**Architektur-Pivot 2026-05-27 (gelocked):** "Universal UX + Specialized Intelligence" — Multi-Model Router ([ANN-009](decisions/ANN-009-multi-model-router-architecture.md)). NB13 belegt: Single-Universal-Modell funktioniert nicht (FX-Edge 2.49 / Crypto-Edge 0.99 random).
+
+**Strategische Prämisse:** Robustheit, Cross-Asset-Generalisierung, Multi-Timeframe-Stabilität, langfristige Produktqualität ([ANN-006](decisions/ANN-006-robustness-first-mantra.md) Mantra). FX-Premium-PF ~2.0 ist Quality Anchor ([ANN-010](decisions/ANN-010-quality-anchor.md)). Override-Discipline ([ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) Lock 5): jeder Per-Pair/Asset/Regime-Override braucht statistical proof + market structure + OOS-Lift + reproducibility.
 
 ---
 
@@ -87,89 +89,170 @@ Alle Profile teilen denselben Premium-Cutoff (0.4096). Edge bleibt PF ~2.0 über
 
 ---
 
-## Phase C.6 — Training-Pool Expansion + Robustness Re-Validation 🟡 ACTIVE (ANN-015)
+## Phase C.6 — Training-Pool Expansion + Robustness Re-Validation ✅ ABGESCHLOSSEN 2026-05-28 (ANN-015)
 
-**Lock:** [ANN-015 V1 Training-Pool Expansion + Robustness Re-Validation](decisions/ANN-015-v1-training-pool-expansion-robustness-revalidation.md).
+**NB14f-v2 Ergebnis (Run `nb14f_2026-05-28T12-47-45Z_81f2316`, commit `80bad05`):**
 
-**Hypothese:** NB14f-Behavioral-Stability-FAIL ist Folge zu schmalen Trainings-Pools — nicht fundamentaler Architektur-Bug. NB13 hat FX-Generalisierung auf 5+ Symbolen belegt (`top-1%`-Cutoff). Cluster-basierte Cutoffs (breiter, ~2%) brauchen breiteren Pool um gleiche Robustheit zu erreichen.
+Pool-Expansion hat **deutlich geholfen** vs v1 (nur GBPUSD-Balanced supported → 3 von 4 Pairs sauber gestaffelt), aber **`all_profiles_behavioral_stable: false`** bleibt — **USDCHF ist strukturell anders**.
 
-**Setup:**
-- `FX_TRAIN_SYMBOLS`: EURUSD, USDJPY, **+ NZDUSD**
-- `FX_HOLDOUT_SYMBOLS`: GBPUSD, AUDUSD, USDCHF, **+ USDCAD**
-- Feature-Set, Hyperparams, Cluster-Mechanik, Behavioral-Thresholds: **alle unverändert** (saubere isolierte Variable)
+| Pair | Aggressive | Balanced | Conservative | Verhalten |
+|---|---:|---:|---:|---|
+| GBPUSD | 1.29 | 1.50 | 1.83 | ✓ sauber gestaffelt |
+| AUDUSD | 1.42 | 1.83 | 1.97 | ✓ sauber gestaffelt |
+| USDCAD | 1.13 | 1.33 | 1.59 | ✓ sauber gestaffelt |
+| USDCHF | 0.97 | 0.63 | **0.17** | ✗ **invertiert** |
 
-**Pipeline:**
-1. NB01 re-run für NZDUSD + USDCAD Fetcher (Dukascopy)
-2. NB04 re-run für Triple-Barrier-Labels auf neuen Symbolen × 4 TFs
-3. NB14f re-run (komplett, mit erweitertem Pool)
+**Production-Seed:** seed=7, Cluster=0.40. Balanced/Conservative ho_pf 1.61 bei n=268 trades.
 
-**Pass-Kriterien (deterministisch in ANN-015 §3 dokumentiert):**
-- `all_profiles_behavioral_stable: true` (alle 5 Behavioral-Metriken passed auf allen 3 Profilen)
-- Mean Hold-Out Premium-PF ≥ 1.4 auf ≥ 3 von 4 Symbolen
-- Pair-Tiering: ≥ 3 Symbole "supported" per ANN-014 §5
+**ANN-015 Pass-Kriterien:**
+- `all_profiles_behavioral_stable: true` — ✗ FAIL
+- Mean Hold-Out PF ≥ 1.4 auf ≥ 3/4 (Balanced) — ✗ FAIL (nur 2/4)
+- Pair-Tiering: ≥ 3 supported (Conservative) — ✓ PASS (3/4)
 
-**Erwartete Laufzeit:** ~25–35 min Colab (NB01 ~10 min + NB04 ~5-10 min + NB14f ~12-15 min).
+**Strategischer Reframe per [ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) (Nico-Direktive 2026-05-28):**
 
-**Fail-Eskalation:** Architektur-Vertiefung (Feature-Engineering / Optuna / Pair-Spezialisierung als V1-Standard).
+USDCHF-Bruch ist **kein Bug sondern Architektur-Signal**. Filter-Stack lernt echte Marktstruktur (CHF reagiert auf SNB / EU statt NY). Statt wegoptimieren oder Pair-Tier-V1-Lock → **vollständige FX-Industrialisierung als Reference Blueprint** vor V2-Asset-Klassen.
+
+NB14f-v2-Daten werden **nicht** als V1-Lock genutzt, sondern als Forschungs-Input für Phase D.1 (USDCHF Deep-Dive).
 
 ---
 
-## Phase D — Pine-Router-V1-Validation (NB15) 🔴 BLOCKED auf Phase C.6 Pass
+## Phase D — FX als Reference Blueprint (Industrialization-First) 🟡 NEXT — ACTIVE
 
-**Status nach NB13/NB14:** Architektur ist bereits gelockt via [ANN-009](decisions/ANN-009-multi-model-router-architecture.md) (Multi-Model Router). NB15 ist daher kein "A vs B vs C"-Entscheidung mehr, sondern **Architecture-Validation** für V1.
+**Lock:** [ANN-016 FX as Reference Blueprint](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md).
 
-**Aktuelle Blockade:** ANN-015 lockt Phase D auf Phase C.6 Pass. Es macht keinen Sinn, Pine-Router gegen ein nicht-behavioral-stabiles Python-Modell zu validieren. NB15-Bau startet erst nach NB14f-v2-Pass.
+**Mission:** FX-Modell vollständig industrialisieren — Pipelines, Quality-Gates, Validation-Tests, Doku-Patterns, Pine-Code-Strukturen, User-Layer-Constraints — als **wiederverwendbarer Blueprint** für Phase E (V2 Multi-Asset).
 
-**Frage NB15:** Funktioniert das Router-Skelett im Pine-Code-Stub korrekt mit dem 5m-FX-Modell als einzigem aktiven Branch?
+**Reihenfolge-Lock:** Architektur-First (D.1–D.3) **bevor** Technical (D.4–D.8). Technische Decisions müssen auf den Architektur-Erkenntnissen aufbauen, nicht umgekehrt.
 
-**Validation-Tasks:**
-1. `core/router/pine_router_codegen.py` V1-Stub auf konkretes FX-Modell anwenden
-2. Bit-exact Validation: Python-Probability == Pine-Probability (auf Test-Sample)
-3. Pine-Budget-Check: tree-cascade + features + router-overhead < 5000 ops/bar
-4. UI-Warning für nicht-5m-Charts korrekt eingebaut
-5. Asset-Detection-Stub für FX vs (Crypto/Indices/Commodity = "Coming Soon")
+### D.1 — USDCHF Deep-Dive 🟡 NEXT (NB15a)
+
+**Ziel:** Verstehen ob USDCHF-Bruch ist Session-Problem / Regime-Problem / Liquidity-Problem / Filter-Interaction-Problem.
+
+**Tests:**
+- Per-Session SHAP-Decomposition (Asia/London/NY/LDN-NY-Overlap)
+- Filter-Impact-Decomposition (welcher Filter macht USDCHF schlechter — HTF-Confirm oder NY-Session?)
+- Volatility-Regime-Analyse (verhält sich USDCHF in High-Vol vs Low-Vol-Regimes anders?)
+- Liquidity-Proxy-Analyse (Volume-Z, RVOL pro Session)
+- Vergleich mit verhaltensähnlichen Pairs (z.B. USDCAD funktioniert — was unterscheidet?)
+
+**Output:** Strukturbefund-Doku, vermutete CHF-spezifische Marktstruktur belegt.
+
+### D.2 — Universal-vs-Per-Pair-Decision (ANN-017, nach D.1)
+
+**Harte Architekturfrage basierend auf D.1-Daten:**
+- a) Filter-Stack bleibt universal?
+- b) FX braucht Pair-Level-Overrides?
+- c) Adaptive Session-Profile (z.B. CHF nutzt London/EU-Session statt NY)?
+
+**Override-Discipline (ANN-016 Lock 5):** Jede Per-Pair-Lösung muss erfüllen:
+1. Klarer statistischer Nachweis
+2. Dokumentierte Marktstruktur-Begründung
+3. OOS-Lift ≥ +0.05 PF
+4. Reproduzierbares Verhalten (3+ Seeds, verschiedene Time-Periods)
+
+**Output:** ANN-017 lockt Architektur-Decision + ggf. Code-Skelett für Override-Mechanik.
+
+### D.3 — Pair-/Session-Behavior Map (NB15b)
+
+**Ziel:** Wann funktioniert das Modell strukturell gut/schlecht?
 
 **Output:**
-- `/results/nb15/pine_validation_{date}.json`
-- `/docs/architecture.md` Update mit V1-Pine-Architektur final
-- Pine-Code-Skelett in `deploy_pine/pace_algo_v1.pine` (Draft)
+- Per-Pair × Per-Session × Per-Volatility-Regime Matrix
+- Operational-Boundary-Karte (klare Aussage: "Modell funktioniert robust unter Bedingungen X, Y, Z")
+- Marketing-Story-Material (ehrliche Beschreibung wann User mit Signalen rechnen kann)
+
+### D.4 — Failure-Case Documentation (research/failure_cases.md)
+
+**Was bricht das Modell?**
+- Vol-Regime-Shifts (Plötzliche Vol-Expansion → Modell-Output?)
+- News-Events (NFP, FOMC, ECB → wie reagiert)
+- Session-Mismatches (USDCHF-Pattern)
+- Illiquide Phasen (Holiday-Gaps, Year-End)
+
+**Output:** Failure-Templates die in V2 für Crypto/Indices/Commodity als Test-Sets dienen.
+
+### D.5 — Pine bit-exact Validation (NB15c)
+
+**Test:** Python-Probability == Pine-Probability auf 10k-Sample TEST-Bars.
+
+**Tolerance:** absolute deviation < 1e-5 (bit-exact under float32).
+
+**Output:** Bit-exact Validation Report pro Pair, Pine-Code-Snippets klassen-agnostisch.
+
+### D.6 — Non-repaint + Live-Bar Validation (NB15d)
+
+**Tests:**
+- Repaint-Test: Signal an Bar t muss nach Bar-Close immer noch identisch sein (kein Look-Ahead)
+- Live-Bar-Behavior: was zeigt Pine während Bar offen? Strategy-Display vs Signal-Trigger.
+- Race-Condition-Tests: Multi-TF-`request.security`-Lookahead-off bestätigen.
+
+**Output:** Live-Bar-Behavior-Spec, klassen-agnostische Repaint-Test-Suite.
+
+### D.7 — Router-Integration (NB15e)
+
+**Tasks:**
+- AssetClass.FX-Route operativ (echte Pine-Code-Pfad)
+- Non-FX zeigt klare UI-Message ("🚧 V1 supports FX Major Pairs — Crypto coming in V2")
+- USDCHF (oder ggf. andere unsupported Pairs nach D.2) bekommen separate UI-Behandlung
+
+**Output:** Pine-Code-Skelett (`deploy_pine/pace_algo_v1.pine`) als Blueprint für V2.
+
+### D.8 — User-Layer Constraint Tests (NB15f)
+
+**Tests pro User-Setting aus Whitelist (ANN-011):**
+- Backtest-Statistik bleibt valid unter Profile-Switch
+- Session-Filter behält PF (kein Curve-Fit-Hack möglich)
+- HTF-Confirmation behält statistische Power
+- Alert-Frequency-Cap bricht nichts
+
+**Output:** User-Layer-Spec, statistisch validierte Setting-Ranges (Anti-Curve-Fit auf User-Side).
 
 ---
 
-## Phase E — Pine Export + Backtest UI (NB09 / NB16 / NB17) ⚪ NEXT+1
+## Phase E — V2 Multi-Asset-Klassen (via Blueprint) ⚪ POST PHASE D
 
-**Erst nach Phase D abgeschlossen.** Vorher kein vollständiger Pine-Code-Generator.
+**Voraussetzung:** Phase D komplett abgeschlossen, Blueprint dokumentiert.
 
-**Deliverables:**
-- NB09: Tree-to-Pine Cascade-Generator (LightGBM/XGBoost)
-- NB16: Backtest-Widget-Design (Trade-Boxes, PF/WR/MDD-Dashboard, Profile-Switching)
-- NB17: Final Pine Compilation + bit-exact Validation gegen Python-Predictions
+```
+E.1  Crypto-Modell    ◄── nutzt Blueprint (Test-Templates aus D.4, Pipeline aus D.1–D.3, Pine-Code-Pattern aus D.5–D.7)
+E.2  Commodity-Modell ◄── XAU + ggf. XAG/Oil
+E.3  Indices-Modell   ◄── sobald Polygon-Aktivierung
+E.4  Pine-Router-Production mit Multi-Model-Stack
+```
 
-**User-Features:**
-- BUY/SELL Labels + Entry-Line + TP/SL-Boxen
-- 3 Profile (Conservative / Balanced / Aggressive)
-- Limitierte sichere Parameter-Slider (Anti-Curve-Fitting)
-- Historische Trade-Visualisierung
-- PF/WR/Avg-R/MDD-Anzeige pro aktuellem Chart/TF
+**V1-Launch erst nach E.1 + E.4 minimum** (FX vollständig + 1 weitere Asset-Klasse + Multi-Model-Pine-Router operativ). Per ANN-016 Lock 3.
 
 ---
 
-## Phase F (V1.5+) — Hybrid Backend (post-launch)
+## Phase F — Pine Export + Backtest UI ⚪ TEIL VON PHASE D + E
 
-Nach V1-Launch + User-Feedback. Pine bleibt der Runtime, Backend retrainiert monatlich, neue Pine-Versionen werden auto-deployed.
-
-## Phase G (V2) — Full Backend
-
-ML-Inferenz auf Cloud-Server, Webhooks an TradingView, Web-Dashboard, Continuous Learning aus Signal-Outcomes.
+Phase F-Deliverables sind jetzt in Phase D / E verteilt:
+- **D.5 / D.7** decken Pine bit-exact + Router-Integration ab
+- **E.4** finalisiert den Multi-Model-Pine-Router
+- Backtest-UI / Profile-Switch / Trade-Boxen werden als Teil von D.7 designed (Blueprint-fähig für alle Asset-Klassen)
 
 ---
 
-## Was wir NICHT tun
+## Phase G (V1.5+) — Hybrid Backend (post-launch)
 
-- ❌ Kein NB09 (Pine Generator) vor Phase D Abschluss
+Nach V1-Launch + User-Feedback. Pine bleibt der Runtime, Backend retrainiert monatlich, neue Pine-Versionen werden auto-deployed. Pro Asset-Klasse separater Retraining-Cycle.
+
+## Phase H (V2/V3) — Full Backend
+
+ML-Inferenz auf Cloud-Server, Webhooks an TradingView, Web-Dashboard, Continuous Learning aus Signal-Outcomes. Multi-Model-Inference parallel pro Asset-Klasse.
+
+---
+
+## Was wir NICHT tun (gelocked)
+
+- ❌ **Kein NB16 (Crypto-Modell) bevor Phase D abgeschlossen** (ANN-016 Lock 1)
+- ❌ **Kein FX-only-V1-Launch** (ANN-016 Lock 3 — min. 2 Asset-Klassen über Blueprint nötig)
+- ❌ Kein Pine-Generator bevor D.5 + D.7 locked
 - ❌ Keine Asset-Spezialisierung "weil EURUSD besonders gut funktioniert"
+- ❌ Keine Per-Pair-Overrides ohne ANN-016-Lock-5-Discipline (statistical / structural / OOS / reproducible)
 - ❌ Kein Release-Pressure — Quality > Speed
 - ❌ Keine Features ohne `≥ +0.05` PF-Lift in OOS-Ablation
-- ❌ Keine theoretischen ML-Konzepte ohne empirische Evidenz
+- ❌ Keine FX-spezifischen Lösungen die später für Crypto/Indices nicht übertragbar sind (ANN-016 Lock 6)
 
 Diese Negativliste ist genauso wichtig wie die Positiv-Roadmap.

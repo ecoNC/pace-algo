@@ -8,14 +8,16 @@
 
 ## Modell-Slot-Status
 
-| Slot | V1 Status | Modell | TF | Premium PF (OOS) | Hold-Out PF | Quality-Anchor | Notiz |
+| Slot | Status | Modell | TF | Premium PF (OOS) | Hold-Out PF | Quality-Anchor | Notiz |
 |---|---|---|---|---:|---:|---|---|
-| **fx_model** | 🟡 Pending Re-Validation | LightGBM 30×3 | **5m only** | 2.00 in-sample (NB14 v1) | 2.39 (3 sym, NB14 v1) | SOFT_ONLY ✓ (NB14 v1) | Re-Validation per [ANN-015](decisions/ANN-015-v1-training-pool-expansion-robustness-revalidation.md) — NB14f-v1 Behavioral-Stability-FAIL, Pool-Expansion läuft |
-| **crypto_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | NB13c Test ausstehend |
-| **indices_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | braucht Polygon-Aktivierung |
-| **commodity_model** | ⏳ V2 — Stub | TBD | TBD | — | — | — | Gold Phase 1 = random (ANN-003) |
+| **fx_model** | 🟡 **Phase D — Industrialization in Progress** | LightGBM 30×3 | **5m only** | 2.00 (NB14 v1, top-1%) | 2.39 (NB14 v1) / 1.61 (NB14f v2, Cluster) | Research-Lock per [ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) | Phase D = Reference-Blueprint-Build (D.1 USDCHF Deep-Dive → D.2 Universal-vs-Per-Pair → D.3 Behavior-Map → D.4–D.8 Technical) |
+| **crypto_model** | ⏳ V2 — Wartet auf Phase E.1 | TBD | TBD | — | — | — | Bau startet erst nach Phase D Abschluss (ANN-016 Lock 1) |
+| **indices_model** | ⏳ V2 — Wartet auf Phase E.3 | TBD | TBD | — | — | — | Plus Polygon-Aktivierung |
+| **commodity_model** | ⏳ V2 — Wartet auf Phase E.2 | TBD | TBD | — | — | — | XAU + ggf. XAG/Oil über Blueprint |
 
-In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Badge "🚧 V2 coming". Router-Skelett ist ready, kein Refactor-Bedarf für V2.
+**Wichtig (ANN-016 Lock 1):** V2-Asset-Klassen-Modelle (E.1–E.3) starten **erst nach Phase D komplett abgeschlossen**. FX wird vollständig industrialisiert als wiederverwendbarer Blueprint, bevor parallele halbfertige Modell-Familien entstehen.
+
+**V1-Launch-Definition (ANN-016 Lock 3):** Erst nach Phase D abgeschlossen UND mind. 2 Asset-Klassen über Blueprint produktionsreif UND Pine-Router operiert echten Multi-Model-Switch. Kein FX-only-V1-Release.
 
 ### V1 FX-Modell — Gelockte Konfiguration (ANN-011, expanded via ANN-015)
 
@@ -61,9 +63,27 @@ In V1-Pine: Aktive Slots haben echte Modelle, Stub-Slots returnen `na` → UI-Ba
 - Behavioral Stability: **FAIL** auf allen 3 Profilen (signal_frequency_cv 0.45–0.77, threshold 0.30)
 - Snapshot: [`results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json`](../results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json)
 
-#### Pending: NB14f v2 (Pool-Expansion per ANN-015)
+#### Historical: NB14f v2 (commit `80bad05`, 3 Train-Symbole + 4 Hold-Out, Cluster-Cutoff)
 
-Numbers werden eingefügt nach Re-Run. Pass-Kriterien: ANN-015 §3.
+**Production-Seed: 7, Cluster: 0.40**
+
+**Pair-Aggregat (Hold-Out, 4 Pairs):**
+
+| Pair | Aggressive PF | Balanced PF | Conservative PF | Verhalten |
+|---|---:|---:|---:|---|
+| GBPUSD | 1.29 | 1.50 | 1.83 | ✓ sauber gestaffelt |
+| AUDUSD | 1.42 | 1.83 | 1.97 | ✓ sauber gestaffelt |
+| USDCAD | 1.13 | 1.33 | 1.59 | ✓ sauber gestaffelt |
+| USDCHF | 0.97 | 0.63 | **0.17** | ✗ Filter-Stack-Inversion (Architektur-Signal) |
+
+**Best-Seed-Profile (seed=7):**
+- Aggressive: IS PF 1.12 / HO PF 1.42 (n=2340)
+- Balanced: IS PF 1.42 / HO PF 1.61 (n=268)
+- Conservative: IS PF 1.42 / HO PF 1.61 (n=268)
+
+**Behavioral Stability:** `all_profiles_behavioral_stable: FALSE` — aber **kein V1-Blocker**, sondern Architektur-Signal per [ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md). USDCHF-Verhalten wird in Phase D.1 vollständig diagnostiziert, nicht wegoptimiert.
+
+Snapshot: [`results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json`](../results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json)
 
 ---
 
