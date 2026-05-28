@@ -1,0 +1,10 @@
+profile,n_trades,wins,losses,pf,wr,expR,sigs_per_day_per_symbol,mdd,avg_duration_bars,symbol
+Aggressive,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,GBPUSD
+Balanced,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,GBPUSD
+Conservative,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,GBPUSD
+Aggressive,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,AUDUSD
+Balanced,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,AUDUSD
+Conservative,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,AUDUSD
+Aggressive,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,USDCHF
+Balanced,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,USDCHF
+Conservative,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,USDCHF

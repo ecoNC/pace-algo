@@ -1,0 +1,4 @@
+profile,symbols,total_trades,wins,losses,pf_weighted,wr_weighted,pf_per_symbol_min,pf_per_symbol_max,cross_symbol_cv,avg_sigs_per_day_sym,max_mdd,avg_duration_bars
+Aggressive,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0
+Balanced,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0
+Conservative,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0

@@ -1,0 +1,4 @@
+profile,n_trades,wins,losses,pf,wr,expR,sigs_per_day_per_symbol,mdd,avg_duration_bars
+Aggressive,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0
+Balanced,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0
+Conservative,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0

@@ -1,0 +1,329 @@
+{
+  "verdict": {
+    "experiment_id": "nb14c_2026-05-28T06-02-20Z_81f2316",
+    "run_date": "2026-05-28",
+    "git_commit": "81f2316",
+    "premium_cutoff": 0.4096,
+    "profiles": {
+      "Aggressive": {
+        "filter_stack": {
+          "require_htf": false,
+          "require_ny": false
+        },
+        "in_sample": {
+          "pf": 0.0,
+          "wr": 0.0,
+          "sigs_per_day_symbol": 0.0,
+          "mdd": 0.0,
+          "avg_duration": 0.0
+        },
+        "holdout": {
+          "pf_weighted": 0.0,
+          "wr_weighted": 0.0,
+          "min_pf_per_symbol": 0.0,
+          "max_pf_per_symbol": 0.0,
+          "cross_symbol_cv": null,
+          "avg_sigs_per_day": 0.0,
+          "max_mdd": 0.0
+        },
+        "quality_anchor": {
+          "passed": false,
+          "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+        }
+      },
+      "Balanced": {
+        "filter_stack": {
+          "require_htf": true,
+          "require_ny": false
+        },
+        "in_sample": {
+          "pf": 0.0,
+          "wr": 0.0,
+          "sigs_per_day_symbol": 0.0,
+          "mdd": 0.0,
+          "avg_duration": 0.0
+        },
+        "holdout": {
+          "pf_weighted": 0.0,
+          "wr_weighted": 0.0,
+          "min_pf_per_symbol": 0.0,
+          "max_pf_per_symbol": 0.0,
+          "cross_symbol_cv": null,
+          "avg_sigs_per_day": 0.0,
+          "max_mdd": 0.0
+        },
+        "quality_anchor": {
+          "passed": false,
+          "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+        }
+      },
+      "Conservative": {
+        "filter_stack": {
+          "require_htf": true,
+          "require_ny": true
+        },
+        "in_sample": {
+          "pf": 0.0,
+          "wr": 0.0,
+          "sigs_per_day_symbol": 0.0,
+          "mdd": 0.0,
+          "avg_duration": 0.0
+        },
+        "holdout": {
+          "pf_weighted": 0.0,
+          "wr_weighted": 0.0,
+          "min_pf_per_symbol": 0.0,
+          "max_pf_per_symbol": 0.0,
+          "cross_symbol_cv": null,
+          "avg_sigs_per_day": 0.0,
+          "max_mdd": 0.0
+        },
+        "quality_anchor": {
+          "passed": false,
+          "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+        }
+      }
+    },
+    "decision": {
+      "all_profiles_passed_quality_anchor": false,
+      "v1_ready": false,
+      "next_step": "Profile mit FAIL-Status re-evaluieren oder Filter anpassen"
+    }
+  },
+  "in_sample": [
+    {
+      "profile": "Aggressive",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0
+    },
+    {
+      "profile": "Balanced",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0
+    },
+    {
+      "profile": "Conservative",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0
+    }
+  ],
+  "holdout_per_sym": [
+    {
+      "profile": "Aggressive",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "profile": "Balanced",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "profile": "Conservative",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "GBPUSD"
+    },
+    {
+      "profile": "Aggressive",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "AUDUSD"
+    },
+    {
+      "profile": "Balanced",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "AUDUSD"
+    },
+    {
+      "profile": "Conservative",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "AUDUSD"
+    },
+    {
+      "profile": "Aggressive",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "profile": "Balanced",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "USDCHF"
+    },
+    {
+      "profile": "Conservative",
+      "n_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf": 0.0,
+      "wr": 0.0,
+      "expR": 0.0,
+      "sigs_per_day_per_symbol": 0.0,
+      "mdd": 0.0,
+      "avg_duration_bars": 0.0,
+      "symbol": "USDCHF"
+    }
+  ],
+  "holdout_agg": [
+    {
+      "profile": "Aggressive",
+      "symbols": 3,
+      "total_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf_weighted": 0.0,
+      "wr_weighted": 0.0,
+      "pf_per_symbol_min": 0.0,
+      "pf_per_symbol_max": 0.0,
+      "cross_symbol_cv": null,
+      "avg_sigs_per_day_sym": 0.0,
+      "max_mdd": 0.0,
+      "avg_duration_bars": 0.0
+    },
+    {
+      "profile": "Balanced",
+      "symbols": 3,
+      "total_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf_weighted": 0.0,
+      "wr_weighted": 0.0,
+      "pf_per_symbol_min": 0.0,
+      "pf_per_symbol_max": 0.0,
+      "cross_symbol_cv": null,
+      "avg_sigs_per_day_sym": 0.0,
+      "max_mdd": 0.0,
+      "avg_duration_bars": 0.0
+    },
+    {
+      "profile": "Conservative",
+      "symbols": 3,
+      "total_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "pf_weighted": 0.0,
+      "wr_weighted": 0.0,
+      "pf_per_symbol_min": 0.0,
+      "pf_per_symbol_max": 0.0,
+      "cross_symbol_cv": null,
+      "avg_sigs_per_day_sym": 0.0,
+      "max_mdd": 0.0,
+      "avg_duration_bars": 0.0
+    }
+  ],
+  "quality": [
+    {
+      "profile": "Aggressive",
+      "in_sample_pf": 0.0,
+      "holdout_pf": 0.0,
+      "min_pf_symbol": 0.0,
+      "mdd": 0.0,
+      "sigs_per_day": 0.0,
+      "quality_passed": false,
+      "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+    },
+    {
+      "profile": "Balanced",
+      "in_sample_pf": 0.0,
+      "holdout_pf": 0.0,
+      "min_pf_symbol": 0.0,
+      "mdd": 0.0,
+      "sigs_per_day": 0.0,
+      "quality_passed": false,
+      "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+    },
+    {
+      "profile": "Conservative",
+      "in_sample_pf": 0.0,
+      "holdout_pf": 0.0,
+      "min_pf_symbol": 0.0,
+      "mdd": 0.0,
+      "sigs_per_day": 0.0,
+      "quality_passed": false,
+      "severity": "check_error: '<=' not supported between instances of 'NoneType' and 'float'"
+    }
+  ]
+}
