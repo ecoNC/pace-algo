@@ -1,4 +1,4 @@
 profile,symbols,total_trades,wins,losses,pf_weighted,wr_weighted,pf_per_symbol_min,pf_per_symbol_max,cross_symbol_cv,avg_sigs_per_day_sym,max_mdd,avg_duration_bars
-Aggressive,3,872,315,529,0.8932,0.3732,0.8011,0.9553,0.091,5.27,62.0,6.01
-Balanced,3,607,253,338,1.1228,0.4281,0.9205,1.3243,0.179,3.6702,25.5,6.0
-Conservative,3,320,128,180,1.0667,0.4156,0.8769,1.2966,0.1969,1.9341,21.5,6.85
+Aggressive,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0
+Balanced,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0
+Conservative,3,0,0,0,0.0,0.0,0.0,0.0,,0.0,0.0,0.0

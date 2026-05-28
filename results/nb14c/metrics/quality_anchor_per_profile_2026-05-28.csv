@@ -1,4 +1,4 @@
 profile,in_sample_pf,holdout_pf,min_pf_symbol,mdd,sigs_per_day,quality_passed,severity
-Aggressive,1.0083,0.8932,0.8011,62.0,5.27,False,check_error: '>=' not supported between instances of 'NoneType' and 'float'
-Balanced,1.1053,1.1228,0.9205,25.5,3.6702,False,check_error: '>=' not supported between instances of 'NoneType' and 'float'
-Conservative,1.3739,1.0667,0.8769,21.5,1.9341,False,check_error: '>=' not supported between instances of 'NoneType' and 'float'
+Aggressive,0.0,0.0,0.0,0.0,0.0,False,check_error: '<=' not supported between instances of 'NoneType' and 'float'
+Balanced,0.0,0.0,0.0,0.0,0.0,False,check_error: '<=' not supported between instances of 'NoneType' and 'float'
+Conservative,0.0,0.0,0.0,0.0,0.0,False,check_error: '<=' not supported between instances of 'NoneType' and 'float'
