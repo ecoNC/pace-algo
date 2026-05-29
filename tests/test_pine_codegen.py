@@ -24,6 +24,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.export.pine_codegen import (
     bit_exact_check,
+    cascade_signature_args,
+    extract_feature_usage,
     lgbm_to_pine_cascade,
     python_reimplementation,
 )
@@ -89,15 +91,22 @@ def test_python_reimpl_matches_booster():
 
 
 def test_pine_output_well_formed():
-    """Generated Pine snippet has expected structure (function + tree vars + raw + sigmoid)."""
+    """Generated Pine snippet has expected structure (function + tree vars + raw + sigmoid).
+
+    With the cascade-signature-only-referenced-features change, only USED
+    features appear in the Pine signature — unused ones are absent.
+    """
     booster, _, feature_names = _train_tiny_booster()
     pine = lgbm_to_pine_cascade(booster, feature_names)
 
     # Function signature
     assert "f_pace_algo_v1_probability(" in pine, "Missing function definition"
-    for name in feature_names:
-        # Pine arg has 'f_' prefix
-        assert f"f_{name}" in pine, f"Feature {name} missing from arglist"
+
+    # Only USED features should appear in the Pine signature
+    sig_features = cascade_signature_args(booster, feature_names)
+    assert len(sig_features) > 0, "Empty cascade signature — booster has no splits?"
+    for name in sig_features:
+        assert f"f_{name}" in pine, f"Used feature {name} missing from cascade"
 
     # Each tree gets its own variable
     n_trees = len(booster.dump_model()['tree_info'])
@@ -112,6 +121,40 @@ def test_pine_output_well_formed():
     forbidden = ['None', 'True', 'False', 'def ', 'lambda ']
     for tok in forbidden:
         assert tok not in pine, f"Forbidden Python token in Pine output: {tok!r}"
+
+
+def test_extract_feature_usage_returns_cascade_aligned_order():
+    """`used_features` is in cascade signature order (feature_idx ascending)."""
+    booster, _, feature_names = _train_tiny_booster()
+    usage = extract_feature_usage(booster, feature_names)
+    sig = cascade_signature_args(booster, feature_names)
+
+    # used_features and cascade signature must be the SAME list
+    assert usage['used_features'] == sig, (
+        f"used_features {usage['used_features']} != cascade signature {sig}"
+    )
+
+    # used_by_split_count exists for reports and is sorted by split_count desc
+    if usage['used_by_split_count']:
+        prev = float('inf')
+        for name in usage['used_by_split_count']:
+            d = next(d for d in usage['details'] if d['feature_name'] == name)
+            assert d['split_count'] <= prev, "used_by_split_count not desc"
+            prev = d['split_count']
+
+
+def test_cascade_with_subset_feature_list_rejected():
+    """If feature_names doesn't cover the booster's max split_feature, error."""
+    booster, _, feature_names = _train_tiny_booster()
+    sig = cascade_signature_args(booster, feature_names)
+    # Try to render with only the first feature name — booster will reference others
+    if len(sig) > 1:
+        try:
+            lgbm_to_pine_cascade(booster, feature_names[:1])
+        except ValueError as e:
+            assert "feature indices" in str(e), str(e)
+            return
+        raise AssertionError("Expected ValueError for truncated feature_names")
 
 
 def test_balanced_dataset_bit_exact():
@@ -169,4 +212,6 @@ if __name__ == '__main__':
     test_balanced_dataset_bit_exact()
     test_feature_index_validation()
     test_pine_threshold_format_stable()
+    test_extract_feature_usage_returns_cascade_aligned_order()
+    test_cascade_with_subset_feature_list_rejected()
     print('All pine_codegen tests passed.')
