@@ -19,10 +19,17 @@ Usage in NB15c (Colab driver):
 """
 from __future__ import annotations
 
+import hashlib
 import math
 from typing import Any, Iterable
 
 import numpy as np
+
+
+# ---------------------------------------------------------------------------
+# Module version — bump when output format / heuristic weights / API change
+# ---------------------------------------------------------------------------
+__version__ = '0.1.0'
 
 
 # ---------------------------------------------------------------------------
@@ -210,6 +217,10 @@ def estimate_pine_ops(pine_code: str,
 
     n_lines = pine_code.count('\n') + 1
     n_bytes = len(pine_code.encode('utf-8'))
+    n_chars = len(pine_code)
+    # Pine v6 function definitions end with `=>` — count to flag if approaching
+    # the per-script function-count limit (~500 in Pine v6).
+    function_count = pine_code.count('=>')
 
     ops_pct = ops_estimate / pine_budget_per_bar if pine_budget_per_bar > 0 else 0.0
     rs_pct = request_security_calls / request_security_budget if request_security_budget > 0 else 0.0
@@ -225,6 +236,7 @@ def estimate_pine_ops(pine_code: str,
         )
 
     return {
+        'pine_codegen_version':         __version__,
         'ops_estimate':                 ops_estimate,
         'ops_pct_of_budget':            ops_pct,
         'pine_budget_per_bar':          pine_budget_per_bar,
@@ -233,6 +245,8 @@ def estimate_pine_ops(pine_code: str,
         'request_security_budget':      request_security_budget,
         'n_lines':                      n_lines,
         'n_bytes':                      n_bytes,
+        'n_chars':                      n_chars,
+        'function_count':               function_count,
         'ta_calls':                     ta_calls,
         'math_calls':                   math_calls,
         'nz_calls':                     nz_calls,
@@ -240,6 +254,34 @@ def estimate_pine_ops(pine_code: str,
         'warnings':                     warnings,
         'passed_budget_check':          len(warnings) == 0,
     }
+
+
+# ---------------------------------------------------------------------------
+# Determinism / audit hashes
+# ---------------------------------------------------------------------------
+
+def _stable_hash(payload: str) -> str:
+    """SHA256 hex digest, first 16 chars (64-bit) for compact snapshots."""
+    return hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
+
+
+def feature_registry_hash(registry: dict[str, str]) -> str:
+    """Hash a feature_name → Pine-snippet mapping.
+
+    Sorts by key first so reorderings in pine_features.py don't change the hash;
+    only actual content changes do. Used to track when the Pine feature
+    semantics have changed across runs.
+    """
+    items = sorted(registry.items())
+    payload = '\n'.join(f"{k}:{v}" for k, v in items)
+    return _stable_hash(payload)
+
+
+def used_feature_list_hash(used: list[str]) -> str:
+    """Hash a list of feature names (order-preserving — order matters because
+    it determines argument position in the generated cascade signature)."""
+    payload = '|'.join(used)
+    return _stable_hash(payload)
 
 
 def bit_exact_check(booster, feature_names: list[str],

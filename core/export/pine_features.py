@@ -123,6 +123,14 @@ _HTF_DEPENDENT_EXACT = {'vol_pct_diff_htf', 'ltf_rsi_minus_htf_rsi'}
 def render_feature_engine(used_features: list[str]) -> dict:
     """Compose the Pine feature-engine block for the booster's referenced features.
 
+    Soft-fail semantics (Nicos Build-2-Direktive):
+    Features without a Pine snippet are AUTO-DROPPED and emitted with a
+    fallback value of 0.0 — the booster's tree splits on dropped features
+    will then behave as if the feature is 0 in Pine. This lets a single
+    low-impact missing feature not block the entire export. The dropped
+    list is surfaced in the return so the caller can log + persist it
+    into snapshot.json.
+
     Args:
         used_features: subset of FEATURE_REGISTRY keys (from
             pine_codegen.extract_feature_usage(...)['used_features'])
@@ -130,42 +138,52 @@ def render_feature_engine(used_features: list[str]) -> dict:
     Returns:
         dict with:
         - 'helpers': always-emitted indicator pre-computations
-        - 'htf':     HTF_HEADER if any HTF-dependent feature is used, else ''
-        - 'features': per-feature variable definitions, one per line
-                      (each line emits `f_<feature_name> = <expression>`)
-        - 'missing':  list of features in `used_features` that have no Pine
-                      mapping. CALLER MUST FAIL if non-empty.
-        - 'feature_arg_list': comma-separated f_<name> args in the order of
-                      used_features — pass straight into the cascade call
+        - 'htf':     HTF_HEADER if any HTF-dependent IMPLEMENTED feature
+                     is used, else ''
+        - 'features': per-feature variable definitions; dropped features
+                      get a `f_<name> = 0.0  // DROPPED` line
+        - 'feature_arg_list': comma-separated f_<name> args in original
+                      used_features order (passes into cascade unchanged)
+        - 'dropped_features': list of feature names with no Pine impl —
+                      Pine output will substitute 0.0 for them. Caller
+                      should log this; non-empty list means Pine predictions
+                      will diverge slightly from booster.predict() for any
+                      tree branch that splits on a dropped feature.
+        - 'missing': DEPRECATED — always empty list (kept for backward compat,
+                     legacy callers can drop the check).
     """
-    missing = [f for f in used_features if f not in FEATURE_REGISTRY]
-    if missing:
-        return {
-            'helpers':          '',
-            'htf':              '',
-            'features':         '',
-            'feature_arg_list': '',
-            'missing':          missing,
-        }
+    implemented = [f for f in used_features if f in FEATURE_REGISTRY]
+    dropped = [f for f in used_features if f not in FEATURE_REGISTRY]
 
+    # HTF header only needed if at least one IMPLEMENTED feature reads HTF
     needs_htf = any(
         f.startswith(_HTF_DEPENDENT_PREFIXES) or f in _HTF_DEPENDENT_EXACT
-        for f in used_features
+        for f in implemented
     )
 
-    feat_lines = ['// === V1 Features (referenced by booster) ===']
-    for fname in used_features:
+    feat_lines: list[str] = []
+    feat_lines.append('// === V1 Features (referenced by booster) ===')
+    for fname in implemented:
         snippet = FEATURE_REGISTRY[fname]
         feat_lines.append(f"f_{fname} = {snippet}")
 
+    if dropped:
+        feat_lines.append('')
+        feat_lines.append('// === DROPPED (no Pine impl — fallback to 0.0) ===')
+        feat_lines.append('// Booster references these; add to FEATURE_REGISTRY for full fidelity.')
+        for fname in dropped:
+            feat_lines.append(f"f_{fname} = 0.0  // DROPPED")
+
+    # arg_list keeps original order — that's how the cascade signature is built
     arg_list = ", ".join(f"f_{n}" for n in used_features)
 
     return {
-        'helpers':          HELPERS_HEADER,
-        'htf':              HTF_HEADER if needs_htf else '',
-        'features':         '\n'.join(feat_lines),
-        'feature_arg_list': arg_list,
-        'missing':          [],
+        'helpers':           HELPERS_HEADER,
+        'htf':               HTF_HEADER if needs_htf else '',
+        'features':          '\n'.join(feat_lines),
+        'feature_arg_list':  arg_list,
+        'dropped_features':  dropped,
+        'missing':           [],   # deprecated — kept for legacy callers
     }
 
 
