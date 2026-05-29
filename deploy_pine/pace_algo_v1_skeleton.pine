@@ -45,27 +45,25 @@ i_session_filter = input.string("None", "Session Filter",
 // ersetzt. Aktuell: einfache EMA-Trend-Probability für Skeleton-Test.
 // =============================================================================
 
+// SKELETON-PLACEHOLDER: RSI-basiert.
+// RSI [0,100] → probability [0,1]. Garantiert signal-aktivitaet fuer
+// Pipeline-Test. V1-Final ersetzt das durch echte LightGBM-Cascade
+// (NB16 v1b) via pine_codegen.
 f_signal_probability_placeholder() =>
-    ema20 = ta.ema(close, 20)
-    ema50 = ta.ema(close, 50)
-    atr14 = ta.atr(14)
-    bullish = close > ema20 and ema20 > ema50
-    bearish = close < ema20 and ema20 < ema50
-    distance_atr = atr14 > 0 ? math.abs(close - ema20) / atr14 : 0.0
-    confidence = math.min(1.0, distance_atr / 2.0)
-    bullish ? 0.50 + 0.50 * confidence : bearish ? 0.50 - 0.50 * confidence : 0.50
+    rsi14 = ta.rsi(close, 14)
+    rsi14 / 100.0
 
 probability = f_signal_probability_placeholder()
 
 // Tier-Cutoffs.
 // V1-FINAL: aus NB16 v1b (LightGBM 100 trees, seed=42):
 //           q90=0.531 / q97=0.548 / q99=0.565 — werden via pine_codegen eingesetzt.
-// SKELETON-TEST: leicht reduzierte Werte damit der EMA-Placeholder
-//                ueberhaupt Signale triggert (Placeholder-proba range ist enger
-//                als die echte Modell-Verteilung). Wird in Build 2 ersetzt.
-var float CUTOFF_STANDARD = 0.51   // Aggressive trigger (skeleton-test)
-var float CUTOFF_HIGH     = 0.53   // Balanced           (skeleton-test)
-var float CUTOFF_PREMIUM  = 0.55   // Conservative       (skeleton-test)
+// SKELETON-TEST: RSI-basierter Placeholder → proba = rsi/100.
+//                Cutoffs entsprechen RSI 55/60/65 (typische Overbought-Schwellen).
+//                Wird in Build 2 ersetzt.
+var float CUTOFF_STANDARD = 0.55   // Aggressive trigger (skeleton-test, RSI>55)
+var float CUTOFF_HIGH     = 0.60   // Balanced           (skeleton-test, RSI>60)
+var float CUTOFF_PREMIUM  = 0.65   // Conservative       (skeleton-test, RSI>65)
 
 tier = probability >= CUTOFF_PREMIUM ? "Premium" : probability >= CUTOFF_HIGH ? "High" : probability >= CUTOFF_STANDARD ? "Standard" : "None"
 
