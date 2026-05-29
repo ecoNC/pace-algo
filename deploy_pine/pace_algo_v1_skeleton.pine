@@ -53,9 +53,7 @@ f_signal_probability_placeholder() =>
     bearish = close < ema20 and ema20 < ema50
     distance_atr = atr14 > 0 ? math.abs(close - ema20) / atr14 : 0.0
     confidence = math.min(1.0, distance_atr / 2.0)
-    bullish ? 0.50 + 0.50 * confidence
-            : bearish ? 0.50 - 0.50 * confidence
-                      : 0.50
+    bullish ? 0.50 + 0.50 * confidence : bearish ? 0.50 - 0.50 * confidence : 0.50
 
 probability = f_signal_probability_placeholder()
 
