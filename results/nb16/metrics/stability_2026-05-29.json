@@ -1,0 +1,86 @@
+[
+  {
+    "variant": "v1a_30_noes",
+    "per_seed": [
+      {
+        "seed": 42,
+        "pf": 1.338174273858921,
+        "wr": 0.47149122807017546,
+        "n_trades": 460,
+        "sigs_per_day_per_symbol": 0.911173011451563,
+        "holdout_pf_mean": 1.3993958164949147,
+        "cluster_pct": 1.00053463682884,
+        "mdd_pct": 0.0
+      },
+      {
+        "seed": 1,
+        "pf": 1.2486033519553073,
+        "wr": 0.45426829268292684,
+        "n_trades": 330,
+        "sigs_per_day_per_symbol": 0.6536675951717734,
+        "holdout_pf_mean": 1.6212099811676082,
+        "cluster_pct": 1.008172305812266,
+        "mdd_pct": 0.0
+      },
+      {
+        "seed": 7,
+        "pf": 1.2784090909090908,
+        "wr": 0.4601226993865031,
+        "n_trades": 328,
+        "sigs_per_day_per_symbol": 0.6497059733828535,
+        "holdout_pf_mean": 1.1756373033722387,
+        "cluster_pct": 1.00053463682884,
+        "mdd_pct": 0.0
+      }
+    ],
+    "behavioral_stats": {
+      "signal_frequency_cv": 0.1657228705262035,
+      "in_sample_pf_cv": 0.028906309363873627,
+      "holdout_pf_mean": 1.3987477003449207,
+      "cluster_frequency_std": 0.003600431687092509,
+      "mdd_relative_std": 1.0
+    }
+  },
+  {
+    "variant": "v1b_100_noes",
+    "per_seed": [
+      {
+        "seed": 42,
+        "pf": 1.4490291262135921,
+        "wr": 0.49135802469135803,
+        "n_trades": 407,
+        "sigs_per_day_per_symbol": 0.8061900340451872,
+        "holdout_pf_mean": 1.7324174729180208,
+        "cluster_pct": 1.00053463682884,
+        "mdd_pct": 0.0
+      },
+      {
+        "seed": 1,
+        "pf": 1.486842105263158,
+        "wr": 0.4977973568281938,
+        "n_trades": 455,
+        "sigs_per_day_per_symbol": 0.9012689569792633,
+        "holdout_pf_mean": 1.7510320189705262,
+        "cluster_pct": 1.00053463682884,
+        "mdd_pct": 0.0
+      },
+      {
+        "seed": 7,
+        "pf": 1.4238578680203047,
+        "wr": 0.4869791666666667,
+        "n_trades": 385,
+        "sigs_per_day_per_symbol": 0.7626121943670691,
+        "holdout_pf_mean": 1.5277615945840244,
+        "cluster_pct": 1.00053463682884,
+        "mdd_pct": 0.0
+      }
+    ],
+    "behavioral_stats": {
+      "signal_frequency_cv": 0.07031374568334552,
+      "in_sample_pf_cv": 0.01781207665526806,
+      "holdout_pf_mean": 1.6704036954908572,
+      "cluster_frequency_std": 0.0,
+      "mdd_relative_std": 1.0
+    }
+  }
+]

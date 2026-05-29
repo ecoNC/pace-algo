@@ -1,0 +1,4 @@
+file,size_kb,total_trees,effective_trees,effective_ratio
+fx_v1_lgbm_seed7_2026-05-29.txt,6.6,1,1,1.0
+lgbm_R1.5.txt,9.7,3,3,1.0
+lgbm_fxgold_pine.txt,30.4,30,30,1.0
