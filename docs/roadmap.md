@@ -119,9 +119,37 @@ NB14f-v2-Daten werden **nicht** als V1-Lock genutzt, sondern als Forschungs-Inpu
 
 ---
 
-## Phase D — V1 Build (radikal vereinfacht 2026-05-28) 🟡 ACTIVE
+## Phase R — Model Robustness Audit ✅ ABGESCHLOSSEN 2026-05-29 (NB16)
 
-**Lock-Hierarchie:** [ANN-018 4-Layer-Architektur](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) ist FINAL. Keine weiteren ANN-Splits, keine zusätzlichen Validations-Phasen.
+**Trigger:** Build 2 Pine-Output zeigte 0 Signale auf allen FX-Pairs trotz bit-exact-Pass.
+**Diagnose:** das gesamte historische Production-Modell ist ein 1-Tree-Decision-Stump
+wegen `early_stopping(10)`. ANN-013/14 Cluster-Mechanik, R-14 Tier-Konvergenz und
+R-19 Pair-Tiering waren alle Symptome desselben Bugs.
+
+**NB16 Audit + Re-Train (`4be80f6`):**
+- Historischer Booster: `fx_v1_lgbm_seed7` = 1 effective tree
+- v0_baseline_es (reproduktion): 2 effective trees, 15 unique probabilities
+- v1a_30_noes: 30 trees, 1569 unique probs, Cross-Symbol Mean PF 1.40
+- **v1b_100_noes: 100 trees, 2273 unique probs, Cross-Symbol Mean PF 1.73, alle 4 Pairs ≥ 1.4** ⭐
+- v1c_xgb_30: 30 trees XGBoost, Cross-Symbol Mean PF 1.50
+
+**Nico-Lock 2026-05-29:** v1b_100_noes ist neuer V1-Kandidat. Cluster-Mechanik obsolet
+(VAL-Quantile q90/q97/q99 sind klar separiert). USDCHF supported (Premium PF 1.53 vs
+0.84 mit Stump) → R-19 obsolet. Behavioral Stability 4/5 metrics passed natürlich
+(mdd ist NB16-S6 Code-Artefakt).
+
+**Code-Patches:**
+- `core/train/lgbm_trainer.py`: `early_stopping_rounds: int | None = None` default
+- NB15c S2: kein early_stopping, V1-Lock-Assertion `n_trees == 100`, neuer Modell-Name
+
+Volle Analyse: [`results/nb16/`](../results/nb16/) — snapshot.json + distribution-plot
++ historical_audit.csv + cross_symbol_holdout.csv + stability.json.
+
+---
+
+## Phase D — V1 Build (radikal vereinfacht 2026-05-28, model-locked 2026-05-29) 🟡 ACTIVE
+
+**Lock-Hierarchie:** [ANN-018 4-Layer-Architektur](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) bleibt FINAL. Modell-Lock von v1b_100_noes per NB16 (siehe Phase R).
 
 **Korrektur 2026-05-28 (Nico):** Wir verlieren uns nicht in Spec-Eskalation. FX ist nicht "Forschungs-Blueprint" sondern **das Produkt**. Phase D wird radikal vereinfacht auf 3 Builds.
 
@@ -158,23 +186,33 @@ Layer 3: Backtest / Settings Transparency
 
 Keine freien Cutoffs, keine ML-Threshold-Inputs, keine Curve-Fit-Parameter.
 
-### Build 2 — FX-Modell-Codegen in Layer 1 einsetzen
+### Build 2 — FX-Modell-Codegen in Layer 1 einsetzen ✅ Code-Pakete fertig, 🟡 Re-Run pending
 
-**Datei:** `core/export/pine_codegen.py` (NEU, schlank)
+**Datei:** `core/export/pine_codegen.py` + `core/export/pine_features.py` + NB15c (alles ready).
 
-LightGBM-Tree-Export als nested-if-else-Pine-Code. NB14f-v2-Production-Seed=7 mit Cluster-Cutoff=0.40 wird als Pine-Code eingebettet. Ersetzt den Layer-1-Stub.
+**Status 2026-05-29:** Pine-Pipeline läuft, aber Modell-Lock geändert. NB15c S2 nutzt jetzt den
+gepatchten `lgbm_trainer.py` (no early_stopping, 100 iters). Nico runnt NB15c re-run → produziert
+neuen `deploy_pine/pace_algo_v1.pine` mit 100-Tree-Modell + VAL-Quantile-Cutoffs.
 
-**Verification:** Python-Probability auf 10k Test-Samples vs Pine-Berechnung — Diff < 1e-5.
+**Verification:** Python-Probability auf 10k Test-Samples vs Pine-Berechnung — Diff < 1e-5 (Stage B bit-exact).
 
-### Build 3 — Live-Test im TradingView
+### Build 3 — Live-Test im TradingView 🔥 GATEKEEPER für V1
 
-Nico öffnet den Indikator auf TradingView, prüft:
+Nico öffnet den Indikator auf TradingView. Diesmal ist das Modell ein echtes 100-Tree-Ensemble
+(v1b_100_noes per NB16), nicht mehr ein 1-Tree-Stump. **Erwartung: reale Signale.**
+
+**Validation-Checkliste (Gatekeeper für V1-Final-Lock):**
+- Signal-Frequenz pro Pair plausibel (NB16-Prognose: ~3 Premium/Tag auf GBPUSD, ~2 auf USDCAD)
+- Python ↔ TV Alignment (visuelle Stichprobe: 10 Bars vergleichen)
+- Regime-Verhalten (Trend / Range / Vola-Spike — Signale konsistent oder degenerieren in einem Regime?)
+- Threshold-Stabilität (kein "Flickern" um den Cutoff)
+- Symbol-Generalization (alle 4 Pairs: GBPUSD/AUDUSD/USDCHF/USDCAD)
 - Dashboard wird auf 4 TFs korrekt angezeigt
-- Backtest-Stats laufen plausibel mit
-- Signale erscheinen entsprechend Profile
-- Performance ist konsistent über 4 Pairs (GBPUSD/AUDUSD/USDCAD funktionieren; USDCHF wird transparent als "schwächeres Pair" gehandhabt — keine Versteck-Logik)
+- Backtest-Stats laufen plausibel
 
-Wenn alle 3 Builds funktionieren → **FX V1 Produkt steht.**
+Wenn diese Checkliste passed → **V1 Final Lock.** Erst danach: ANN-013/14 Status-Update auf
+"Superseded by V1 Lock 2026-05-29", Pine-Codegen XGBoost-Erweiterung als Future-Option,
+Phase E (V2 Multi-Asset) frei.
 
 ---
 

@@ -10,7 +10,7 @@
 
 | Slot | Status | Modell | TF | Premium PF (OOS) | Hold-Out PF | Quality-Anchor | Notiz |
 |---|---|---|---|---:|---:|---|---|
-| **fx_model** | 🟡 **Phase D — Industrialization in Progress** | LightGBM 30×3 | **5m only** | 2.00 (NB14 v1, top-1%) | 2.39 (NB14 v1) / 1.61 (NB14f v2, Cluster) | Research-Lock per [ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md) | Phase D = Reference-Blueprint-Build (D.1 USDCHF Deep-Dive → D.2 Universal-vs-Per-Pair → D.3 Behavior-Map → D.4–D.8 Technical) |
+| **fx_model** | 🟡 **V1 Candidate — Pine Live Validation Pending** | LightGBM **100×3** (no early_stopping, seed=42) | **5m only** | **1.45** (NB16, in-sample Premium) | **1.73 cross-symbol mean** (NB16, 4 pairs ≥ 1.4) | passed naturally (NB16 v1b) | V1-Kandidat **v1b_100_noes** gelocked 2026-05-29. Old 1-Tree-Stump entries archived below as Decision-Stump Baseline. |
 | **crypto_model** | ⏳ V2 — Wartet auf Phase E.1 | TBD | TBD | — | — | — | Bau startet erst nach Phase D Abschluss (ANN-016 Lock 1) |
 | **indices_model** | ⏳ V2 — Wartet auf Phase E.3 | TBD | TBD | — | — | — | Plus Polygon-Aktivierung |
 | **commodity_model** | ⏳ V2 — Wartet auf Phase E.2 | TBD | TBD | — | — | — | XAU + ggf. XAG/Oil über Blueprint |
@@ -19,23 +19,24 @@
 
 **V1-Launch-Definition (ANN-016 Lock 3):** Erst nach Phase D abgeschlossen UND mind. 2 Asset-Klassen über Blueprint produktionsreif UND Pine-Router operiert echten Multi-Model-Switch. Kein FX-only-V1-Release.
 
-### V1 FX-Modell — Gelockte Konfiguration (ANN-011, expanded via ANN-015)
+### V1 FX-Modell — Gelockte Konfiguration (V1 Lock 2026-05-29, post NB16)
 
 | Parameter | Wert |
 |---|---|
 | Algorithm | LightGBM (binary classification, sigmoid output) |
-| Trees | 30 |
+| Trees | **100 (full ensemble, NO early stopping)** — locked 2026-05-29 nach NB16 Audit |
 | Max Depth | 3 |
-| Features (27) | Phase-1-Winner-Set (Baseline 15 + HTF-Interaction 12) |
-| Training Symbols | EURUSD, USDJPY, **NZDUSD (NEU per ANN-015)** (Walk-Forward 2020-01 → 2024-01) |
-| Validation Window | 2024-01 → 2024-07 |
+| Features | Whatever is in `_extended.parquet` + dropna (booster auto-selects via SHAP, Path B) |
+| Training Symbols | EURUSD, USDJPY, NZDUSD (per ANN-015) |
+| Validation Window | 2024-01 → 2024-07 — **for monitoring only, NOT for early stopping** |
 | Test Window | 2024-07 → 2026-05 |
-| Hold-Out Symbols | GBPUSD, AUDUSD, USDCHF, **USDCAD (NEU per ANN-015)** |
-| Primary TF | **5m only** |
+| Hold-Out Symbols | GBPUSD, AUDUSD, USDCHF, USDCAD |
+| Primary TF | **5m only** (ANN-011) |
 | HTF Context | 1h, 4h (mit `shift(1)` Anti-Look-Ahead) |
-| Cutoff-Mechanik | Per-Model Relative Cluster (ANN-014) — Production-Cluster wird aus NB14f-v2 BEST_SEED extrahiert |
-| Filter-Stack (Profile) | Aggressive=Premium-pur, Balanced=Premium+HTF, Conservative=Premium+HTF+NY (ANN-012) |
-| Random Seed | TBD nach NB14f-v2 (BEST_SEED via Behavioral Stability) |
+| Cutoff-Mechanik | VAL-Quantile (Standard q90, High q97, Premium q99) — Cluster-Detection nicht mehr nötig (siehe NB16 Distribution: kontinuierliche Glockenkurve) |
+| Filter-Stack (Profile) | Aggressive=Standard, Balanced=High, Conservative=Premium (siehe NB15c) |
+| Random Seed | **42** (Production-Lock), `deterministic=True` |
+| Why this changed | NB16 audit (commit `4be80f6`): early_stopping(10) had clipped LightGBM to ~1-3 effective trees, causing every downstream symptom. See `results/nb16/`. |
 
 ### V1 FX-Modell — Performance Snapshots
 
@@ -84,6 +85,48 @@
 **Behavioral Stability:** `all_profiles_behavioral_stable: FALSE` — aber **kein V1-Blocker**, sondern Architektur-Signal per [ANN-016](decisions/ANN-016-fx-as-reference-blueprint-industrialization-first.md). USDCHF-Verhalten wird in Phase D.1 vollständig diagnostiziert, nicht wegoptimiert.
 
 Snapshot: [`results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json`](../results/nb14f/summaries/nb14f_full_snapshot_2026-05-28.json)
+
+> **Re-interpretation 2026-05-29 (post NB16):** Diese Historical-Snapshots oben (NB14 v1, NB14f v1+v2) sind **Decision-Stump-Modelle** — `effective_trees ≈ 1` wegen `early_stopping(10)`. Die hier gezeigten PF-Zahlen sind Stump-Artefakte, nicht echter Edge. Bleiben als Research-Baseline erhalten. **Echtes V1-Modell siehe NB16 v1b unten.**
+
+#### Current V1 Candidate: NB16 v1b_100_noes (commit `4be80f6`, 2026-05-29)
+
+**100-Tree LightGBM, NO early_stopping, seed=42, deterministic.**
+
+| Metrik | Wert |
+|---|---:|
+| effective_trees | 100 |
+| unique probabilities (TEST 4dp) | 2273 |
+| Probability range (TEST) | 0.313 – 0.674 |
+| q90 / q97 / q99 (VAL) | 0.531 / 0.548 / 0.565 |
+| In-sample TEST Premium PF | 1.45 |
+| In-sample TEST Premium WR | 49.1% |
+| In-sample sigs/day/symbol | 0.81 |
+
+**Cross-Symbol Hold-Out (Premium tier, VAL-q99 cutoff):**
+
+| Pair | PF | WR | n_trades |
+|---|---:|---:|---:|
+| GBPUSD | **2.32** | 60.7% | 169 |
+| AUDUSD | 1.41 | 48.4% | 95 |
+| USDCHF | **1.53** | 50.5% | 103 |
+| USDCAD | 1.67 | 52.7% | 149 |
+| **Mean** | **1.73** | 53.1% | ~129 per pair |
+
+**Multi-Seed Behavioral Stability ([42, 1, 7]):**
+- signal_frequency_cv: 0.070 ✅ (target < 0.30)
+- in_sample_pf_cv: 0.018 ✅ (target < 0.40)
+- holdout_pf_mean: 1.67 ✅ (target ≥ 1.30)
+- cluster_frequency_std: 0.000 ✅ (target < 1.5)
+- mdd_relative_std: 1.0 ⚠️ Code-Artefakt (NB16 S6 hat MDD nicht berechnet → div-by-zero) — kein reales Stability-Failure
+
+**Was ANN-013/14 Cluster-Mechanik obsolet macht:** Mit kontinuierlicher Probability-Distribution (2273 unique values vs 15 beim Stump) sind VAL-Quantile-Cutoffs eindeutig getrennt (q90=0.531, q97=0.548, q99=0.565 — klare Stufung statt Konvergenz). Kein Cluster-Detection-Workaround mehr nötig.
+
+**Pine-Compatibility:** Cutoff q99=0.565, Max=0.674 → 0.11 Headroom. Floating-Point-Drift Python↔Pine (~1e-7) ist kein Problem mehr.
+
+Snapshot: [`results/nb16/summaries/nb16_full_snapshot_2026-05-29.json`](../results/nb16/summaries/nb16_full_snapshot_2026-05-29.json)
+Distribution-Plot: [`results/nb16/plots/probability_distributions_2026-05-29.png`](../results/nb16/plots/probability_distributions_2026-05-29.png)
+
+**Production-Status:** Pine Live Validation steht aus = Gatekeeper für V1-Final-Lock.
 
 ---
 

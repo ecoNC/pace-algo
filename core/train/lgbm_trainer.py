@@ -24,19 +24,31 @@ def train_lgbm(
     X_val: pd.DataFrame,
     y_val: pd.Series,
     params: dict[str, Any] | None = None,
-    early_stopping_rounds: int = 10,
+    early_stopping_rounds: int | None = None,
 ) -> lgb.Booster:
     """
-    Train LightGBM with validation-based early stopping.
+    Train LightGBM, by default running the full num_iterations from `params`.
+
+    HISTORY-NOTE (V1 lock, 2026-05-29):
+    Prior versions defaulted to `early_stopping_rounds=10`. NB16 audit
+    proved this clipped LightGBM to 1-3 effective trees on our data,
+    causing ultra-discrete probability distributions, cluster convergence
+    (R-14), behavioral instability (NB14f-v2), and Pine 0-signal failures.
+    See `results/nb16/` for the audit. The new default trains the full
+    100 iterations as a real ensemble.
 
     Args:
         X_train, y_train: training features and binary labels
         X_val, y_val: validation features and binary labels
         params: LightGBM params (uses defaults if None)
-        early_stopping_rounds: stop if val loss doesn't improve
+        early_stopping_rounds: if None (default) no early stopping is used.
+            Pass an int (e.g. 10) only for explicit historical-reproduction
+            of pre-V1 runs. The new V1 contract is: train the full
+            num_iterations, validation set is only for monitoring.
 
     Returns:
-        Trained Booster
+        Trained Booster (num_trees == params['num_iterations'] when
+        early_stopping_rounds is None).
     """
     if params is None:
         params = {
@@ -46,7 +58,7 @@ def train_lgbm(
             "max_depth":            3,
             "min_data_in_leaf":     200,
             "learning_rate":        0.05,
-            "num_iterations":       100,   # capped, early stopping selects best
+            "num_iterations":       100,   # FULL ensemble (V1 lock 2026-05-29)
             "lambda_l2":            1.0,
             "feature_fraction":     0.8,
             "bagging_fraction":     0.8,
@@ -54,10 +66,6 @@ def train_lgbm(
             "is_unbalance":         True,   # class weight balanced
             "verbose":              -1,
             "n_jobs":               -1,
-            # Reproducibility — kritisch für ANN-012 Cutoff-Lock (siehe NB14c Run 2 Debug).
-            # Ohne diese Flags variiert das Modell zwischen Runs durch feature_fraction +
-            # bagging_fraction Stochastik → VAL-top-1% Cutoff schwankt um ~0.005-0.01 →
-            # bricht ANN-012's Premium-Cutoff-Lock.
             "seed":                 42,
             "deterministic":        True,
         }
@@ -65,13 +73,16 @@ def train_lgbm(
     train_data = lgb.Dataset(X_train, label=y_train)
     val_data = lgb.Dataset(X_val, label=y_val, reference=train_data)
 
+    callbacks = [lgb.log_evaluation(period=0)]
+    if early_stopping_rounds is not None:
+        callbacks.insert(0, lgb.early_stopping(early_stopping_rounds, verbose=False))
+
     model = lgb.train(
         params,
         train_data,
         valid_sets=[train_data, val_data],
         valid_names=["train", "val"],
-        callbacks=[lgb.early_stopping(early_stopping_rounds, verbose=False),
-                    lgb.log_evaluation(period=0)],
+        callbacks=callbacks,
     )
     return model
 
