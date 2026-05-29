@@ -59,11 +59,15 @@ f_signal_probability_placeholder() =>
 
 probability = f_signal_probability_placeholder()
 
-// Tier-Cutoffs aus NB14f-v2 (Cluster-Detection per ANN-013/14, Production-Seed=7)
-// PLACEHOLDER bis pine_codegen die echten Cluster pro Asset-Klasse einsetzt.
-var float CUTOFF_STANDARD = 0.50   // Aggressive trigger
-var float CUTOFF_HIGH     = 0.55   // Balanced
-var float CUTOFF_PREMIUM  = 0.65   // Conservative
+// Tier-Cutoffs.
+// V1-FINAL: aus NB16 v1b (LightGBM 100 trees, seed=42):
+//           q90=0.531 / q97=0.548 / q99=0.565 — werden via pine_codegen eingesetzt.
+// SKELETON-TEST: leicht reduzierte Werte damit der EMA-Placeholder
+//                ueberhaupt Signale triggert (Placeholder-proba range ist enger
+//                als die echte Modell-Verteilung). Wird in Build 2 ersetzt.
+var float CUTOFF_STANDARD = 0.51   // Aggressive trigger (skeleton-test)
+var float CUTOFF_HIGH     = 0.53   // Balanced           (skeleton-test)
+var float CUTOFF_PREMIUM  = 0.55   // Conservative       (skeleton-test)
 
 tier = probability >= CUTOFF_PREMIUM ? "Premium" : probability >= CUTOFF_HIGH ? "High" : probability >= CUTOFF_STANDARD ? "Standard" : "None"
 
@@ -275,7 +279,7 @@ if show_dashboard and barstate.islast
 // =============================================================================
 
 if show_backtest and barstate.islast
-    var table stats = table.new(position.bottom_right, 2, 8, border_width=1, border_color=color.new(color.gray, 60))
+    var table stats = table.new(position.bottom_right, 2, 11, border_width=1, border_color=color.new(color.gray, 60))
     bg_h = color.new(color.black, 50)
     txt_h = color.white
 
@@ -288,23 +292,36 @@ if show_backtest and barstate.islast
     table.cell(stats, 0, 2, "Session Filter",                                 text_size=size.small)
     table.cell(stats, 1, 2, i_session_filter,                                 text_size=size.small)
 
-    table.cell(stats, 0, 3, "Trades",                                         text_size=size.small)
-    table.cell(stats, 1, 3, str.tostring(bt_total_trades),                    text_size=size.small)
+    // === Diagnose: aktuelle Probability + Active Cutoff (Transparenz) ===
+    table.cell(stats, 0, 3, "Current Proba", bgcolor=color.new(color.navy, 80), text_size=size.small)
+    proba_color = probability >= profile_cutoff ? color.new(color.green, 70) : color.new(color.gray, 80)
+    table.cell(stats, 1, 3, str.tostring(probability, "#.###"), bgcolor=proba_color, text_size=size.small)
 
-    table.cell(stats, 0, 4, "Win Rate", text_size=size.small)
+    table.cell(stats, 0, 4, "Active Cutoff", bgcolor=color.new(color.navy, 80), text_size=size.small)
+    table.cell(stats, 1, 4, str.tostring(profile_cutoff, "#.###"), text_size=size.small)
+
+    table.cell(stats, 0, 5, "Current Tier", bgcolor=color.new(color.navy, 80), text_size=size.small)
+    tier_color = tier == "Premium" ? color.new(color.yellow, 60) : tier == "High" ? color.new(color.lime, 70) : tier == "Standard" ? color.new(color.aqua, 70) : color.new(color.gray, 80)
+    table.cell(stats, 1, 5, tier, bgcolor=tier_color, text_size=size.small)
+
+    // === Stats ===
+    table.cell(stats, 0, 6, "Trades",                                         text_size=size.small)
+    table.cell(stats, 1, 6, str.tostring(bt_total_trades),                    text_size=size.small)
+
+    table.cell(stats, 0, 7, "Win Rate", text_size=size.small)
     wr_color = bt_wr >= 0.55 ? color.new(color.green, 70) : bt_wr >= 0.45 ? color.new(color.gray, 80) : color.new(color.red, 70)
-    table.cell(stats, 1, 4, str.tostring(bt_wr * 100, "#.#") + "%", bgcolor=wr_color, text_size=size.small)
+    table.cell(stats, 1, 7, str.tostring(bt_wr * 100, "#.#") + "%", bgcolor=wr_color, text_size=size.small)
 
-    table.cell(stats, 0, 5, "Profit Factor", text_size=size.small)
+    table.cell(stats, 0, 8, "Profit Factor", text_size=size.small)
     pf_color = bt_pf >= 1.5 ? color.new(color.green, 70) : bt_pf >= 1.0 ? color.new(color.gray, 80) : color.new(color.red, 70)
-    table.cell(stats, 1, 5, str.tostring(bt_pf, "#.##"), bgcolor=pf_color, text_size=size.small)
+    table.cell(stats, 1, 8, str.tostring(bt_pf, "#.##"), bgcolor=pf_color, text_size=size.small)
 
-    table.cell(stats, 0, 6, "Max Drawdown", text_size=size.small)
+    table.cell(stats, 0, 9, "Max Drawdown", text_size=size.small)
     dd_color = bt_max_dd <= 0.10 ? color.new(color.green, 70) : bt_max_dd <= 0.20 ? color.new(color.gray, 80) : color.new(color.red, 70)
-    table.cell(stats, 1, 6, str.tostring(bt_max_dd * 100, "#.#") + "%", bgcolor=dd_color, text_size=size.small)
+    table.cell(stats, 1, 9, str.tostring(bt_max_dd * 100, "#.#") + "%", bgcolor=dd_color, text_size=size.small)
 
-    table.cell(stats, 0, 7, "Current Equity",                                 text_size=size.small)
-    table.cell(stats, 1, 7, str.tostring(bt_equity, "#.##") + " R",           text_size=size.small)
+    table.cell(stats, 0, 10, "Current Equity",                                text_size=size.small)
+    table.cell(stats, 1, 10, str.tostring(bt_equity, "#.##") + " R",          text_size=size.small)
 
 
 // =============================================================================
