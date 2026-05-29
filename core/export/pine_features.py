@@ -41,6 +41,13 @@ _macd_signal   = ta.ema(_macd_line, 9)
 _macd_hist     = _macd_line - _macd_signal
 _macd_hist_atr = _macd_hist / _safe_atr
 _atr_pct_rank  = ta.percentrank(_atr14, 100) / 100.0
+// --- Session/time + Vol-Expansion helpers ---
+_hour_utc      = hour(time, "UTC")
+_min_utc       = minute(time, "UTC")
+_frac_hour     = _hour_utc + _min_utc / 60.0
+_dow_utc       = dayofweek(time, "UTC")
+_atr_avg_50    = ta.sma(_atr14, 50)
+_vol_ratio     = _atr_avg_50 > 0.0 ? _atr14 / _atr_avg_50 : 1.0
 """
 
 
@@ -112,6 +119,25 @@ FEATURE_REGISTRY: dict[str, str] = {
     'both_low_vol':             '(_atr_pct_rank < 0.3 and _htf_1h_atr_pct_safe < 0.3) ? 1.0 : 0.0',
     'pullback_in_bull':         '(_htf_1h_ema_align > 0.5 and _rsi14 < 45.0) ? 1.0 : 0.0',
     'pullback_in_bear':         '(_htf_1h_ema_align < -0.5 and _rsi14 > 55.0) ? 1.0 : 0.0',
+
+    # === Session Flags (core/features/session.py) ===
+    'in_asia':                  '(_hour_utc >= 23 or _hour_utc < 8) ? 1.0 : 0.0',
+    'in_london':                '(_hour_utc >= 8 and _hour_utc < 17) ? 1.0 : 0.0',
+    'in_ny':                    '(_hour_utc >= 13 and _hour_utc < 22) ? 1.0 : 0.0',
+    'in_london_ny_killzone':    '(_hour_utc >= 13 and _hour_utc < 17) ? 1.0 : 0.0',
+    'in_asia_london_overlap':   '(_hour_utc >= 8 and _hour_utc < 9) ? 1.0 : 0.0',
+    'in_us_open_killzone':      '(_frac_hour >= 13.5 and _frac_hour < 15.5) ? 1.0 : 0.0',
+    'in_london_open_killzone':  '(_hour_utc >= 8 and _hour_utc < 10) ? 1.0 : 0.0',
+    # Pine FX charts only render bars during market hours, so this is
+    # effectively always 1.0 — but emit it explicitly to match training.
+    'is_fx_market_open':        '(_dow_utc == dayofweek.sunday and _hour_utc >= 22) ? 1.0 : (_dow_utc >= dayofweek.monday and _dow_utc <= dayofweek.friday) ? 1.0 : 0.0',
+
+    # === Vol-Expansion (core/features/session.py vol_expansion_features) ===
+    'vol_expansion_ratio':      '_vol_ratio',
+    'vol_expanding':            '_vol_ratio > 1.2 ? 1.0 : 0.0',
+    'vol_contracting':          '_vol_ratio < 0.8 ? 1.0 : 0.0',
+    # ta.barssince returns na if condition has never been true — fall back to 99.
+    'bars_since_vol_spike':     'math.min(99.0, nz(ta.barssince(_vol_ratio > 1.5), 99))',
 }
 
 
