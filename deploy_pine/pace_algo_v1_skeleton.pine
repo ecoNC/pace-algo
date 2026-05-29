@@ -65,15 +65,10 @@ var float CUTOFF_STANDARD = 0.50   // Aggressive trigger
 var float CUTOFF_HIGH     = 0.55   // Balanced
 var float CUTOFF_PREMIUM  = 0.65   // Conservative
 
-tier = probability >= CUTOFF_PREMIUM  ? "Premium"
-     : probability >= CUTOFF_HIGH     ? "High"
-     : probability >= CUTOFF_STANDARD ? "Standard"
-     :                                   "None"
+tier = probability >= CUTOFF_PREMIUM ? "Premium" : probability >= CUTOFF_HIGH ? "High" : probability >= CUTOFF_STANDARD ? "Standard" : "None"
 
 // Profile mapping (ANN-012 + ANN-018)
-profile_cutoff = profile == "Aggressive"   ? CUTOFF_STANDARD
-              : profile == "Balanced"     ? CUTOFF_HIGH
-              :                              CUTOFF_PREMIUM
+profile_cutoff = profile == "Aggressive" ? CUTOFF_STANDARD : profile == "Balanced" ? CUTOFF_HIGH : CUTOFF_PREMIUM
 
 signal_raw = probability >= profile_cutoff
 
@@ -100,10 +95,8 @@ signal_active = signal_raw and session_allowed
 // --- Per-TF Berechnungs-Funktionen (Lookahead-Off zwingend) ---
 
 f_trend_score(tf_str) =>
-    e20 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 20),
-                            barmerge.gaps_off, barmerge.lookahead_off)
-    e50 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 50),
-                            barmerge.gaps_off, barmerge.lookahead_off)
+    e20 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 20), barmerge.gaps_off, barmerge.lookahead_off)
+    e50 = request.security(syminfo.tickerid, tf_str, ta.ema(close, 50), barmerge.gaps_off, barmerge.lookahead_off)
     e20 > e50 ? 1 : e20 < e50 ? -1 : 0
 
 // ta.adx() reported "Could not find function" in some Pine v6 environments —
@@ -113,8 +106,7 @@ f_adx_helper() =>
     _adx_val
 
 f_adx_value(tf_str) =>
-    request.security(syminfo.tickerid, tf_str, f_adx_helper(),
-                      barmerge.gaps_off, barmerge.lookahead_off)
+    request.security(syminfo.tickerid, tf_str, f_adx_helper(), barmerge.gaps_off, barmerge.lookahead_off)
 
 // Bollinger-Width-Ratio: aktueller Width / SMA(Width, 50)
 // Self-contained Helper damit es in request.security passt.
@@ -126,8 +118,7 @@ f_bb_width_ratio() =>
     width_avg > 0 ? width / width_avg : 1.0
 
 f_range_ratio(tf_str) =>
-    request.security(syminfo.tickerid, tf_str, f_bb_width_ratio(),
-                      barmerge.gaps_off, barmerge.lookahead_off)
+    request.security(syminfo.tickerid, tf_str, f_bb_width_ratio(), barmerge.gaps_off, barmerge.lookahead_off)
 
 // --- Per-TF Werte holen ---
 
@@ -225,8 +216,7 @@ bt_total_trades = bt_wins + bt_losses
 bt_wr  = bt_total_trades > 0 ? bt_wins / bt_total_trades : 0.0
 bt_gross_win  = bt_wins * 1.5
 bt_gross_loss = bt_losses * 1.0
-bt_pf = bt_gross_loss > 0 ? bt_gross_win / bt_gross_loss
-                          : (bt_gross_win > 0 ? 999.0 : 0.0)
+bt_pf = bt_gross_loss > 0 ? bt_gross_win / bt_gross_loss : (bt_gross_win > 0 ? 999.0 : 0.0)
 
 
 // =============================================================================
@@ -234,8 +224,7 @@ bt_pf = bt_gross_loss > 0 ? bt_gross_win / bt_gross_loss
 // =============================================================================
 
 if show_dashboard and barstate.islast
-    var table dash = table.new(position.top_right, 5, 6, border_width=1,
-                                border_color=color.new(color.gray, 60))
+    var table dash = table.new(position.top_right, 5, 6, border_width=1, border_color=color.new(color.gray, 60))
     bg_header = color.new(color.black, 50)
     txt_header = color.white
 
@@ -286,8 +275,7 @@ if show_dashboard and barstate.islast
 // =============================================================================
 
 if show_backtest and barstate.islast
-    var table stats = table.new(position.bottom_right, 2, 8, border_width=1,
-                                 border_color=color.new(color.gray, 60))
+    var table stats = table.new(position.bottom_right, 2, 8, border_width=1, border_color=color.new(color.gray, 60))
     bg_h = color.new(color.black, 50)
     txt_h = color.white
 
@@ -324,19 +312,13 @@ if show_backtest and barstate.islast
 // =============================================================================
 
 if show_signals and signal_active and not in_trade[1]
-    label_color = tier == "Premium" ? color.yellow
-                : tier == "High"    ? color.lime
-                :                      color.aqua
-    label.new(bar_index, low, "▲ " + tier,
-              style=label.style_label_up, color=label_color,
-              textcolor=color.black, size=size.small)
+    label_color = tier == "Premium" ? color.yellow : tier == "High" ? color.lime : color.aqua
+    label.new(bar_index, low, "▲ " + tier, style=label.style_label_up, color=label_color, textcolor=color.black, size=size.small)
 
 // TP/SL Boxen für aktuell offenen Trade
 var box current_trade_box = na
 if in_trade and not in_trade[1]
-    current_trade_box := box.new(bar_index, tp_px, bar_index, sl_px,
-                                  border_color=color.new(color.blue, 50),
-                                  bgcolor=color.new(color.blue, 90))
+    current_trade_box := box.new(bar_index, tp_px, bar_index, sl_px, border_color=color.new(color.blue, 50), bgcolor=color.new(color.blue, 90))
 
 if not in_trade and not na(current_trade_box)
     box.set_right(current_trade_box, bar_index)

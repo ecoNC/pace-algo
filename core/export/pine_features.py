@@ -72,8 +72,8 @@ _pf_htf_ema_align() =>
     _e200 = ta.ema(close, 200)
     _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
 
-_htf_1h_rsi14_raw     = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1],       barmerge.gaps_off, barmerge.lookahead_off)
-_htf_1h_atr_pct_raw   = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1],   barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1], barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_off)
 _htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_off)
 
 _htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
