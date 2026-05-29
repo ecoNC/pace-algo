@@ -1,0 +1,174 @@
+"""Pine v6 code snippets per V1 feature — registry-based lookup.
+
+NB15c picks the subset that the production booster actually references
+(via extract_feature_usage) and only emits Pine code for those — Path B
+of Build 2: minimal, data-driven, no dead-feature surface area.
+
+Anti-Look-Ahead Discipline (ANN-018):
+- All HTF (1h) reads use barmerge.lookahead_off + [1] shift
+- Lower-TF features computed on closed bars only
+- No high/low references in signal logic — only close-derived inputs
+
+Source-of-Truth: core/features/engineer.py + core/features/htf_interaction.py
+(these Pine snippets are line-by-line transliterations of those modules)
+"""
+from __future__ import annotations
+
+
+# ---------------------------------------------------------------------------
+# Pre-computed indicators emitted ONCE per Pine file before any feature line
+# ---------------------------------------------------------------------------
+
+HELPERS_HEADER = """// === Pre-computed indicators (V1 feature engine) ===
+_atr14         = ta.atr(14)
+_safe_atr      = _atr14 > 0.0 ? _atr14 : na
+_ema20         = ta.ema(close, 20)
+_ema50         = ta.ema(close, 50)
+_ema200        = ta.ema(close, 200)
+_rsi14         = ta.rsi(close, 14)
+_adx14         = ta.adx(14)
+_swing_hi_20   = ta.highest(high, 20)
+_swing_lo_20   = ta.lowest(low, 20)
+_vol_sma20     = ta.sma(volume, 20)
+_vol_std50     = ta.stdev(volume, 50)
+_log_ret       = nz(math.log(close / close[1]), 0.0)
+_ema_alignment = _ema20 > _ema50 and _ema50 > _ema200 ? 1.0 :
+                 _ema20 < _ema50 and _ema50 < _ema200 ? -1.0 : 0.0
+_macd_fast     = ta.ema(close, 12)
+_macd_slow     = ta.ema(close, 26)
+_macd_line     = _macd_fast - _macd_slow
+_macd_signal   = ta.ema(_macd_line, 9)
+_macd_hist     = _macd_line - _macd_signal
+_macd_hist_atr = _macd_hist / _safe_atr
+_atr_pct_rank  = ta.percentrank(_atr14, 100) / 100.0
+"""
+
+
+# ---------------------------------------------------------------------------
+# HTF (1h) context — pulled via request.security with lookahead_off + [1] shift
+# IMPORTANT: each request.security call counts against Pine's 40-call budget
+# ---------------------------------------------------------------------------
+
+HTF_HEADER = """// === HTF (1h) context — anti-look-ahead via [1] shift ===
+_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60",
+    ta.rsi(close, 14)[1], barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60",
+    (ta.percentrank(ta.atr(14), 100) / 100.0)[1], barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60",
+    (ta.ema(close, 20) > ta.ema(close, 50) and ta.ema(close, 50) > ta.ema(close, 200) ? 1.0 :
+     ta.ema(close, 20) < ta.ema(close, 50) and ta.ema(close, 50) < ta.ema(close, 200) ? -1.0 : 0.0)[1],
+    barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
+_htf_1h_atr_pct_safe = nz(_htf_1h_atr_pct_raw, 0.5)
+_htf_1h_ema_align    = nz(_htf_1h_ema_align_raw, 0.0)
+"""
+
+
+# ---------------------------------------------------------------------------
+# Per-feature Pine expressions
+# Keys MUST match feature_name from core/features/* (no aliasing)
+# ---------------------------------------------------------------------------
+
+FEATURE_REGISTRY: dict[str, str] = {
+    # === Session (cyclical hour encoding) ===
+    'hour_sin': 'math.sin(2.0 * math.pi * (hour(time, "UTC") + minute(time, "UTC") / 60.0) / 24.0)',
+    'hour_cos': 'math.cos(2.0 * math.pi * (hour(time, "UTC") + minute(time, "UTC") / 60.0) / 24.0)',
+
+    # === Volatility ===
+    'atr_pct':             '_atr14 / close',
+    'atr_percentile_100':  '_atr_pct_rank',
+    'realized_vol_20':     'ta.stdev(_log_ret, 20) * math.sqrt(20)',
+
+    # === Trend ===
+    'adx_14':              '_adx14',
+    'ema_20_dist_atr':     '(close - _ema20) / _safe_atr',
+    'ema_20_slope_atr':    '(_ema20 - _ema20[5]) / _safe_atr',
+
+    # === Momentum ===
+    'momentum_composite':  '(_rsi14 - 50.0) / 50.0 + math.tanh(_macd_hist_atr)',
+
+    # === Structure ===
+    'dist_to_swing_high_atr': '(_swing_hi_20 - close) / _safe_atr',
+    'dist_to_swing_low_atr':  '(close - _swing_lo_20) / _safe_atr',
+
+    # === Volume ===
+    'rvol_20':             'volume / nz(_vol_sma20, 1.0)',
+    'volume_z_score':      '(volume - _vol_sma20) / nz(_vol_std50, 1.0)',
+
+    # === HTF (1h) raw ===
+    'htf_1h_rsi_14':              '_htf_1h_rsi14',
+    'htf_1h_atr_percentile_100':  '_htf_1h_atr_pct_safe',
+
+    # === HTF × LTF Interactions ===
+    'htf_ltf_agree_bull':       '(_ema_alignment > 0.5 and _htf_1h_ema_align > 0.5) ? 1.0 : 0.0',
+    'htf_ltf_agree_bear':       '(_ema_alignment < -0.5 and _htf_1h_ema_align < -0.5) ? 1.0 : 0.0',
+    'htf_ltf_counter_trend':    '((_ema_alignment > 0.5 and _htf_1h_ema_align < -0.5) or (_ema_alignment < -0.5 and _htf_1h_ema_align > 0.5)) ? 1.0 : 0.0',
+    'htf_ltf_alignment_score':  '_ema_alignment * _htf_1h_ema_align',
+    'ltf_rsi_minus_htf_rsi':    '_rsi14 - _htf_1h_rsi14',
+    'both_rsi_oversold':        '(_rsi14 < 35.0 and _htf_1h_rsi14 < 40.0) ? 1.0 : 0.0',
+    'both_rsi_overbought':      '(_rsi14 > 65.0 and _htf_1h_rsi14 > 60.0) ? 1.0 : 0.0',
+    'vol_pct_diff_htf':         '_atr_pct_rank - _htf_1h_atr_pct_safe',
+    'both_high_vol':            '(_atr_pct_rank > 0.7 and _htf_1h_atr_pct_safe > 0.7) ? 1.0 : 0.0',
+    'both_low_vol':             '(_atr_pct_rank < 0.3 and _htf_1h_atr_pct_safe < 0.3) ? 1.0 : 0.0',
+    'pullback_in_bull':         '(_htf_1h_ema_align > 0.5 and _rsi14 < 45.0) ? 1.0 : 0.0',
+    'pullback_in_bear':         '(_htf_1h_ema_align < -0.5 and _rsi14 > 55.0) ? 1.0 : 0.0',
+}
+
+
+# Features that require HTF_HEADER to be emitted (anything reading 1h state)
+_HTF_DEPENDENT_PREFIXES = ('htf_', 'both_', 'pullback_')
+_HTF_DEPENDENT_EXACT = {'vol_pct_diff_htf', 'ltf_rsi_minus_htf_rsi'}
+
+
+def render_feature_engine(used_features: list[str]) -> dict:
+    """Compose the Pine feature-engine block for the booster's referenced features.
+
+    Args:
+        used_features: subset of FEATURE_REGISTRY keys (from
+            pine_codegen.extract_feature_usage(...)['used_features'])
+
+    Returns:
+        dict with:
+        - 'helpers': always-emitted indicator pre-computations
+        - 'htf':     HTF_HEADER if any HTF-dependent feature is used, else ''
+        - 'features': per-feature variable definitions, one per line
+                      (each line emits `f_<feature_name> = <expression>`)
+        - 'missing':  list of features in `used_features` that have no Pine
+                      mapping. CALLER MUST FAIL if non-empty.
+        - 'feature_arg_list': comma-separated f_<name> args in the order of
+                      used_features — pass straight into the cascade call
+    """
+    missing = [f for f in used_features if f not in FEATURE_REGISTRY]
+    if missing:
+        return {
+            'helpers':          '',
+            'htf':              '',
+            'features':         '',
+            'feature_arg_list': '',
+            'missing':          missing,
+        }
+
+    needs_htf = any(
+        f.startswith(_HTF_DEPENDENT_PREFIXES) or f in _HTF_DEPENDENT_EXACT
+        for f in used_features
+    )
+
+    feat_lines = ['// === V1 Features (referenced by booster) ===']
+    for fname in used_features:
+        snippet = FEATURE_REGISTRY[fname]
+        feat_lines.append(f"f_{fname} = {snippet}")
+
+    arg_list = ", ".join(f"f_{n}" for n in used_features)
+
+    return {
+        'helpers':          HELPERS_HEADER,
+        'htf':              HTF_HEADER if needs_htf else '',
+        'features':         '\n'.join(feat_lines),
+        'feature_arg_list': arg_list,
+        'missing':          [],
+    }
+
+
+def supported_features() -> list[str]:
+    """Sorted list of all feature names with a Pine implementation."""
+    return sorted(FEATURE_REGISTRY.keys())

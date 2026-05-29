@@ -105,6 +105,143 @@ def python_reimplementation(booster, feature_names: list[str],
     return 1.0 / (1.0 + np.exp(-raw_scores))
 
 
+def extract_feature_usage(booster, feature_names: list[str]) -> dict:
+    """Inspect a booster and report which features it actually splits on.
+
+    Returns a dict with:
+      - 'used_features': list of feature_name (in deterministic split-count order)
+      - 'unused_features': list of feature_name with zero splits
+      - 'details': list of per-feature stats sorted by split_count desc:
+            [{feature_name, feature_idx, split_count, used_in_tree_count,
+              total_gain, avg_gain}]
+      - 'n_trees': total trees in the booster
+      - 'n_features_referenced': len(used_features)
+    """
+    model_dict = booster.dump_model()
+    trees = model_dict['tree_info']
+    n_trees = len(trees)
+    n_features = len(feature_names)
+
+    split_count = [0] * n_features
+    used_in_tree = [0] * n_features
+    total_gain = [0.0] * n_features
+
+    for tree_info in trees:
+        per_tree_seen: set[int] = set()
+        _accumulate(tree_info['tree_structure'],
+                     split_count, total_gain, per_tree_seen)
+        for idx in per_tree_seen:
+            used_in_tree[idx] += 1
+
+    details = []
+    for idx, name in enumerate(feature_names):
+        details.append({
+            'feature_name':       name,
+            'feature_idx':        idx,
+            'split_count':        split_count[idx],
+            'used_in_tree_count': used_in_tree[idx],
+            'total_gain':         total_gain[idx],
+            'avg_gain':           (total_gain[idx] / split_count[idx]) if split_count[idx] > 0 else 0.0,
+        })
+    details.sort(key=lambda d: (-d['split_count'], d['feature_name']))
+
+    used = [d['feature_name'] for d in details if d['split_count'] > 0]
+    unused = [d['feature_name'] for d in details if d['split_count'] == 0]
+
+    return {
+        'n_trees':                n_trees,
+        'n_features_referenced':  len(used),
+        'used_features':          used,
+        'unused_features':        unused,
+        'details':                details,
+    }
+
+
+def _accumulate(node: dict,
+                  split_count: list[int],
+                  total_gain: list[float],
+                  per_tree_seen: set) -> None:
+    if 'leaf_value' in node:
+        return
+    feat_idx = int(node['split_feature'])
+    split_count[feat_idx] += 1
+    total_gain[feat_idx] += float(node.get('split_gain', 0.0))
+    per_tree_seen.add(feat_idx)
+    if 'left_child' in node:
+        _accumulate(node['left_child'], split_count, total_gain, per_tree_seen)
+    if 'right_child' in node:
+        _accumulate(node['right_child'], split_count, total_gain, per_tree_seen)
+
+
+def estimate_pine_ops(pine_code: str,
+                       pine_budget_per_bar: int = 5000,
+                       request_security_budget: int = 40) -> dict:
+    """Heuristic Pine budget estimate.
+
+    Counts:
+      - approximate ops/bar from operator density + ternary depth
+      - request.security() calls (hard limit 40 in Pine v6)
+      - total file size (bytes + lines)
+
+    Warnings flagged when any usage exceeds 70% of the relevant budget.
+    Heuristic only — Pine compiler is the source of truth in TradingView.
+    """
+    # Operator-density heuristic: each binary operator + each ternary branch
+    # roughly costs one op/bar. ta.* calls cost more (~5 ops each — they are
+    # incremental indicators backed by Pine's internal state).
+    # This is intentionally conservative — better to flag a warning early
+    # than to miss a Pine compiler "ops exceeded" failure in TradingView.
+    op_chars = sum(pine_code.count(c) for c in ['+', '-', '*', '/', '?', '<', '>', '='])
+    ta_calls = pine_code.count('ta.')
+    math_calls = pine_code.count('math.')
+    request_security_calls = pine_code.count('request.security(')
+    nz_calls = pine_code.count('nz(')
+
+    # Heuristic weights — calibrated against typical Pine v6 tree-cascades.
+    # Tree splits (`<= ? :`) are highly optimized by Pine compiler, so the
+    # per-op_char weight is low. The dominant costs are ta.* (incremental
+    # indicators with internal state) and request.security wrappers.
+    # IMPORTANT: this is a CONSERVATIVE proxy — the source of truth is
+    # TradingView's own "Compile" ops counter at paste time.
+    ops_estimate = int(
+        0.5 * op_chars + 8 * ta_calls + 2 * math_calls
+        + 10 * request_security_calls + nz_calls
+    )
+
+    n_lines = pine_code.count('\n') + 1
+    n_bytes = len(pine_code.encode('utf-8'))
+
+    ops_pct = ops_estimate / pine_budget_per_bar if pine_budget_per_bar > 0 else 0.0
+    rs_pct = request_security_calls / request_security_budget if request_security_budget > 0 else 0.0
+
+    warnings = []
+    if ops_pct > 0.70:
+        warnings.append(
+            f"ops/bar ~{ops_estimate} = {ops_pct:.0%} of budget {pine_budget_per_bar} (>70%)"
+        )
+    if rs_pct > 0.70:
+        warnings.append(
+            f"request.security calls = {request_security_calls} = {rs_pct:.0%} of budget {request_security_budget} (>70%)"
+        )
+
+    return {
+        'ops_estimate':                 ops_estimate,
+        'ops_pct_of_budget':            ops_pct,
+        'pine_budget_per_bar':          pine_budget_per_bar,
+        'request_security_calls':       request_security_calls,
+        'request_security_pct_of_budget': rs_pct,
+        'request_security_budget':      request_security_budget,
+        'n_lines':                      n_lines,
+        'n_bytes':                      n_bytes,
+        'ta_calls':                     ta_calls,
+        'math_calls':                   math_calls,
+        'nz_calls':                     nz_calls,
+        'op_chars':                     op_chars,
+        'warnings':                     warnings,
+        'passed_budget_check':          len(warnings) == 0,
+    }
+
+
 def bit_exact_check(booster, feature_names: list[str],
                       X: np.ndarray, atol: float = 1e-5) -> dict:
     """Compare booster.predict(X) vs python_reimplementation(X).

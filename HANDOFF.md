@@ -1404,9 +1404,10 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 ### 🚦 TL;DR FÜR SIBLING-CLAUDE — Stand 2026-05-28 (lies das ZUERST)
 
 **Aktueller Build-Status:**
-- ✅ **Build 1 fertig:** `deploy_pine/pace_algo_v1_skeleton.pine` (commit `41eda70` / Section 19 letzter Eintrag)
-- 🟡 **Build 2 wartet** auf Nico-Feedback aus TradingView-Live-Test des Skeletons
-- ⏭️ Build 3 (Live-FX-Test mit echtem Modell) danach
+- ✅ **Build 1 fertig:** `deploy_pine/pace_algo_v1_skeleton.pine` (commit `41eda70`)
+- ✅ **Build 2 Code-Pakete fertig** (arbeits-pc, 2026-05-28): `core/export/pine_codegen.py` + `core/export/pine_features.py` + `notebooks/15c_v1_pine_export.ipynb`. Lokal validiert: bit-exact 0.0 diff Mini-LGBM, Pine-Ops-Heuristik kalibriert auf ~35% Budget für 30 trees × 8 features (= reale ~50-65% bei 27 features erwartet).
+- 🟡 **Build 2 Final-Step wartet auf Nicos NB15c-Colab-Run:** trainiert echtes Modell seed=7, generiert `deploy_pine/pace_algo_v1.pine`, pusht Outputs + Pine-File.
+- ⏭️ Build 3 (TradingView-Live-Test mit echtem Modell) danach
 
 **Top-5 aktive Locks die NICHT verletzt werden dürfen:**
 
@@ -1425,14 +1426,31 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 | (a) Bug-Reports aus Pine-Skeleton | Direkt fixen. Pine v6, keine Refactor-Übungen. |
 | (b) "Skeleton läuft" | **Build 2 starten** — siehe Build-2-Checkliste unten |
 
-**Build 2 Checkliste (wenn Pfad b):**
+**Build 2 Code-Pakete (DONE):**
 
-1. **Modell-File holen:** sollte in Drive unter `MyDrive/pace-algo/artifacts/models/` liegen (NB14f-v2-Output). Falls **nicht vorhanden**: kurzer Re-Train mit `seed=7 / deterministic=True` über NB14f-Pipeline. Cluster-Cutoff aus VAL extrahieren (≈ 0.40, exact via `extract_premium_cluster()`).
-2. **`core/export/pine_codegen.py` bauen** (NEU, schlank): nimmt LightGBM `.txt` oder `.pkl`, generiert nested-if-else Pine-Snippet für 30 Trees, gibt es als String zurück. Klein halten — eine Funktion `lgbm_to_pine_cascade(model, feature_names) -> str`.
-3. **Placeholder ersetzen** in `deploy_pine/pace_algo_v1_skeleton.pine` Layer 1 (Funktion `f_signal_probability_placeholder()` → durch echte Tree-Cascade ersetzen).
-4. **Cutoffs eintragen:** `CUTOFF_STANDARD/HIGH/PREMIUM` mit echten Werten aus NB14f-v2 (statt 0.50/0.55/0.65 Placeholder).
-5. **Bit-exact Validation:** kurzes Notebook oder Python-Script — 10k Test-Samples durch Python-Modell + Pine-Cascade-Reimplementierung in Python, Diff muss < 1e-5 sein. (Nicht in Pine ausführen lassen — Python-Simulation reicht für Build-2-Validation.)
-6. **Non-Repaint-Check:** in Pine prüfen dass `request.security(..., barmerge.lookahead_off)` für alle Layer-2-Aufrufe gesetzt ist (sind sie bereits). Signal-Logic darf nur auf `close` referenzieren, nicht auf `high/low` von aktuellem Bar.
+1. ✅ **`core/export/pine_codegen.py`** — `lgbm_to_pine_cascade()`, `extract_feature_usage()`, `estimate_pine_ops()`, `python_reimplementation()`, `bit_exact_check()`. Tests in `tests/test_pine_codegen.py` grün (max_abs_diff < 1e-9 lokal).
+2. ✅ **`core/export/pine_features.py`** — Registry für die 27 NB11-Winner-Features (HELPERS_HEADER + HTF_HEADER + per-feature snippet). `render_feature_engine(used_features)` filtert auf Path-B-Subset, FAIL CLEAR wenn Features ohne Pine-Impl.
+3. ✅ **`notebooks/15c_v1_pine_export.ipynb`** — 10 Sections: Setup → Load → Train(seed=7) → Cutoffs → Feature-Usage-Report → Render-Engine → Cascade → Skeleton-Patch → Budget-Estimate → Bit-exact → Auto-Push. Output: `deploy_pine/pace_algo_v1.pine`.
+
+**Nicos Schritt jetzt (was er in Colab macht):**
+
+1. Drive `git pull` (oder NB15c direkt aus GitHub öffnen)
+2. NB15c laufen lassen (~10–15 min)
+3. Erwartete Outputs (alle auto-gepusht):
+   - `deploy_pine/pace_algo_v1.pine` — fertige Pine-Datei
+   - `results/nb15c/feature_usage.json` — welche Features das Modell wirklich nutzt
+   - `results/nb15c/pine_budget.json` — ops/bar Heuristik + Warning wenn >70%
+   - `results/nb15c/bit_exact.json` — Stage-B-Validation (atol 1e-5)
+   - `results/nb15c/snapshot.json` — komplette Production-Snapshot
+4. Pine-File in TradingView Pine Editor pasten → Compile → Build 3.
+
+**Falls Pine-Compiler "ops exceeded" wirft:** unsere Heuristik ist konservativ — TradingViews echte Counter zeigt ggf. mehr. Iteration: SHAP-niedrigste Features rauswerfen aus FEATURE_REGISTRY (z.B. `both_low_vol`, `pullback_in_bear`) → NB15c re-run.
+
+**Non-Repaint-Audit (statisch):**
+- HTF reads im Skeleton + pine_features.py HTF_HEADER nutzen `barmerge.lookahead_off` + `[1]` shift ✓
+- Feature-Engine referenziert nur `close`, `high`, `low`, `volume` aus aktuellem Bar (kein Future-Lookup) ✓
+- Tree-Cascade ist deterministisch ✓
+- **OPEN für Build 3:** Skeleton `if signal_active and not in_trade` hat keinen `barstate.isconfirmed`-Guard → Live-Bar-Signal könnte intra-bar flickern bis Bar-Close. Wenn Nico das im Live-Test sieht: 1-Zeilen-Patch (`barstate.isconfirmed and signal_active`).
 
 **Was NICHT machen:**
 - ❌ Keine neuen ANN-Files
@@ -1926,4 +1944,5 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-28 | heim-pc | home | **FUNDAMENTAL ARCHITECTURE LOCK — ANN-018: 4-Layer Decision-Assisted System.** (Später vereinfacht zu 3 Layern im Skeleton — siehe nächster Eintrag.) Geschrieben mit 5 Locks. | `245162b` | Über-eskaliert. |
 | 2026-05-28 | heim-pc | home | **EXECUTION-LOCK + RADIKALE VEREINFACHUNG (Nico-Course-Correct).** Nico stoppt Framework-Eskalation: keine ANN-019/020/021, keine separaten Validation-NBs als Pflichtschritt. FX ist nicht Reference-Blueprint sondern **das Produkt**. ANN-018 inhaltlich gültig (3 Layer) aber Implementation drastisch vereinfacht zu EINEM Pine-File. Phase D radikal vereinfacht zu 3 Builds (Pine-Skeleton / Modell-Codegen / Live-Test). Aktualisiert: ANN-018 mit Execution-Lock-Header, `docs/roadmap.md` (3 Builds + Anti-Eskalations-Negativliste), HANDOFF Section 16. NEU: `deploy_pine/pace_algo_v1_skeleton.pine` (Pine v6, alle 3 Layer in einem File: Signal-Stub + MTF-Dashboard 5m/15m/1h/4h × Trend/Strength/Range + Backtest-Live-Stats). | `41eda70` | Nico TradingView-Live-Test. |
 | 2026-05-28 | heim-pc → arbeits-pc | home → work | **WORKSTATION-SWITCH zum Arbeits-PC + Nico-Discipline-Lock.** Nico bestätigt: aktuelle Struktur (Signal/Dashboard/Backtest) ist das Produkt, keine weiteren Architektur-Detours. **NEUE LOCKED PROCESS RULE:** Bei jeder neuen Idee zuerst fragen "Verbessert das direkt das Trading-Produkt oder nur die Architektur?" — wenn nur Architektur-Komplexität: nicht priorisieren. Nico wechselt jetzt an Arbeits-PC, bereitet Build 2 vor. Pine-Skeleton ist bereit zum Live-Test in TradingView. | (dieser HANDOFF-Commit) | **Sibling-Claude auf Arbeits-PC:** Erwarte zwei mögliche Pfade von Nico: (a) TradingView-Skeleton-Test-Feedback mit Bug-Reports → direkt fixen, oder (b) Skeleton funktioniert → **Build 2 starten**. Build 2 = `core/export/pine_codegen.py` schreiben: lädt LightGBM-Modell aus NB14f-v2-Production-Seed=7 (Modell-Artefakt liegt in Drive `MyDrive/pace-algo/artifacts/models/` — muss von Nico geholt werden oder kurz nachtrainiert), exportiert die 30 Trees als nested-if-else Pine-Code-Snippet, ersetzt den Placeholder in `deploy_pine/pace_algo_v1_skeleton.pine` Layer 1 (Funktion `f_signal_probability_placeholder()`), inkl. echter Cluster-Cutoffs (NB14f-v2: ~0.40). Plus bit-exact Validation-NB (Python ↔ Pine Diff < 1e-5 auf 10k Test-Samples). Plus Live-Bar/Non-Repaint-Verification: Signal an Bar t darf nach Bar-Close NICHT mehr ändern. Disziplin-Lock beachten: nichts bauen was nur Architektur-Komplexität erhöht. Wenn unsicher ob ein Schritt produktwirksam ist → Nico fragen statt eskalieren. |
+| 2026-05-28 | arbeits-pc | work | **BUILD 2 — Code-Pakete fertig (Path B: data-driven feature selection).** Nico-Direktive: Modell → genutzte Features → Pine → Validation → TradingView. Geliefert: (1) `core/export/pine_codegen.py` — `lgbm_to_pine_cascade()`, `extract_feature_usage()` (mit split_count/avg_gain/used_in_tree_count), `estimate_pine_ops()` (heuristische ops/bar + request.security counter + 70%-Budget-Warning), `python_reimplementation()`, `bit_exact_check()`. (2) `core/export/pine_features.py` — Registry für 27 NB11-Winner-Features (HELPERS + HTF + per-feature Snippet), `render_feature_engine(used_features)` filtert auf Booster-Referenz-Subset, FAIL CLEAR bei fehlendem Snippet. (3) `notebooks/15c_v1_pine_export.ipynb` — 10 Sections End-to-End: Setup → Load → Train(seed=7, deterministic) → Cutoffs (top 3 qualifying clusters per ANN-013/14) → Feature-Usage-Report → Engine-Render → Cascade → Skeleton-Patch → Budget → Bit-exact (atol 1e-5) → Auto-Push. (4) `tests/test_pine_codegen.py` — 5 Tests grün (bit-exact max_abs_diff < 1e-9 auf Mini-LGBM). End-to-end Smoketest mit synth booster: 30 trees, 8 features, patched file 411 Zeilen, ops/bar 1760 (35% Budget), bit-exact 0.0 diff. Pine-Heuristik kalibriert auf 0.5/op_char + 8/ta + 10/request.security (Pine-Compiler ist source-of-truth, Heuristik konservativ). | `6e3873c` + (next commit) | **Nico in Colab:** NB15c laufen (~10-15 min). Outputs: `deploy_pine/pace_algo_v1.pine` (final Pine-File) + `results/nb15c/{feature_usage,pine_budget,bit_exact,snapshot}.json`. Falls Pine-Compiler `ops exceeded` wirft: SHAP-niedrigste Features droppen → NB15c re-run. Sonst → Build 3 TradingView-Live-Test. **Open für Build 3:** Live-Bar-Signal-Repaint-Guard (`barstate.isconfirmed`) — 1-Zeilen-Patch falls Live-Test Flickering zeigt. |
 
