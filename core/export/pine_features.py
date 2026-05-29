@@ -57,14 +57,24 @@ _vol_ratio     = _atr_avg_50 > 0.0 ? _atr14 / _atr_avg_50 : 1.0
 # ---------------------------------------------------------------------------
 
 HTF_HEADER = """// === HTF (1h) context — anti-look-ahead via [1] shift ===
-_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60",
-    ta.rsi(close, 14)[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60",
-    (ta.percentrank(ta.atr(14), 100) / 100.0)[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60",
-    (ta.ema(close, 20) > ta.ema(close, 50) and ta.ema(close, 50) > ta.ema(close, 200) ? 1.0 :
-     ta.ema(close, 20) < ta.ema(close, 50) and ta.ema(close, 50) < ta.ema(close, 200) ? -1.0 : 0.0)[1],
-    barmerge.gaps_off, barmerge.lookahead_off)
+// Pine v6 disallows complex inline expressions in request.security() —
+// we wrap each HTF computation in a helper function (standard pattern).
+_pf_htf_rsi() =>
+    ta.rsi(close, 14)
+
+_pf_htf_atr_pct() =>
+    ta.percentrank(ta.atr(14), 100) / 100.0
+
+_pf_htf_ema_align() =>
+    _e20 = ta.ema(close, 20)
+    _e50 = ta.ema(close, 50)
+    _e200 = ta.ema(close, 200)
+    _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
+
+_htf_1h_rsi14_raw     = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1],       barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_atr_pct_raw   = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1],   barmerge.gaps_off, barmerge.lookahead_off)
+_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_off)
+
 _htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
 _htf_1h_atr_pct_safe = nz(_htf_1h_atr_pct_raw, 0.5)
 _htf_1h_ema_align    = nz(_htf_1h_ema_align_raw, 0.0)
