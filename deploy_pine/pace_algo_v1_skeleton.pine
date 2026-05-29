@@ -106,8 +106,14 @@ f_trend_score(tf_str) =>
                             barmerge.gaps_off, barmerge.lookahead_off)
     e20 > e50 ? 1 : e20 < e50 ? -1 : 0
 
+// ta.adx() reported "Could not find function" in some Pine v6 environments —
+// use ta.dmi() which returns [+DI, -DI, ADX] and pick the third value.
+f_adx_helper() =>
+    [_diPlus, _diMinus, _adx_val] = ta.dmi(14, 14)
+    _adx_val
+
 f_adx_value(tf_str) =>
-    request.security(syminfo.tickerid, tf_str, ta.adx(14),
+    request.security(syminfo.tickerid, tf_str, f_adx_helper(),
                       barmerge.gaps_off, barmerge.lookahead_off)
 
 // Bollinger-Width-Ratio: aktueller Width / SMA(Width, 50)
@@ -152,9 +158,7 @@ f_trend_label(score) =>
     score == 1 ? "▲ Up" : score == -1 ? "▼ Down" : "─ Neutral"
 
 f_trend_color(score) =>
-    score == 1 ? color.new(color.green, 70)
-              : score == -1 ? color.new(color.red, 70)
-                            : color.new(color.gray, 80)
+    score == 1 ? color.new(color.green, 70) : score == -1 ? color.new(color.red, 70) : color.new(color.gray, 80)
 
 // --- Overall Market State (TF-gewichtet) ---
 // 4h = 4× / 1h = 2× / 15m = 1× / 5m = 0.5×  → Summe Gewichte = 7.5
@@ -163,15 +167,9 @@ weighted_sum = 4.0 * trend_4h + 2.0 * trend_1h + 1.0 * trend_15m + 0.5 * trend_5
 weight_total = 7.5
 market_state_score = weighted_sum / weight_total   // [-1, +1]
 
-market_state_label = market_state_score >  0.50 ? "Strong Bullish"
-                   : market_state_score >  0.20 ? "Bullish"
-                   : market_state_score > -0.20 ? "Neutral"
-                   : market_state_score > -0.50 ? "Bearish"
-                   :                                "Strong Bearish"
+market_state_label = market_state_score > 0.50 ? "Strong Bullish" : market_state_score > 0.20 ? "Bullish" : market_state_score > -0.20 ? "Neutral" : market_state_score > -0.50 ? "Bearish" : "Strong Bearish"
 
-market_state_color = market_state_score >  0.20 ? color.new(color.green, 60)
-                   : market_state_score < -0.20 ? color.new(color.red, 60)
-                   :                                color.new(color.gray, 70)
+market_state_color = market_state_score > 0.20 ? color.new(color.green, 60) : market_state_score < -0.20 ? color.new(color.red, 60) : color.new(color.gray, 70)
 
 
 // =============================================================================
@@ -305,22 +303,16 @@ if show_backtest and barstate.islast
     table.cell(stats, 0, 3, "Trades",                                         text_size=size.small)
     table.cell(stats, 1, 3, str.tostring(bt_total_trades),                    text_size=size.small)
 
-    table.cell(stats, 0, 4, "Win Rate",                                       text_size=size.small)
-    wr_color = bt_wr >= 0.55 ? color.new(color.green, 70) :
-               bt_wr >= 0.45 ? color.new(color.gray, 80)  :
-                                color.new(color.red, 70)
+    table.cell(stats, 0, 4, "Win Rate", text_size=size.small)
+    wr_color = bt_wr >= 0.55 ? color.new(color.green, 70) : bt_wr >= 0.45 ? color.new(color.gray, 80) : color.new(color.red, 70)
     table.cell(stats, 1, 4, str.tostring(bt_wr * 100, "#.#") + "%", bgcolor=wr_color, text_size=size.small)
 
-    table.cell(stats, 0, 5, "Profit Factor",                                  text_size=size.small)
-    pf_color = bt_pf >= 1.5 ? color.new(color.green, 70) :
-               bt_pf >= 1.0 ? color.new(color.gray, 80)  :
-                               color.new(color.red, 70)
+    table.cell(stats, 0, 5, "Profit Factor", text_size=size.small)
+    pf_color = bt_pf >= 1.5 ? color.new(color.green, 70) : bt_pf >= 1.0 ? color.new(color.gray, 80) : color.new(color.red, 70)
     table.cell(stats, 1, 5, str.tostring(bt_pf, "#.##"), bgcolor=pf_color, text_size=size.small)
 
-    table.cell(stats, 0, 6, "Max Drawdown",                                   text_size=size.small)
-    dd_color = bt_max_dd <= 0.10 ? color.new(color.green, 70) :
-               bt_max_dd <= 0.20 ? color.new(color.gray, 80)  :
-                                    color.new(color.red, 70)
+    table.cell(stats, 0, 6, "Max Drawdown", text_size=size.small)
+    dd_color = bt_max_dd <= 0.10 ? color.new(color.green, 70) : bt_max_dd <= 0.20 ? color.new(color.gray, 80) : color.new(color.red, 70)
     table.cell(stats, 1, 6, str.tostring(bt_max_dd * 100, "#.#") + "%", bgcolor=dd_color, text_size=size.small)
 
     table.cell(stats, 0, 7, "Current Equity",                                 text_size=size.small)
