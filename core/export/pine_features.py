@@ -19,7 +19,14 @@ from __future__ import annotations
 # Pre-computed indicators emitted ONCE per Pine file before any feature line
 # ---------------------------------------------------------------------------
 
-HELPERS_HEADER = """// === Pre-computed indicators (V1 feature engine) ===
+HELPERS_HEADER = """// === Pine-v6 helper functions (tanh is not native in Pine v6) ===
+// Numerically stable tanh via exp identity, clipped to avoid float overflow.
+_pf_tanh(_x) =>
+    _xc = math.max(-20.0, math.min(20.0, _x))
+    _e  = math.exp(2.0 * _xc)
+    (_e - 1.0) / (_e + 1.0)
+
+// === Pre-computed indicators (V1 feature engine) ===
 _atr14         = ta.atr(14)
 _safe_atr      = _atr14 > 0.0 ? _atr14 : na
 _ema20         = ta.ema(close, 20)
@@ -103,7 +110,7 @@ FEATURE_REGISTRY: dict[str, str] = {
     'ema_20_slope_atr':    '(_ema20 - _ema20[5]) / _safe_atr',
 
     # === Momentum ===
-    'momentum_composite':  '(_rsi14 - 50.0) / 50.0 + math.tanh(_macd_hist_atr)',
+    'momentum_composite':  '(_rsi14 - 50.0) / 50.0 + _pf_tanh(_macd_hist_atr)',
 
     # === Structure ===
     'dist_to_swing_high_atr': '(_swing_hi_20 - close) / _safe_atr',
