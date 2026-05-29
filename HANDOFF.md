@@ -1422,6 +1422,7 @@ Decision-Stump-Bugs.
 **Action-Plan (4-Schritt, Nico-Direktive 2026-05-29):**
 1. ✅ `core/train/lgbm_trainer.py` patchen: no `early_stopping` default, 100 iters full
 2. ✅ NB15c S2 patchen: kein early_stopping callback + V1-Lock-Assertion (n_trees == 100)
+2b. ✅ NB15c S3 patchen: VAL-Quantile statt Cluster-Detection (Cluster ist obsolet für 100-Tree-Modell, siehe `0ab4843`)
 3. 🟡 **Nico: NB15c re-run** mit dem neuen Trainer → echtes 100-Tree-Modell + frisches `pace_algo_v1.pine`
 4. 🟡 **Pine Live Validation in TradingView** — die eigentliche Gatekeeper-Phase:
    - Signal-Frequenz
@@ -1429,6 +1430,11 @@ Decision-Stump-Bugs.
    - Regime-Verhalten
    - Threshold-Stabilität
    - Symbol-Generalization (alle 4 Pairs)
+
+**Workstation-Switch 2026-05-29:** Nico arbeitet jetzt auf **Heim-PC**. Sibling-Claude
+auf Heim-PC liest **Section 19b (Workstation-Switch Briefing)** für vollständigen
+Kontext — Status, Process-Locks, Erwartungswerte, Fehlerpfade, Schnell-Referenz aller
+relevanten Files.
 
 **Was bleibt erhalten / unverändert (Nico-Direktive):**
 - Alte Snapshots NICHT löschen — bleiben als "Decision-Stump Baseline / Research Artifact"
@@ -1922,6 +1928,152 @@ Premium-only. Kein Profile-Switch in V1. "Aggressive" und "Balanced" werden erst
 
 ---
 
+## 19b. WORKSTATION-SWITCH BRIEFING — Heim-PC (2026-05-29)
+
+**An Sibling-Claude auf Heim-PC:** das hier ist dein vollständiger Kontext.
+Bevor du irgendetwas tust: `git pull --ff-only origin main` und Section 16
+TL;DR-Box + diese Sektion lesen. Dann zu Nico für direction.
+
+### Was du wissen MUSST (5 Punkte)
+
+1. **V1 KANDIDAT GELOCKED:** `v1b_100_noes` = LightGBM 100 Trees, `seed=42`,
+   `deterministic=True`, **kein early_stopping**. Lock-Decision Nico 2026-05-29
+   nach NB16-Audit (commit `4be80f6`).
+
+2. **Was NB16 bewiesen hat:** der gesamte historische Research-Pfad
+   (NB12/13/14/14e/14f) hat mit `early_stopping(10)` trainiert und Booster
+   wurden auf 1-Tree-Decision-Stumps reduziert. ALLE bisherigen Failure-Modes
+   (Cluster-Konvergenz / R-14 Tier-Konvergenz / R-19 Pair-Tiering / Pine
+   0-Signale / Behavioral-Instability) waren Symptome dieses Bugs. NB16 hat
+   das schwarz auf weiß bewiesen — siehe `results/nb16/`.
+
+3. **Aktueller Build-Status:**
+   - ✅ `core/train/lgbm_trainer.py` patched (kein early_stopping default)
+   - ✅ NB15c S2 patched (V1-Lock-Assertion `n_trees == 100`)
+   - ✅ NB15c S3 patched (VAL-Quantile statt Cluster-Detection)
+   - 🟡 **OFFEN: NB15c re-run in Colab** — Nico wird das auf Heim-PC starten
+   - 🟡 OFFEN: Pine Live Validation in TradingView = Gatekeeper-Phase
+
+4. **Process-Locks die du NICHT verletzen darfst:**
+   - "Verbessert das direkt das Trading-Modell?" — Filter für jede Idee
+   - **KEINE neuen ADRs** vor Pine-Live-Test (Nicos Direktive 2026-05-29)
+   - Alte Snapshots (NB14/14f/14b/c/d/e/f) NICHT löschen — Research-Artefakte
+   - Cluster-Detection-Code in `core/analysis/probability_diagnostic.py`
+     bleibt deprecated dabei — KEIN Refactor
+   - Pine ist eingefroren bis V1-Lock final
+
+5. **Aktuelle Lokale-Erwartungswerte (aus NB16, sollten in NB15c-Re-Run
+   reproduziert werden):**
+   - `n_trees == 100` (Assertion in NB15c S2, fail loud bei Regression)
+   - VAL probability range ≈ [0.33, 0.65]
+   - unique probs (4dp) ≈ 2273
+   - VAL q90 ≈ 0.531 / q97 ≈ 0.548 / q99 ≈ 0.565
+   - Cluster-Detection in S3 wird "no qualifying clusters" returnen (das ist
+     das HEALTHY-Signal, nicht ein Bug)
+
+### Was Nico als nächstes machen will (Plan-Status)
+
+| # | Schritt | Status |
+|---|---|---|
+| 1 | `lgbm_trainer.py` patch | ✅ commit `c02df54` |
+| 2 | NB15c S2 (V1-Lock-Assertion) | ✅ commit `c02df54` |
+| 2b | NB15c S3 (Quantile statt Cluster) | ✅ commit `0ab4843` |
+| 3 | **NB15c re-run in Colab** (Heim-PC) | 🟡 NEXT |
+| 4 | **Pine Live Validation in TradingView** | 🟡 GATEKEEPER |
+| 5 | Doku-Sync (model_registry / roadmap / HANDOFF) | ✅ commit `c02df54` |
+
+### Was du im NB15c-Re-Run beobachten solltest
+
+Print-Outputs in jeder Section:
+
+```
+S2:  Booster trained: 100 trees (expected 100)
+     Model saved: artifacts/models/fx_v1_lgbm_seed7_100trees_2026-05-29.txt
+
+S3:  VAL proba range: [~0.33, ~0.65]
+     Unique VAL probs (4dp): ~2200
+     CUTOFF_STANDARD = 0.5309  (q90)
+     CUTOFF_HIGH     = 0.5479  (q97)
+     CUTOFF_PREMIUM  = 0.5648  (q99)
+     Headroom Premium → Max: ~0.11
+     Cluster-Detection (Legacy ANN-013/14, info-only):
+       no qualifying clusters: no cluster with >= 0.5% size
+       → expected for v1b_100_noes (continuous distribution = healthy model)
+
+S4:  Features actually used: ≈ 30-50 (NB16 hatte 5 — aber das war mit Stump;
+     mit 100 Trees nutzt das Modell viel mehr Features)
+
+S5:  All used features have Pine implementations — no fallback substitution.
+     (sollte kein Dropped geben — Registry hat 39 Features)
+     ODER: 1-2 dropped (mit Soft-Fail-Fallback zu 0.0)
+
+S8:  ops/bar (heuristic): ~3000-4000 (100 Trees × 3 splits = mehr als
+     beim 1-Tree-Stump bei 1522)  — könnte 60-80% Budget treffen
+     (Warning bei >70% ist OK — TV-Compiler ist source of truth)
+
+S9:  Bit-exact passed=True, max_abs_diff < 1e-5
+
+S10: 🔒 AUTO_PUSH=False → outputs nur in Drive (per Nicos Lock-Policy)
+```
+
+**Wenn S3 oder S4 anders aussieht als oben:** stop, frag Nico, eskaliere nicht.
+
+**Wenn S8 Warning >70%** triggert: KEIN automatischer Feature-Reduktion-Schritt.
+Nico entscheidet. Wahrscheinlich akzeptabel solange unter 90%.
+
+### Pine Live Validation (nach NB15c)
+
+In TradingView:
+1. `MyDrive/pace-algo/deploy_pine/pace_algo_v1.pine` → Pine Editor → paste → Save → Add to Chart
+2. Chart: **EURUSD oder GBPUSD, 5m**
+3. Compile-Status checken
+4. Validation-Checkliste (steht auch in `docs/roadmap.md` Phase D Build 3):
+   - ✓ Signal-Frequenz: ~3 Premium/Tag auf GBPUSD (NB16-Prognose)
+   - ✓ Python ↔ TV Alignment: 10 Bars visuell vergleichen
+   - ✓ Regime-Verhalten: konsistent in Trend / Range / Vola-Spike?
+   - ✓ Threshold-Stabilität: kein Flickern am Cutoff
+   - ✓ Symbol-Generalization: alle 4 Pairs (GBPUSD ⭐, AUDUSD, USDCHF ⭐, USDCAD)
+   - ✓ Dashboard erscheint, Backtest-Stats erscheinen
+5. **Wenn alle Checks pass → V1 Final Lock**, dann ANN-013/14 status update,
+   XGBoost-Pine-Codegen als Future-Option, Phase E (V2 Multi-Asset) freischalten.
+
+### Mögliche Fehlerpfade + Fixes
+
+| Symptom | Ursache | Fix |
+|---|---|---|
+| NB15c S2 wirft `V1 LOCK VIOLATION` | Trainer fängt `early_stopping_rounds` ein | Check `core/train/lgbm_trainer.py` Default ist `None`, NB15c verwendet eigenen Train-Call ohne callback |
+| NB15c S3 wirft "Cluster extraction failed" | NB15c-Notebook in Colab nicht aktuell | Drive `git pull` machen + S3 nochmal runnen |
+| NB15c S5 zeigt viele dropped_features | Modell nutzt Features außerhalb der 39-Reg | Liste der dropped_features hier reinposten → ich erweitere Registry |
+| NB15c S8 zeigt ops >90% Budget | TV könnte "memory limit exceeded" werfen | Feature-Reduktion via SHAP-niedrigste droppen — NICHT automatisch, mit Nico klären |
+| Pine compile errors | Pine v6 strikte Syntax-Regeln | Errors hier reinposten, ich fixe gezielt (vorher schon einige Multi-Line-Ternary-Fixes gemacht) |
+| Pine compile OK aber 0 Signale | Modell-Cutoff zu hoch / Distribution doch nicht so kontinuierlich | Erwartung: q99=0.565, Max=0.674 → 0.11 Headroom. Wenn 0 Signale: prüfen `probability` werte in TV vs Python sollten matchen |
+| Pine compile OK aber Repaint | `barstate.isconfirmed`-Guard fehlt | 1-Zeilen-Patch in Skeleton: `if signal_active and not in_trade and barstate.isconfirmed` |
+
+### Wichtige Files (Schnell-Referenz)
+
+- `notebooks/15c_v1_pine_export.ipynb` — der Pine-Export-Workflow (10 Sections)
+- `notebooks/16_model_robustness_audit.ipynb` — der NB16-Audit (das Beweisstück)
+- `core/train/lgbm_trainer.py` — Trainer mit dem Lock-Patch
+- `core/export/pine_codegen.py` — `lgbm_to_pine_cascade()`, `bit_exact_check()`, etc.
+- `core/export/pine_features.py` — 39 Feature-Snippets, Soft-Fail-Logik
+- `deploy_pine/pace_algo_v1_skeleton.pine` — UI-Skeleton (alle Pine-v6-Syntax-Fixes drin)
+- `deploy_pine/pace_algo_v1.pine` — wird durch NB15c-Run erzeugt (Drive only)
+- `results/nb16/plots/probability_distributions_2026-05-29.png` — visueller Beweis
+- `docs/model_registry.md` — V1-Modell-Specs (NB16-Snapshot drin)
+- `docs/roadmap.md` — Phase R abgeschlossen, Phase D Build 3 = Gatekeeper
+- `HANDOFF.md` Section 16 TL;DR — aktueller Build-Status
+
+### End-of-Turn-Discipline auf Heim-PC
+
+Wenn du Section 19 erweiterst: **chronologisch UNTEN anhängen** (älter zuerst).
+Workstation = `heim-pc`. Account = `home`. Commits als ecoNC (HANDOFF Section
+20.3 protokoll).
+
+Wenn Nico später wieder Arbeits-PC, schreibst du einen Workstation-Switch-Row
+nach demselben Pattern (Section 20.10).
+
+---
+
 ## 19. Session Handoff Log
 
 Each Claude session MUST append a row here after meaningful work. This is the chain of custody between Arbeits-PC and Heim-PC.
@@ -1981,6 +2133,8 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-05-28 | colab → arbeits-pc | mixed | **BUG-FIX in `lgbm_to_pine_cascade`: Feature-Index-Mismatch.** Nicos NB15c-Run hat in S6 `ValueError: Booster references feature indices [12, 24, 26, 57] but only 5 feature names were provided` geworfen. Root-Cause: `lgbm_to_pine_cascade(booster, used)` bekam die `used`-Subset (5 features), aber Tree-Splits referenzieren `split_feature`-Indices in der FULL training-time Liste (FEATURE_COLS, 58+ features). `_validate_features` korrekt detected out-of-range indices. Fix: API-Vertrag klargestellt — `lgbm_to_pine_cascade(booster, feature_names_FULL)`, intern wird die referenced-Subset für die Cascade-Signature extrahiert (Index ascending = Path B small footprint). Neue Helper `cascade_signature_args(booster, feature_names_full) -> list[str]` returnt die Cascade-Arg-Order. `extract_feature_usage()` `used_features` ist jetzt in CASCADE SIGNATURE ORDER (sorted by feature_idx ascending) — matched render_feature_engine + cascade signature 1:1. Plus `used_by_split_count` für Top-N-Reports. NB15c S6: `lgbm_to_pine_cascade(booster, FEATURE_COLS)` (full list passing). Tests erweitert: `test_extract_feature_usage_returns_cascade_aligned_order` + `test_cascade_with_subset_feature_list_rejected`. End-to-end Smoketest mit 12 synth features (11 used, 1 unused): cascade signature und arg_list exakt aligned, bit-exact 0.0 diff, 562 ops (11% Budget). | (next commit) | **Nico:** NB15c nochmal von vorne in Colab. S6 sollte jetzt sauber durchlaufen. Restliche Sections + AUTO_PUSH=False Discipline bleiben. |
 | 2026-05-28 | colab → arbeits-pc | mixed | **NB15c lief, Output snapshot.json zeigte 0 dropped + Bit-exact=true + Budget=30% — aber pace_algo_v1.pine zeigte 0 Signale in TradingView.** Iteration multiple Pine v6 syntax-Fixes: `:`-am-Zeilenanfang Multi-Line-Ternaries collapsed (`f_trend_color` / `tier` / `profile_cutoff` / `market_state_label` / `market_state_color` / `wr_color` / `pf_color` / `dd_color` / `bt_pf` / `label_color`), Multi-Line function-arg-spreads collapsed (`label.new` / `box.new` / `table.new` / dashboard-`request.security`), `ta.adx → ta.dmi(14,14)[2]` (Pine v6 "function not found" Cascade-Error), HTF inline-ternaries in `request.security` refactored zu helper-functions (`_pf_htf_rsi/atr_pct/ema_align`). | `2cf8088`, `9317b1c`, `ca3e0f2` | Compile geht eventually, aber 0 Signale → tieferer Bug. |
 | 2026-05-29 | colab → arbeits-pc | mixed | **NB16 RUN ABGESCHLOSSEN — Hypothese 100% bestätigt.** Audit: aktuelles Production-Modell `fx_v1_lgbm_seed7` = **1 Tree (effective)**. NB13's PF-2.5-Modell (`lgbm_fxgold_pine.txt`) hatte hingegen 30 echte Trees — der Bug ist nicht historisch durchgehend, sondern erst seit NB14e/f-Pipeline aufgetreten. Re-Train 4 Varianten Side-by-Side: **v1b_100_noes ist klarer Winner** — 2273 unique probabilities (vs 15 beim Stump), Cross-Symbol Mean Premium-PF 1.73 (alle 4 Hold-Out-Pairs ≥ 1.4), USDCHF supported (PF 1.53 vs 0.84), Behavioral Stability 4/5 metrics passed (mdd ist Code-Artefakt aus S6). Pine-Cutoff q99=0.565 mit Max 0.674 → echter Floating-Point-Headroom. Plot `results/nb16/plots/probability_distributions_2026-05-29.png` zeigt visuell den fundamentalen Unterschied: v0 = 15 diskrete Spikes, v1b = saubere Glockenkurve mit Tail. | `4be80f6` (auto-push) | Claude: Analyse + V1-Kandidat-Empfehlung. |
-| 2026-05-29 | arbeits-pc | work | **V1 KANDIDAT GELOCKED — v1b_100_noes (LightGBM 100 trees, no early_stopping, seed=42).** Nico-Genehmigung 2026-05-29 nach NB16-Verdict: "erster echter V1-Kandidat seit Projektbeginn". Fundamentaler Punkt: alle Failure-Modes (degenerierte Probability-Cluster, q-Konvergenz, Pine-Threshold-Probleme, Behavioral-Instability, USDCHF-Schwäche) erklären sich konsistent durch den 1-Tree-Stump. v1b liefert "probabilistisch gesund" + endlich numerischen Headroom für Pine. ANN-013/14 Cluster-Mechanik praktisch obsolet, R-19 Pair-Tiering obsolet, R-14 gelöst. Patches: (1) `core/train/lgbm_trainer.py` — `early_stopping_rounds: int = None` default (opt-in für historical reproduction), HISTORY-NOTE im docstring mit NB16-Audit-Cross-Link. (2) NB15c S2 — early_stopping-Callback entfernt, V1-Lock-Assertion `n_trees == 100`, Model-Naming jetzt `fx_v1_lgbm_seed{seed}_{n_trees}trees_{date}.txt`. Nicos Direktive: alte Snapshots NICHT löschen, Cluster-Code NICHT refactoren, KEINE neuen ADRs vor Pine-Live-Test. | (next commit) | **Nico in Colab:** NB15c re-run mit dem gepatchten Trainer. Output: neues `pace_algo_v1.pine` mit echtem 100-Tree-Modell. Erwartung in TradingView diesmal: reale Signal-Separation (q99=0.565 vs Max 0.674 = 0.11 Headroom). **Pine Live Validation ist Gatekeeper für V1.** Wenn Signale + Python↔TV Alignment + saubere Regime-Verhalten + Symbol-Generalization passt → V1 Lock final. |
+| 2026-05-29 | arbeits-pc | work | **V1 KANDIDAT GELOCKED — v1b_100_noes (LightGBM 100 trees, no early_stopping, seed=42).** Nico-Genehmigung 2026-05-29 nach NB16-Verdict: "erster echter V1-Kandidat seit Projektbeginn". Fundamentaler Punkt: alle Failure-Modes (degenerierte Probability-Cluster, q-Konvergenz, Pine-Threshold-Probleme, Behavioral-Instability, USDCHF-Schwäche) erklären sich konsistent durch den 1-Tree-Stump. v1b liefert "probabilistisch gesund" + endlich numerischen Headroom für Pine. ANN-013/14 Cluster-Mechanik praktisch obsolet, R-19 Pair-Tiering obsolet, R-14 gelöst. Patches: (1) `core/train/lgbm_trainer.py` — `early_stopping_rounds: int = None` default (opt-in für historical reproduction), HISTORY-NOTE im docstring mit NB16-Audit-Cross-Link. (2) NB15c S2 — early_stopping-Callback entfernt, V1-Lock-Assertion `n_trees == 100`, Model-Naming jetzt `fx_v1_lgbm_seed{seed}_{n_trees}trees_{date}.txt`. Nicos Direktive: alte Snapshots NICHT löschen, Cluster-Code NICHT refactoren, KEINE neuen ADRs vor Pine-Live-Test. | `c02df54` | NB15c re-run im Colab, S3 crash siehe nächster Eintrag. |
+| 2026-05-29 | colab → arbeits-pc | mixed | **NB15c re-run crashed in S3: `extract_premium_cluster()` failed mit "no cluster with >= 0.5% size".** Erwartetes Symptom: mit kontinuierlicher 100-Tree-Distribution (2273 unique values) hat kein Probability-Wert mehr ≥ 0.5% Bar-Share. Cluster-Detection war ja exakt der Workaround der jetzt obsolet ist. Fix: NB15c S3 komplett umgestellt — VAL-Quantile q90/q97/q99 direkt als Cutoffs. Cluster-Call bleibt nur als Diagnostik (info-only, "no qualifying clusters" wird als Healthy-Signal geloggt statt zu crashen). Plus neue Sanity-Warning wenn `unique_probs < 50` (würde early_stopping-Regression fangen). | `0ab4843` | Nico macht Workstation-Switch zu Heim-PC. |
+| 2026-05-29 | arbeits-pc → heim-pc | work → home | **WORKSTATION-SWITCH zum Heim-PC.** Nico macht den Switch jetzt. Alles auf Arbeits-PC-Seite ist stoppbar: working-tree clean, alle Patches gepusht (letzter Commit `0ab4843`). | `(dieser Commit)` | **Sibling-Claude auf Heim-PC — kompakter Briefing-Block siehe Section 19c unten.** |
 | 2026-05-29 | arbeits-pc | work | **STRATEGY-RESET (vor NB16-Run) — Build 2/3 PAUSIERT, Phase R Model Robustness aktiv.** Diagnose des 0-Signale-Problems: NB15c snapshot.json zeigte `n_trees: 1`. Das Modell ist ein 1-Tree Decision-Stump mit 8 leaf-values im Range [-0.4532, -0.4053] → sigmoid-output 0.388–0.400. Cutoffs (Premium=0.4000) liegen AM Maximum der Probability-Distribution. Floating-Point-Drift zwischen Python sigmoid und Pine `math.exp(-raw)` sortiert alle Bars unter den Cutoff → 0 Signale. **Root-Cause durchgehend:** der gesamte Research-Pfad NB12/13/14/14e/14f hat mit `early_stopping(10)` trainiert, was den LightGBM-Booster auf 1 aktiven Baum reduziert hat. Cluster-Detection (ANN-013/14), Tier-Konvergenz (R-14), Behavioral-Stability-Failures (NB14f) sind alle Symptome desselben Decision-Stump-Bugs, nicht ihre Lösung. Nicos Strategy-Reset: Pine eingefroren (Code/Pipeline bleibt erhalten), keine neuen ADRs / Architektur-Eskalationen bis Modell-Kern validiert ist. Process-Rule: "Verbessert das direkt das Trading-Modell?" Alte Snapshots als "Decision-Stump Baseline / Research Artifact" markiert, nicht gelöscht. NB16 gebaut (`notebooks/16_model_robustness_audit.ipynb`, 17 cells, 8 sections): S1 Audit historischer Booster (num_trees + effective_trees mit non-zero gain), S2 Re-Train 4 Varianten (v0_baseline_es / v1a_30_noes / v1b_100_noes / v1c_xgb_30) auf identischen Daten/Features/Splits/Seeds, S3 Probability-Distribution-Histograms (das visuelle Hauptkriterium), S4 In-Sample-Performance, S5 Cross-Symbol Hold-Out (4 Pairs), S6 Multi-Seed Stability (v1a + v1b × 3 Seeds, ANN-014-Behavioral-Suite), S7 Verdict + JSON-Snapshot. AUTO_PUSH=False default. HANDOFF Section 16 TL;DR-Box komplett umgeschrieben (Build-Status zu "STRATEGY-RESET 2026-05-29"). | (next commit) | **Nico in Colab:** NB16 Run All (~30-45 min, da 4 Varianten + 6 Stability-Re-Trains). Outputs in Drive: 1 PNG Probability-Distribution-Plot, 6 CSVs, 2 JSONs. Erwartung: v0_baseline_es bestätigt 1-Tree-Bug, v1a/v1b zeigen echte Ensembles mit kontinuierlicher Distribution. Cross-Symbol PF zeigt ob NB13's PF 2.5 echter Edge oder Stump-Artefakt war. Decision danach: welche Variante = neuer V1-Kandidat. Pine bleibt eingefroren bis Decision. |
 
