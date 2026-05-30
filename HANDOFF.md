@@ -2086,32 +2086,11 @@ patched.replace('var float CUTOFF_HIGH     = 0.60', ...)
 **⚠️ Diese Fixes MÜSSEN vor NB15c-Re-Run in Colab angewendet werden.**
 Ohne Fix: Section 7 crasht mit `ValueError` oder patcht Cutoffs still-wrong.
 
-### Framer Landing Page (pace-algo pre-release)
-
-Framer-Projekt: https://contextual-retention-689854.framer.app
-
-**Heute geändert (via Framer MCP):**
-- ✅ Hero-Text getrennt (war zusammengeführt: `"...intelligencePACE Algo..."`)
-- ✅ Hero-Copy überarbeitet: `"Adaptive Trading Intelligence"` + klare Subheading
-- ✅ `COMING SOON` — kein Zusatz, kein Early-Access-Hint
-- ✅ Feature-Cards: alle 3 haben jetzt Beschreibungen (Signal Engine, Market Context, Adaptive Architecture)
-- ✅ Development Status: `"Research complete. System validated. Final integration underway."`
-- ✅ Performance: BlackHoleEffect 143→60 Partikel, MagicRings 8→5 Ringe
-- 🟡 Discord CTA Button: **noch nicht fertig** — lila Hintergrund von meiner Änderung noch drauf, Discord-Logo-Insert läuft noch. Nico will nur Discord-Logo, kein Text, original Design.
-
-**Discord-CTA aktueller Zustand:**
-- Node: `IVE3bzJpJ` (Cta)
-- Problem: `backgroundColor="/Purple"` ist noch gesetzt (war nicht im Original)
-- Problem: Text-Node `mAR4skg02` ("Join Discord") wurde gelöscht ✅
-- Problem: Discord Phosphor-Icon (`w1vAiJJOQ`) wurde erstellt aber Cta-Node ist duplikat
-- **Fix needed:** `backgroundColor` vom Cta-Node entfernen, Struktur aufräumen
-
 ### Nächste Schritte (Priorität)
 
 1. **NB15c Bugs fixen** (in Colab): Section 0 `AUTO_PUSH=True`, Section 7 Patch-Logic + Cutoffs
 2. **NB15c komplett re-run** → Pine Script wird nach `deploy_pine/pace_algo_v1.pine` gepusht
 3. **TradingView CDP starten** (Desktop-Verknüpfung) → Pine Script laden → Signale validieren
-4. **Framer Discord-CTA** fertigstellen: `backgroundColor` vom Cta entfernen, nur Discord-Logo
 
 ### Was du im NB15c-Re-Run beobachten solltest
 
