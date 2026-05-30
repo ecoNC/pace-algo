@@ -2024,6 +2024,95 @@ TL;DR-Box + diese Sektion lesen. Dann zu Nico für direction.
 | 4 | **Pine Live Validation in TradingView** | 🟡 GATEKEEPER |
 | 5 | Doku-Sync (model_registry / roadmap / HANDOFF) | ✅ commit `c02df54` |
 
+---
+
+## 19c. SESSION-LOG — Heim-PC (2026-05-30)
+
+### Infrastruktur eingerichtet (einmalig)
+
+| Tool | Status | Details |
+|---|---|---|
+| Claude Code CLI | ✅ v2.1.158 | `claude.exe` in WindowsApps, läuft via Terminal |
+| TradingView MCP | ✅ verbunden | CDP Port 9222, exe-Pfad in Section 20b, Desktop-Verknüpfung erstellt |
+| Framer MCP | ✅ verbunden | Remote HTTP MCP, in FleetView-Konnektoren + CLI |
+| trading-indicators Plugin | ✅ installiert | 33 Commands, 10 Agents in `~/.claude/` |
+| CLAUDE.md | ✅ committed | Auto-Kontext für CLI-Sessions — `claude` im Terminal kennt PaceAlgo |
+
+### NB15c — Bugs identifiziert, Fix OFFEN
+
+Zwei Bugs in `notebooks/15c_v1_pine_export.ipynb` durch den RSI-Skeleton-Fix (Arbeits-PC, 29.05):
+
+**Bug 1 — Section 7, Zeile `PLACEHOLDER_END_MARKER = ': 0.50'`:**
+Das Skeleton hat nach dem RSI-Fix kein `': 0.50'` mehr — `skeleton.index()` würde crashen.
+
+**Fix (noch nicht committed):**
+```python
+# ALT (kaputt):
+PLACEHOLDER_END_MARKER = ': 0.50'
+ps = skeleton.index(PLACEHOLDER_START)
+pe = skeleton.index(PLACEHOLDER_END_MARKER, ps) + len(PLACEHOLDER_END_MARKER)
+patched = skeleton[:ps] + replacement_block + skeleton[pe:]
+
+# --- Replace probability call ---
+old_call = 'probability = f_signal_probability_placeholder()'
+...
+if old_call not in patched:
+    raise SystemExit(...)
+patched = patched.replace(old_call, new_call, 1)
+
+# NEU (korrekt):
+old_call = 'probability = f_signal_probability_placeholder()'
+new_call = f'probability = f_pace_algo_v1_probability({engine["feature_arg_list"]})'
+ps = skeleton.index(PLACEHOLDER_START)
+pe = skeleton.index(old_call) + len(old_call)
+patched = skeleton[:ps] + replacement_block + '\n\n' + new_call + skeleton[pe:]
+```
+
+**Bug 2 — Section 7, Cutoff-Replacement-Strings:**
+```python
+# ALT (kaputt — Skeleton hat 0.55/0.60, nicht 0.50/0.55):
+patched.replace('var float CUTOFF_STANDARD = 0.50', ...)
+patched.replace('var float CUTOFF_HIGH     = 0.55', ...)
+
+# NEU (korrekt):
+patched.replace('var float CUTOFF_STANDARD = 0.55', ...)
+patched.replace('var float CUTOFF_HIGH     = 0.60', ...)
+```
+
+**Bug 3 — Section 0:** `AUTO_PUSH = False` → muss `True` sein damit Pine nach GitHub gepusht wird.
+
+**Bug 4 — Section 7, LEFTOVERS-Check:** gleiche falsche Werte wie Bug 2.
+
+**⚠️ Diese Fixes MÜSSEN vor NB15c-Re-Run in Colab angewendet werden.**
+Ohne Fix: Section 7 crasht mit `ValueError` oder patcht Cutoffs still-wrong.
+
+### Framer Landing Page (pace-algo pre-release)
+
+Framer-Projekt: https://contextual-retention-689854.framer.app
+
+**Heute geändert (via Framer MCP):**
+- ✅ Hero-Text getrennt (war zusammengeführt: `"...intelligencePACE Algo..."`)
+- ✅ Hero-Copy überarbeitet: `"Adaptive Trading Intelligence"` + klare Subheading
+- ✅ `COMING SOON` — kein Zusatz, kein Early-Access-Hint
+- ✅ Feature-Cards: alle 3 haben jetzt Beschreibungen (Signal Engine, Market Context, Adaptive Architecture)
+- ✅ Development Status: `"Research complete. System validated. Final integration underway."`
+- ✅ Performance: BlackHoleEffect 143→60 Partikel, MagicRings 8→5 Ringe
+- 🟡 Discord CTA Button: **noch nicht fertig** — lila Hintergrund von meiner Änderung noch drauf, Discord-Logo-Insert läuft noch. Nico will nur Discord-Logo, kein Text, original Design.
+
+**Discord-CTA aktueller Zustand:**
+- Node: `IVE3bzJpJ` (Cta)
+- Problem: `backgroundColor="/Purple"` ist noch gesetzt (war nicht im Original)
+- Problem: Text-Node `mAR4skg02` ("Join Discord") wurde gelöscht ✅
+- Problem: Discord Phosphor-Icon (`w1vAiJJOQ`) wurde erstellt aber Cta-Node ist duplikat
+- **Fix needed:** `backgroundColor` vom Cta-Node entfernen, Struktur aufräumen
+
+### Nächste Schritte (Priorität)
+
+1. **NB15c Bugs fixen** (in Colab): Section 0 `AUTO_PUSH=True`, Section 7 Patch-Logic + Cutoffs
+2. **NB15c komplett re-run** → Pine Script wird nach `deploy_pine/pace_algo_v1.pine` gepusht
+3. **TradingView CDP starten** (Desktop-Verknüpfung) → Pine Script laden → Signale validieren
+4. **Framer Discord-CTA** fertigstellen: `backgroundColor` vom Cta entfernen, nur Discord-Logo
+
 ### Was du im NB15c-Re-Run beobachten solltest
 
 Print-Outputs in jeder Section:
