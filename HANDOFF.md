@@ -1859,6 +1859,48 @@ Means session is ending on the current machine.
 
 ---
 
+## 20b. Heim-PC Infrastruktur (einmalig eingerichtet 2026-05-30)
+
+### TradingView MCP (CDP-Verbindung)
+
+TradingView Desktop ist als **Windows Store App** installiert. Das normale Icon startet OHNE CDP — für Claude-Zugriff muss TradingView MIT `--remote-debugging-port=9222` gestartet werden.
+
+**TradingView exe Pfad:**
+```
+C:\Program Files\WindowsApps\TradingView.Desktop_3.1.0.7818_x64__n534cwy3pjxzj\TradingView.exe
+```
+
+**Start-Befehl (PowerShell):**
+```powershell
+Stop-Process -Name "TradingView" -ErrorAction SilentlyContinue
+Start-Process "C:\Program Files\WindowsApps\TradingView.Desktop_3.1.0.7818_x64__n534cwy3pjxzj\TradingView.exe" -ArgumentList "--remote-debugging-port=9222"
+```
+
+**Oder per Desktop-Verknüpfung:** `C:\Users\ecoar\Desktop\TradingView (CDP).lnk`
+
+**MCP Repo:** `C:\Users\ecoar\tradingview-mcp\`
+**MCP Config:** `C:\Users\ecoar\.claude\settings.json` → `mcpServers.tradingview`
+**CDP Test:** `http://localhost:9222/json/version`
+
+**Workflow:**
+1. TradingView via Start-Befehl oder Verknüpfung starten
+2. `claude --dangerously-skip-permissions` im Terminal
+3. `tv_health_check` → bestätigt Verbindung
+4. Dann Pine-Script direkt aus Claude in TradingView laden/testen
+
+### Claude Code CLI (Heim-PC)
+
+- Node.js v24.16.0 installiert
+- `@anthropic-ai/claude-code` v2.1.158 installiert
+- `claude.exe` nach `C:\Users\ecoar\AppData\Local\Microsoft\WindowsApps\claude.exe` kopiert (PATH-Fix)
+- VS Code Extension: `anthropic.claude-code` v2.1.158
+
+### Installierte Plugins (Heim-PC `~/.claude/`)
+
+- **trading-indicators** (lgbarn) — 33 Pine/Ninja/Tradovate Commands, 10 Agents
+
+---
+
 ## 19a. DECISION nach NB14b — ✅ RESOLVED 2026-05-27 → Option A locked
 
 **Entscheidung:** Nico hat **Option A** gelockt am 2026-05-27 (Arbeits-PC). Volle Begründung + Mechanik in [ANN-012](docs/decisions/ANN-012-v1-tier-architecture-premium-core-plus-filters.md).
