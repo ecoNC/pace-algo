@@ -34,7 +34,8 @@ data_cache/processed/
 !results/**/*.feather
 !results/**/*.json
 
-# Model artifacts — too large for git
+# Model artifacts
+# .txt (LightGBM text format, ~3MB) IS tracked — needed for local recalibration
 artifacts/models/*.pkl
 artifacts/models/*.joblib
 
