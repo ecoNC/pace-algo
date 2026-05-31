@@ -372,9 +372,9 @@ probability = f_pace_algo_v1_probability(f_ema_20_dist_atr, f_ema_50_dist_atr, f
 // SKELETON-TEST: RSI-basierter Placeholder → proba = rsi/100.
 //                Cutoffs entsprechen RSI 55/60/65 (typische Overbought-Schwellen).
 //                Wird in Build 2 ersetzt.
-var float CUTOFF_STANDARD = 0.5312   // Aggressive trigger (skeleton-test, RSI>55)
-var float CUTOFF_HIGH     = 0.5485   // Balanced           (skeleton-test, RSI>60)
-var float CUTOFF_PREMIUM  = 0.5658   // Conservative       (skeleton-test, RSI>65)
+var float CUTOFF_STANDARD = 0.5300   // Aggressive trigger (skeleton-test, RSI>55)
+var float CUTOFF_HIGH     = 0.5414   // Balanced           (skeleton-test, RSI>60)
+var float CUTOFF_PREMIUM  = 0.5590   // Conservative       (skeleton-test, RSI>65)
 
 tier = probability >= CUTOFF_PREMIUM ? "Premium" : probability >= CUTOFF_HIGH ? "High" : probability >= CUTOFF_STANDARD ? "Standard" : "None"
 
