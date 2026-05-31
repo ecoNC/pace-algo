@@ -88,32 +88,96 @@ if not na(_pl_raw)
 _prev_conf_sh = ta.valuewhen(not na(_ph_raw), _conf_sh, 1)
 _prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
 
-// --- FVG detection (stateful: tracks most recent unfilled Fair Value Gap) ---
-// Bullish FVG: high[2] < low (3-candle gap, price pulled up without filling)
-// Bearish FVG: low[2] > high
-// Fill: bull FVG filled when low crosses below its lower edge; bear when high crosses above upper.
-// ATR-threshold: only gaps > 0.1 * ATR(14) are tracked (matches market_structure.py min_size_atr=0.1)
-var float _fvg_bull_lo = na
-var float _fvg_bull_hi = na
-var float _fvg_bear_lo = na
-var float _fvg_bear_hi = na
-_fvg_bull_new_sz = low  - high[2]   // positive = bullish gap exists this bar
-_fvg_bear_new_sz = low[2] - high    // positive = bearish gap exists this bar
-if _fvg_bull_new_sz > 0.1 * _atr14
-    _fvg_bull_lo := high[2]
-    _fvg_bull_hi := low
-if _fvg_bear_new_sz > 0.1 * _atr14
-    _fvg_bear_lo := high
-    _fvg_bear_hi := low[2]
-// Check fill conditions
-if not na(_fvg_bull_lo) and low <= _fvg_bull_lo
-    _fvg_bull_lo := na
-    _fvg_bull_hi := na
-if not na(_fvg_bear_lo) and high >= _fvg_bear_hi
-    _fvg_bear_lo := na
-    _fvg_bear_hi := na
-_fvg_bull_mid = na(_fvg_bull_lo) ? na : (_fvg_bull_lo + _fvg_bull_hi) / 2.0
-_fvg_bear_mid = na(_fvg_bear_lo) ? na : (_fvg_bear_lo + _fvg_bear_hi) / 2.0
+// --- FVG detection: tracks last 2 per type, 20-bar expiry, nearest-to-close ---
+// Matches Python detect_fvg(lookback=20, nearest selection) in market_structure.py.
+// Bug fix: old single-slot version was overwritten by newer FVGs, losing the relevant
+// FVG above price → systematic proba underestimate (~0.07 shift vs Python).
+var float _fvg_bull_lo_a = na, _fvg_bull_hi_a = na
+var int   _fvg_bull_bar_a = 0
+var float _fvg_bull_lo_b = na, _fvg_bull_hi_b = na
+var int   _fvg_bull_bar_b = 0
+var float _fvg_bear_lo_a = na, _fvg_bear_hi_a = na
+var int   _fvg_bear_bar_a = 0
+var float _fvg_bear_lo_b = na, _fvg_bear_hi_b = na
+var int   _fvg_bear_bar_b = 0
+// Expiry (20 bars — matches Python lookback=20)
+if not na(_fvg_bull_lo_a) and bar_index - _fvg_bull_bar_a > 20
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and bar_index - _fvg_bull_bar_b > 20
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and bar_index - _fvg_bear_bar_a > 20
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and bar_index - _fvg_bear_bar_b > 20
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// Fill conditions
+if not na(_fvg_bull_lo_a) and low <= _fvg_bull_lo_a
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and low <= _fvg_bull_lo_b
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and high >= _fvg_bear_hi_a
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and high >= _fvg_bear_hi_b
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// New FVG detection — shift old into slot b, new into slot a
+if low - high[2] > 0.1 * _atr14
+    _fvg_bull_lo_b := _fvg_bull_lo_a
+    _fvg_bull_hi_b := _fvg_bull_hi_a
+    _fvg_bull_bar_b := _fvg_bull_bar_a
+    _fvg_bull_lo_a := high[2]
+    _fvg_bull_hi_a := low
+    _fvg_bull_bar_a := bar_index
+if low[2] - high > 0.1 * _atr14
+    _fvg_bear_lo_b := _fvg_bear_lo_a
+    _fvg_bear_hi_b := _fvg_bear_hi_a
+    _fvg_bear_bar_b := _fvg_bear_bar_a
+    _fvg_bear_lo_a := high
+    _fvg_bear_hi_a := low[2]
+    _fvg_bear_bar_a := bar_index
+// Nearest-to-close selection
+_fvg_bull_mid_a = na(_fvg_bull_lo_a) ? na : (_fvg_bull_lo_a + _fvg_bull_hi_a) / 2.0
+_fvg_bull_mid_b = na(_fvg_bull_lo_b) ? na : (_fvg_bull_lo_b + _fvg_bull_hi_b) / 2.0
+_fvg_bear_mid_a = na(_fvg_bear_lo_a) ? na : (_fvg_bear_lo_a + _fvg_bear_hi_a) / 2.0
+_fvg_bear_mid_b = na(_fvg_bear_lo_b) ? na : (_fvg_bear_lo_b + _fvg_bear_hi_b) / 2.0
+var float _fvg_bull_mid = na, _fvg_bull_sz = na
+var float _fvg_bear_mid = na, _fvg_bear_sz = na
+_fvg_bull_mid := na
+_fvg_bull_sz  := na
+if not na(_fvg_bull_mid_a) and not na(_fvg_bull_mid_b)
+    if math.abs(close - _fvg_bull_mid_a) <= math.abs(close - _fvg_bull_mid_b)
+        _fvg_bull_mid := _fvg_bull_mid_a
+        _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+    else
+        _fvg_bull_mid := _fvg_bull_mid_b
+        _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+else if not na(_fvg_bull_mid_a)
+    _fvg_bull_mid := _fvg_bull_mid_a
+    _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+else if not na(_fvg_bull_mid_b)
+    _fvg_bull_mid := _fvg_bull_mid_b
+    _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+_fvg_bear_mid := na
+_fvg_bear_sz  := na
+if not na(_fvg_bear_mid_a) and not na(_fvg_bear_mid_b)
+    if math.abs(close - _fvg_bear_mid_a) <= math.abs(close - _fvg_bear_mid_b)
+        _fvg_bear_mid := _fvg_bear_mid_a
+        _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+    else
+        _fvg_bear_mid := _fvg_bear_mid_b
+        _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
+else if not na(_fvg_bear_mid_a)
+    _fvg_bear_mid := _fvg_bear_mid_a
+    _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+else if not na(_fvg_bear_mid_b)
+    _fvg_bear_mid := _fvg_bear_mid_b
+    _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
 """
 
 
@@ -234,13 +298,13 @@ FEATURE_REGISTRY: dict[str, str] = {
     # Equal highs: current confirmed swing high is within 0.3 ATR of previous one
     'eqhigh_present':       '(not na(_conf_sh) and not na(_prev_conf_sh) and math.abs(_conf_sh - _prev_conf_sh) < 0.3 * _atr14) ? 1.0 : 0.0',
 
-    # === FVG (Fair Value Gap) — stateful, most recent unfilled gap ===
+    # === FVG (Fair Value Gap) — 2-slot tracking, 20-bar expiry, nearest selection ===
     # dist = (close - fvg_midpoint) / ATR — positive = close above gap midpoint
     'dist_to_bull_fvg_atr':  'na(_fvg_bull_mid) ? 0.0 : (close - _fvg_bull_mid) / _safe_atr',
     'dist_to_bear_fvg_atr':  'na(_fvg_bear_mid) ? 0.0 : (close - _fvg_bear_mid) / _safe_atr',
     # size = gap height / ATR
-    'fvg_bull_size_atr':     'na(_fvg_bull_lo) ? 0.0 : (_fvg_bull_hi - _fvg_bull_lo) / _safe_atr',
-    'fvg_bear_size_atr':     'na(_fvg_bear_lo) ? 0.0 : (_fvg_bear_hi - _fvg_bear_lo) / _safe_atr',
+    'fvg_bull_size_atr':     'na(_fvg_bull_sz) ? 0.0 : _fvg_bull_sz / _safe_atr',
+    'fvg_bear_size_atr':     'na(_fvg_bear_sz) ? 0.0 : _fvg_bear_sz / _safe_atr',
 
     # === Volume ===
     'rvol_20':             'volume / nz(_vol_sma20, 1.0)',
