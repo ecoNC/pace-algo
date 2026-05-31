@@ -1,0 +1,197 @@
+{
+  "run_date": "2026-05-31",
+  "model_name": "fx_v2_lgbm_seed7_100trees_2026-05-31.txt",
+  "train_end": "2025-01-01T00:00:00+00:00",
+  "val_end": "2025-07-01T00:00:00+00:00",
+  "best_seed": 7,
+  "cutoffs": {
+    "standard": 0.5352530408472094,
+    "high": 0.5539274124557775,
+    "premium": 0.5771771560331714
+  },
+  "feature_cols": [
+    "ema_20_dist_atr",
+    "ema_50_dist_atr",
+    "ema_200_dist_atr",
+    "ema_20_slope_atr",
+    "ema_alignment",
+    "adx_14",
+    "adx_slope",
+    "rsi_14",
+    "stoch_rsi_k",
+    "roc_10",
+    "macd_hist_atr",
+    "momentum_composite",
+    "atr_pct",
+    "atr_percentile_100",
+    "bb_width_pct",
+    "vol_compression",
+    "realized_vol_20",
+    "dist_to_swing_high_atr",
+    "dist_to_swing_low_atr",
+    "bos_bullish",
+    "bos_bearish",
+    "rvol_20",
+    "volume_z_score",
+    "hour_sin",
+    "hour_cos",
+    "htf_1h_ema_alignment",
+    "htf_1h_rsi_14",
+    "htf_1h_atr_percentile_100",
+    "htf_4h_ema_alignment",
+    "htf_4h_rsi_14",
+    "htf_4h_atr_percentile_100",
+    "sweep_up_recent",
+    "sweep_down_recent",
+    "bars_since_sweep_up",
+    "bars_since_sweep_down",
+    "eqhigh_present",
+    "eqlow_present",
+    "dist_to_sh_atr_conf",
+    "dist_to_sl_atr_conf",
+    "bos_up_strict",
+    "bos_down_strict",
+    "choch_to_down",
+    "choch_to_up",
+    "fvg_bull_active",
+    "fvg_bear_active",
+    "dist_to_bull_fvg_atr",
+    "dist_to_bear_fvg_atr",
+    "fvg_bull_size_atr",
+    "fvg_bear_size_atr",
+    "in_asia",
+    "in_london",
+    "in_ny",
+    "in_london_ny_killzone",
+    "in_asia_london_overlap",
+    "in_us_open_killzone",
+    "in_london_open_killzone",
+    "is_fx_market_open",
+    "vol_expansion_ratio",
+    "vol_expanding",
+    "vol_contracting",
+    "bars_since_vol_spike",
+    "htf_ltf_agree_bull",
+    "htf_ltf_agree_bear",
+    "htf_ltf_counter_trend",
+    "htf_ltf_alignment_score",
+    "ltf_rsi_minus_htf_rsi",
+    "both_rsi_oversold",
+    "both_rsi_overbought",
+    "vol_pct_diff_htf",
+    "both_high_vol",
+    "both_low_vol",
+    "pullback_in_bull",
+    "pullback_in_bear"
+  ],
+  "n_features": 73,
+  "train_rows": 76925,
+  "val_rows": 12945,
+  "test_rows": 23527,
+  "seed_scores": [
+    {
+      "seed": 7,
+      "aggressive_holdout_pf": 1.931,
+      "aggressive_total_trades": 204,
+      "cutoff_premium": 0.5771771560331714
+    },
+    {
+      "seed": 1,
+      "aggressive_holdout_pf": 1.847,
+      "aggressive_total_trades": 218,
+      "cutoff_premium": 0.5858092333574376
+    },
+    {
+      "seed": 42,
+      "aggressive_holdout_pf": 1.771,
+      "aggressive_total_trades": 210,
+      "cutoff_premium": 0.5831758640244044
+    }
+  ],
+  "holdout_summary": [
+    {
+      "symbol": "AUDUSD",
+      "profile": "Aggressive",
+      "n_trades": 42.33,
+      "pf": 0.88,
+      "wr": 0.37
+    },
+    {
+      "symbol": "AUDUSD",
+      "profile": "Balanced",
+      "n_trades": 23.33,
+      "pf": 0.66,
+      "wr": 0.29
+    },
+    {
+      "symbol": "AUDUSD",
+      "profile": "Conservative",
+      "n_trades": 3.33,
+      "pf": 1.67,
+      "wr": 0.47
+    },
+    {
+      "symbol": "GBPUSD",
+      "profile": "Aggressive",
+      "n_trades": 59.33,
+      "pf": 1.94,
+      "wr": 0.56
+    },
+    {
+      "symbol": "GBPUSD",
+      "profile": "Balanced",
+      "n_trades": 18.0,
+      "pf": 1.0,
+      "wr": 0.4
+    },
+    {
+      "symbol": "GBPUSD",
+      "profile": "Conservative",
+      "n_trades": 4.0,
+      "pf": 0.17,
+      "wr": 0.08
+    },
+    {
+      "symbol": "USDCAD",
+      "profile": "Aggressive",
+      "n_trades": 77.33,
+      "pf": 3.71,
+      "wr": 0.7
+    },
+    {
+      "symbol": "USDCAD",
+      "profile": "Balanced",
+      "n_trades": 15.0,
+      "pf": 2.45,
+      "wr": 0.62
+    },
+    {
+      "symbol": "USDCAD",
+      "profile": "Conservative",
+      "n_trades": 5.33,
+      "pf": 3.75,
+      "wr": 0.67
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Aggressive",
+      "n_trades": 31.67,
+      "pf": 1.17,
+      "wr": 0.44
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Balanced",
+      "n_trades": 16.33,
+      "pf": 0.25,
+      "wr": 0.14
+    },
+    {
+      "symbol": "USDCHF",
+      "profile": "Conservative",
+      "n_trades": 6.67,
+      "pf": 0.0,
+      "wr": 0.0
+    }
+  ]
+}
