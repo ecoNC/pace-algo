@@ -51,6 +51,7 @@ _macd_line     = _macd_fast - _macd_slow
 _macd_signal   = ta.ema(_macd_line, 9)
 _macd_hist     = _macd_line - _macd_signal
 _macd_hist_atr = _macd_hist / _safe_atr
+_roc_10        = close[10] != 0.0 ? (close - close[10]) / close[10] : 0.0
 _atr_pct_rank  = ta.percentrank(_atr14, 100) / 100.0
 // --- Session/time + Vol-Expansion helpers ---
 _hour_utc      = hour(time, "UTC")
@@ -245,6 +246,10 @@ FEATURE_REGISTRY: dict[str, str] = {
     'rvol_20':             'volume / nz(_vol_sma20, 1.0)',
     'volume_z_score':      '(volume - _vol_sma20) / nz(_vol_std50, 1.0)',
 
+    # === Momentum / ROC ===
+    'roc_10':         '_roc_10',
+    'macd_hist_atr':  '_macd_hist_atr',
+
     # === HTF (1h) raw ===
     'htf_1h_rsi_14':              '_htf_1h_rsi14',
     'htf_1h_atr_percentile_100':  '_htf_1h_atr_pct_safe',
@@ -252,6 +257,7 @@ FEATURE_REGISTRY: dict[str, str] = {
     # === HTF (4h) raw ===
     'htf_4h_rsi_14':              '_htf_4h_rsi14',
     'htf_4h_atr_percentile_100':  '_htf_4h_atr_pct_safe',
+    'htf_1h_ema_alignment':       '_htf_1h_ema_align',
     'htf_4h_ema_alignment':       '_htf_4h_ema_align',
 
     # === HTF × LTF Interactions ===
