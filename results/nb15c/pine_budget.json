@@ -1,0 +1,20 @@
+{
+  "experiment_id": "nb15c_2026-05-31T16-14-08Z_81f2316",
+  "pine_codegen_version": "0.1.0",
+  "ops_estimate": 2858,
+  "ops_pct_of_budget": 0.5716,
+  "pine_budget_per_bar": 5000,
+  "request_security_calls": 8,
+  "request_security_pct_of_budget": 0.2,
+  "request_security_budget": 40,
+  "n_lines": 559,
+  "n_bytes": 67415,
+  "n_chars": 67346,
+  "function_count": 17,
+  "ta_calls": 34,
+  "math_calls": 11,
+  "nz_calls": 7,
+  "op_chars": 4955,
+  "warnings": [],
+  "passed_budget_check": true
+}
