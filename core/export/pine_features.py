@@ -5,12 +5,15 @@ NB15c picks the subset that the production booster actually references
 of Build 2: minimal, data-driven, no dead-feature surface area.
 
 Anti-Look-Ahead Discipline (ANN-018):
-- All HTF (1h) reads use barmerge.lookahead_off + [1] shift
+- All HTF (1h/4h) reads use barmerge.lookahead_off + [1] shift
+- Macro (daily VIX/DXY/TNX) use [1] shift → last completed trading day
+- Confirmed swings use ta.pivothigh/pivotlow (rightbars=5 delay, no future)
+- FVG stateful detection uses var + fill logic on closed bars
 - Lower-TF features computed on closed bars only
-- No high/low references in signal logic — only close-derived inputs
 
-Source-of-Truth: core/features/engineer.py + core/features/htf_interaction.py
-(these Pine snippets are line-by-line transliterations of those modules)
+Source-of-Truth:
+  core/features/engineer.py      → trend/momentum/volatility/session features
+  core/features/market_structure.py → SMC / FVG features
 """
 from __future__ import annotations
 
@@ -56,12 +59,68 @@ _frac_hour     = _hour_utc + _min_utc / 60.0
 _dow_utc       = dayofweek(time, "UTC")
 _atr_avg_50    = ta.sma(_atr14, 50)
 _vol_ratio     = _atr_avg_50 > 0.0 ? _atr14 / _atr_avg_50 : 1.0
+
+// --- BB Width + StochRSI pre-computations ---
+// bb_width_pct = (4 * std) / mid — matches engineer.py bb_width(mult=2): (2*std*2)/mid
+_bb_std20      = ta.stdev(close, 20)
+_bb_mid20      = ta.sma(close, 20)
+_bb_width_pct  = _bb_mid20 > 0.0 ? (4.0 * _bb_std20) / _bb_mid20 : 0.0
+_bb_width_avg  = ta.sma(_bb_width_pct, 20)
+// StochRSI-K: (rsi - lowest_rsi_14) / (highest_rsi_14 - lowest_rsi_14) * 100
+_stoch_lo14    = ta.lowest(_rsi14, 14)
+_stoch_hi14    = ta.highest(_rsi14, 14)
+_stoch_rsi_dif = _stoch_hi14 - _stoch_lo14
+
+// --- Confirmed pivot swings (anti-lookahead: ta.pivothigh confirms after rightbars=5) ---
+// ta.pivothigh(src, leftbars, rightbars) returns the pivot value at bar[rightbars] when
+// confirmed (strict: no bar in ±5 window is >= pivot). na otherwise.
+// Forward-fill last confirmed value so every bar has a reference level.
+var float _conf_sh = na
+var float _conf_sl = na
+_ph_raw = ta.pivothigh(high, 5, 5)
+_pl_raw = ta.pivotlow(low,  5, 5)
+if not na(_ph_raw)
+    _conf_sh := _ph_raw
+if not na(_pl_raw)
+    _conf_sl := _pl_raw
+// Previous confirmed swing (for equal-highs detection)
+_prev_conf_sh = ta.valuewhen(not na(_ph_raw), _conf_sh, 1)
+_prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
+
+// --- FVG detection (stateful: tracks most recent unfilled Fair Value Gap) ---
+// Bullish FVG: high[2] < low (3-candle gap, price pulled up without filling)
+// Bearish FVG: low[2] > high
+// Fill: bull FVG filled when low crosses below its lower edge; bear when high crosses above upper.
+// ATR-threshold: only gaps > 0.1 * ATR(14) are tracked (matches market_structure.py min_size_atr=0.1)
+var float _fvg_bull_lo = na
+var float _fvg_bull_hi = na
+var float _fvg_bear_lo = na
+var float _fvg_bear_hi = na
+_fvg_bull_new_sz = low  - high[2]   // positive = bullish gap exists this bar
+_fvg_bear_new_sz = low[2] - high    // positive = bearish gap exists this bar
+if _fvg_bull_new_sz > 0.1 * _atr14
+    _fvg_bull_lo := high[2]
+    _fvg_bull_hi := low
+if _fvg_bear_new_sz > 0.1 * _atr14
+    _fvg_bear_lo := high
+    _fvg_bear_hi := low[2]
+// Check fill conditions
+if not na(_fvg_bull_lo) and low <= _fvg_bull_lo
+    _fvg_bull_lo := na
+    _fvg_bull_hi := na
+if not na(_fvg_bear_lo) and high >= _fvg_bear_hi
+    _fvg_bear_lo := na
+    _fvg_bear_hi := na
+_fvg_bull_mid = na(_fvg_bull_lo) ? na : (_fvg_bull_lo + _fvg_bull_hi) / 2.0
+_fvg_bear_mid = na(_fvg_bear_lo) ? na : (_fvg_bear_lo + _fvg_bear_hi) / 2.0
 """
 
 
 # ---------------------------------------------------------------------------
-# HTF (1h) context — pulled via request.security with lookahead_off + [1] shift
+# HTF (1h + 4h) context + Macro (daily VIX/DXY/TNX)
+# All via request.security with lookahead_off + [1] shift
 # IMPORTANT: each request.security call counts against Pine's 40-call budget
+# Current usage: 3 (1h) + 3 (4h) + 3 (macro) = 9 calls
 # ---------------------------------------------------------------------------
 
 HTF_HEADER = """// === HTF (1h) context — anti-look-ahead via [1] shift ===
@@ -86,6 +145,46 @@ _htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_ali
 _htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
 _htf_1h_atr_pct_safe = nz(_htf_1h_atr_pct_raw, 0.5)
 _htf_1h_ema_align    = nz(_htf_1h_ema_align_raw, 0.0)
+
+// === HTF (4h) context — same pattern as 1h, timeframe "240" ===
+_pf_htf4h_rsi() =>
+    ta.rsi(close, 14)
+
+_pf_htf4h_atr_pct() =>
+    ta.percentrank(ta.atr(14), 100) / 100.0
+
+_pf_htf4h_ema_align() =>
+    _e20 = ta.ema(close, 20)
+    _e50 = ta.ema(close, 50)
+    _e200 = ta.ema(close, 200)
+    _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
+
+_htf_4h_rsi14_raw     = request.security(syminfo.tickerid, "240", _pf_htf4h_rsi()[1], barmerge.gaps_off, barmerge.lookahead_off)
+_htf_4h_atr_pct_raw   = request.security(syminfo.tickerid, "240", _pf_htf4h_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_off)
+_htf_4h_ema_align_raw = request.security(syminfo.tickerid, "240", _pf_htf4h_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_off)
+
+_htf_4h_rsi14        = nz(_htf_4h_rsi14_raw, 50.0)
+_htf_4h_atr_pct_safe = nz(_htf_4h_atr_pct_raw, 0.5)
+_htf_4h_ema_align    = nz(_htf_4h_ema_align_raw, 0.0)
+
+// === Macro context (daily VIX / DXY / TNX — anti-lookahead) ===
+// [1] shift = last completed trading day (matches engineer.py macro.shift(1)).
+// pct_change(5) after shift(1): uses close[1] vs close[6] in daily context.
+// Neutral fallbacks: VIX=20, DXY=100, TNX=4 (typical mid-cycle values).
+// One request.security per symbol, returns [d1_close, d6_close] as tuple.
+_pf_macro_daily() =>
+    [close[1], close[6]]
+
+[_macro_vix_d1_raw, _macro_vix_d6_raw] = request.security("CBOE:VIX",  "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+[_macro_dxy_d1_raw, _macro_dxy_d6_raw] = request.security("TVC:DXY",   "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+[_macro_tnx_d1_raw, _macro_tnx_d6_raw] = request.security("TVC:US10Y", "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+
+_vix_level = nz(_macro_vix_d1_raw, 20.0)
+_dxy_level = nz(_macro_dxy_d1_raw, 100.0)
+_tnx_level = nz(_macro_tnx_d1_raw, 4.0)
+_vix_d6    = nz(_macro_vix_d6_raw, 20.0)
+_dxy_d6    = nz(_macro_dxy_d6_raw, 100.0)
+_tnx_d6    = nz(_macro_tnx_d6_raw, 4.0)
 """
 
 
@@ -103,18 +202,44 @@ FEATURE_REGISTRY: dict[str, str] = {
     'atr_pct':             '_atr14 / close',
     'atr_percentile_100':  '_atr_pct_rank',
     'realized_vol_20':     'ta.stdev(_log_ret, 20) * math.sqrt(20)',
+    # bb_width_pct = (4 * stdev) / sma — engineer.py: bb_width(mult=2) = (2*std*2)/mid
+    'bb_width_pct':        '_bb_width_pct',
+    # vol_compression = bb_width / rolling_mean(bb_width, 20) — ratio < 1 = compressed
+    'vol_compression':     '_bb_width_avg > 0.0 ? _bb_width_pct / _bb_width_avg : 1.0',
 
     # === Trend ===
     'adx_14':              '_adx14',
+    'adx_slope':           '_adx14 - _adx14[5]',
     'ema_20_dist_atr':     '(close - _ema20) / _safe_atr',
+    'ema_50_dist_atr':     '(close - _ema50) / _safe_atr',
+    'ema_200_dist_atr':    '(close - _ema200) / _safe_atr',
     'ema_20_slope_atr':    '(_ema20 - _ema20[5]) / _safe_atr',
+    'ema_alignment':       '_ema_alignment',
 
     # === Momentum ===
+    'rsi_14':              '_rsi14',
+    # stoch_rsi_k = (rsi - lowest_rsi_14) / (highest_rsi_14 - lowest_rsi_14) * 100
+    'stoch_rsi_k':         '_stoch_rsi_dif > 0.0 ? (_rsi14 - _stoch_lo14) / _stoch_rsi_dif * 100.0 : 50.0',
     'momentum_composite':  '(_rsi14 - 50.0) / 50.0 + _pf_tanh(_macd_hist_atr)',
 
-    # === Structure ===
+    # === Structure (rolling swing H/L — fast approximation) ===
     'dist_to_swing_high_atr': '(_swing_hi_20 - close) / _safe_atr',
     'dist_to_swing_low_atr':  '(close - _swing_lo_20) / _safe_atr',
+
+    # === Structure (confirmed pivot swings — matches market_structure.py, swing_length=5) ===
+    # ta.pivothigh(high, 5, 5) confirms at bar[5], no lookahead
+    'dist_to_sh_atr_conf':  'na(_conf_sh) ? 0.0 : (_conf_sh - close) / _safe_atr',
+    'dist_to_sl_atr_conf':  'na(_conf_sl) ? 0.0 : (close - _conf_sl) / _safe_atr',
+    # Equal highs: current confirmed swing high is within 0.3 ATR of previous one
+    'eqhigh_present':       '(not na(_conf_sh) and not na(_prev_conf_sh) and math.abs(_conf_sh - _prev_conf_sh) < 0.3 * _atr14) ? 1.0 : 0.0',
+
+    # === FVG (Fair Value Gap) — stateful, most recent unfilled gap ===
+    # dist = (close - fvg_midpoint) / ATR — positive = close above gap midpoint
+    'dist_to_bull_fvg_atr':  'na(_fvg_bull_mid) ? 0.0 : (close - _fvg_bull_mid) / _safe_atr',
+    'dist_to_bear_fvg_atr':  'na(_fvg_bear_mid) ? 0.0 : (close - _fvg_bear_mid) / _safe_atr',
+    # size = gap height / ATR
+    'fvg_bull_size_atr':     'na(_fvg_bull_lo) ? 0.0 : (_fvg_bull_hi - _fvg_bull_lo) / _safe_atr',
+    'fvg_bear_size_atr':     'na(_fvg_bear_lo) ? 0.0 : (_fvg_bear_hi - _fvg_bear_lo) / _safe_atr',
 
     # === Volume ===
     'rvol_20':             'volume / nz(_vol_sma20, 1.0)',
@@ -123,6 +248,11 @@ FEATURE_REGISTRY: dict[str, str] = {
     # === HTF (1h) raw ===
     'htf_1h_rsi_14':              '_htf_1h_rsi14',
     'htf_1h_atr_percentile_100':  '_htf_1h_atr_pct_safe',
+
+    # === HTF (4h) raw ===
+    'htf_4h_rsi_14':              '_htf_4h_rsi14',
+    'htf_4h_atr_percentile_100':  '_htf_4h_atr_pct_safe',
+    'htf_4h_ema_alignment':       '_htf_4h_ema_align',
 
     # === HTF × LTF Interactions ===
     'htf_ltf_agree_bull':       '(_ema_alignment > 0.5 and _htf_1h_ema_align > 0.5) ? 1.0 : 0.0',
@@ -137,6 +267,16 @@ FEATURE_REGISTRY: dict[str, str] = {
     'both_low_vol':             '(_atr_pct_rank < 0.3 and _htf_1h_atr_pct_safe < 0.3) ? 1.0 : 0.0',
     'pullback_in_bull':         '(_htf_1h_ema_align > 0.5 and _rsi14 < 45.0) ? 1.0 : 0.0',
     'pullback_in_bear':         '(_htf_1h_ema_align < -0.5 and _rsi14 > 55.0) ? 1.0 : 0.0',
+
+    # === Macro (daily VIX / DXY / TNX) ===
+    # level = last completed trading day's close (anti-lookahead shift)
+    # chg_5d = pct_change over 5 trading days (matches engineer.py attach_macro)
+    'vix_level':   '_vix_level',
+    'dxy_level':   '_dxy_level',
+    'tnx_level':   '_tnx_level',
+    'vix_chg_5d':  '_vix_d6 > 0.0 ? (_vix_level - _vix_d6) / _vix_d6 : 0.0',
+    'dxy_chg_5d':  '_dxy_d6 > 0.0 ? (_dxy_level - _dxy_d6) / _dxy_d6 : 0.0',
+    'tnx_chg_5d':  '_tnx_d6 > 0.0 ? (_tnx_level - _tnx_d6) / _tnx_d6 : 0.0',
 
     # === Session Flags (core/features/session.py) ===
     'in_asia':                  '(_hour_utc >= 23 or _hour_utc < 8) ? 1.0 : 0.0',
@@ -159,9 +299,15 @@ FEATURE_REGISTRY: dict[str, str] = {
 }
 
 
-# Features that require HTF_HEADER to be emitted (anything reading 1h state)
+# Features that require HTF_HEADER to be emitted
+# (anything reading 1h/4h state or macro via request.security)
 _HTF_DEPENDENT_PREFIXES = ('htf_', 'both_', 'pullback_')
-_HTF_DEPENDENT_EXACT = {'vol_pct_diff_htf', 'ltf_rsi_minus_htf_rsi'}
+_HTF_DEPENDENT_EXACT = {
+    'vol_pct_diff_htf', 'ltf_rsi_minus_htf_rsi',
+    # Macro features — need MACRO section inside HTF_HEADER
+    'vix_level', 'dxy_level', 'tnx_level',
+    'vix_chg_5d', 'dxy_chg_5d', 'tnx_chg_5d',
+}
 
 
 def render_feature_engine(used_features: list[str]) -> dict:
@@ -199,7 +345,7 @@ def render_feature_engine(used_features: list[str]) -> dict:
     implemented = [f for f in used_features if f in FEATURE_REGISTRY]
     dropped = [f for f in used_features if f not in FEATURE_REGISTRY]
 
-    # HTF header only needed if at least one IMPLEMENTED feature reads HTF
+    # HTF header only needed if at least one IMPLEMENTED feature reads HTF/macro
     needs_htf = any(
         f.startswith(_HTF_DEPENDENT_PREFIXES) or f in _HTF_DEPENDENT_EXACT
         for f in implemented
