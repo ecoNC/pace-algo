@@ -1,0 +1,77 @@
+{
+  "module": "FX",
+  "config": {
+    "symbols_long": [
+      "GBPUSD",
+      "USDJPY",
+      "USDCAD",
+      "NZDUSD",
+      "USDCHF"
+    ],
+    "symbols_short": [
+      "USDCHF"
+    ],
+    "features": [
+      "hour_cos",
+      "hour_sin",
+      "rvol_20",
+      "ema_20_dist_atr",
+      "atr_pct",
+      "htf_4h_rsi_14",
+      "is_fx_market_open",
+      "in_ny",
+      "htf_4h_atr_percentile_100"
+    ],
+    "meta_features": "full-73",
+    "trees": 50,
+    "gate": "in_ny(13-22 UTC) & vol_tradeable(not QUIET/SHOCK)",
+    "selection": "POOLED proba threshold, top10/day",
+    "meta": "secondary full-feature re-rank",
+    "sizing": "proba tercile 0.5/1.0/1.5x",
+    "execution": "R=1.5 (TP1.5/SL1.0 ATR, 24-bar), next-bar-open"
+  },
+  "robustness": {
+    "0.3pip": {
+      "net_pf": 1.66,
+      "wr": 0.51,
+      "trades_per_day": 9.34,
+      "n_folds": 10,
+      "pct_folds_pos": 0.9,
+      "min_fold_pf": 0.96,
+      "median_fold_pf": 1.6,
+      "pf_by_year": {
+        "2024": 1.309,
+        "2025": 2.098,
+        "2026": 1.825
+      }
+    },
+    "0.5pip": {
+      "net_pf": 1.506,
+      "wr": 0.51,
+      "trades_per_day": 9.34,
+      "n_folds": 10,
+      "pct_folds_pos": 0.8,
+      "min_fold_pf": 0.88,
+      "median_fold_pf": 1.45,
+      "pf_by_year": {
+        "2024": 1.18,
+        "2025": 1.915,
+        "2026": 1.659
+      }
+    },
+    "1.0pip": {
+      "net_pf": 1.184,
+      "wr": 0.51,
+      "trades_per_day": 9.34,
+      "n_folds": 10,
+      "pct_folds_pos": 0.6,
+      "min_fold_pf": 0.69,
+      "median_fold_pf": 1.15,
+      "pf_by_year": {
+        "2024": 0.912,
+        "2025": 1.53,
+        "2026": 1.308
+      }
+    }
+  }
+}
