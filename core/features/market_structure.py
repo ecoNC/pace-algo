@@ -392,13 +392,16 @@ def compute_smc_features(ohlcv: pd.DataFrame, atr_series: np.ndarray,
         "bos_down_strict": bos_down,
         "choch_to_down": choch_dn,
         "choch_to_up": choch_up,
-        # FVG features
+        # FVG features. FIX 2026-06-01: 0-fill "no active FVG" (NaN) to match Pine
+        # semantics (`na(...) ? 0.0`). Previously NaN -> dropna(feat) silently dropped
+        # ~90% of bars (kept only bars with simultaneous bull+bear FVG) AND caused
+        # train/serve skew (Pine 0-fills, training dropped). Now all bars usable.
         "fvg_bull_active": bull_act,
         "fvg_bear_active": bear_act,
-        "dist_to_bull_fvg_atr": dist_bull,
-        "dist_to_bear_fvg_atr": dist_bear,
-        "fvg_bull_size_atr": size_bull,
-        "fvg_bear_size_atr": size_bear,
+        "dist_to_bull_fvg_atr": np.nan_to_num(dist_bull, nan=0.0),
+        "dist_to_bear_fvg_atr": np.nan_to_num(dist_bear, nan=0.0),
+        "fvg_bull_size_atr": np.nan_to_num(size_bull, nan=0.0),
+        "fvg_bear_size_atr": np.nan_to_num(size_bear, nan=0.0),
     }, index=ohlcv.index)
 
     return out

@@ -1,0 +1,129 @@
+{
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "n_features": 77,
+  "per_pair": {
+    "GBPUSD": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 9,
+        "pf_mean": 1.119,
+        "pf_min": 0.655,
+        "pf_std": 0.538
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 17,
+        "pf_mean": 1.258,
+        "pf_min": 0.734,
+        "pf_std": 0.587
+      }
+    },
+    "USDJPY": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 17,
+        "pf_mean": 1.344,
+        "pf_min": 0.587,
+        "pf_std": 0.728
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 18,
+        "pf_mean": 1.476,
+        "pf_min": 0.645,
+        "pf_std": 0.833
+      }
+    },
+    "USDCAD": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 16,
+        "pf_mean": 1.244,
+        "pf_min": 0.467,
+        "pf_std": 0.757
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 18,
+        "pf_mean": 1.44,
+        "pf_min": 0.514,
+        "pf_std": 0.893
+      }
+    },
+    "NZDUSD": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 10,
+        "pf_mean": 0.966,
+        "pf_min": 0.491,
+        "pf_std": 0.488
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 13,
+        "pf_mean": 1.147,
+        "pf_min": 0.578,
+        "pf_std": 0.549
+      }
+    },
+    "USDCHF": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 18,
+        "pf_mean": 1.101,
+        "pf_min": 0.479,
+        "pf_std": 0.394
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 22,
+        "pf_mean": 1.294,
+        "pf_min": 0.576,
+        "pf_std": 0.476
+      }
+    },
+    "AUDUSD": {
+      "net_1.0pip": {
+        "n": 30,
+        "pf_gt1": 13,
+        "pf_mean": 0.939,
+        "pf_min": 0.451,
+        "pf_std": 0.267
+      },
+      "net_0.3pip": {
+        "n": 30,
+        "pf_gt1": 20,
+        "pf_mean": 1.107,
+        "pf_min": 0.529,
+        "pf_std": 0.309
+      }
+    }
+  },
+  "tier1_pooled": {
+    "gross": {
+      "n": 30,
+      "pf_gt1": 23,
+      "pf_mean": 1.34,
+      "pf_min": 0.749,
+      "pf_std": 0.435
+    },
+    "net_0.3pip": {
+      "n": 30,
+      "pf_gt1": 22,
+      "pf_mean": 1.274,
+      "pf_min": 0.722,
+      "pf_std": 0.41
+    },
+    "net_1.0pip": {
+      "n": 30,
+      "pf_gt1": 17,
+      "pf_mean": 1.135,
+      "pf_min": 0.663,
+      "pf_std": 0.36
+    }
+  }
+}
