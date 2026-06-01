@@ -1,0 +1,68 @@
+{
+  "module": "CRYPTO",
+  "symbols": [
+    "BTCUSD",
+    "ETHUSD"
+  ],
+  "features": [
+    "htf_4h_rsi_14",
+    "hour_cos",
+    "htf_1h_rsi_14",
+    "ltf_rsi_minus_htf_rsi",
+    "hour_sin",
+    "dist_to_swing_high_atr",
+    "dist_to_sh_atr_conf",
+    "bars_since_vol_spike",
+    "ema_50_dist_atr"
+  ],
+  "trees": 50,
+  "gate": "vol_tradeable only (24/7, no session)",
+  "selection": "POOLED top8/day + meta + sizing",
+  "robustness": {
+    "0.02ATR": {
+      "net_pf": 1.136,
+      "wr": 0.428,
+      "trades_per_day": 8.82,
+      "n_folds": 20,
+      "pct_folds_pos": 0.75,
+      "min_fold_pf": 0.76,
+      "median_fold_pf": 1.16,
+      "pf_by_year": {
+        "2024": 1.237,
+        "2025": 1.146,
+        "2026": 0.942
+      },
+      "bar_pass": false
+    },
+    "0.05ATR": {
+      "net_pf": 1.08,
+      "wr": 0.428,
+      "trades_per_day": 8.82,
+      "n_folds": 20,
+      "pct_folds_pos": 0.7,
+      "min_fold_pf": 0.72,
+      "median_fold_pf": 1.11,
+      "pf_by_year": {
+        "2024": 1.177,
+        "2025": 1.09,
+        "2026": 0.896
+      },
+      "bar_pass": false
+    },
+    "0.1ATR": {
+      "net_pf": 0.994,
+      "wr": 0.428,
+      "trades_per_day": 8.82,
+      "n_folds": 20,
+      "pct_folds_pos": 0.5,
+      "min_fold_pf": 0.67,
+      "median_fold_pf": 1.02,
+      "pf_by_year": {
+        "2024": 1.083,
+        "2025": 1.003,
+        "2026": 0.824
+      },
+      "bar_pass": false
+    }
+  }
+}
