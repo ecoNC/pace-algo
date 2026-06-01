@@ -2184,6 +2184,46 @@ nach demselben Pattern (Section 20.10).
 
 ---
 
+## 19d. WORKSTATION-SWITCH BRIEFING — Heim-PC (2026-06-01)
+
+**Sibling-Claude auf Heim-PC: lies das ZUERST. Hier stehen wir, das wurde heute geändert.**
+
+### TL;DR — wo wir stehen (eine Session, großer Bogen)
+Wir haben das System von „ML entscheidet Trades" zu einem **validierten Hybrid** geführt und dabei viele Annahmen ehrlich entzaubert. **Aktueller, belastbarer Stand:**
+- **Architektur (validiert, gelockt):** `9-Feature-ML-Ranker (Selektor)` + `State/Session-Gate (Kontext-Filter)` + `simple R-based Execution`. Kein rein-regelbasiertes System (empirisch widerlegt), ML ist NICHT optional (einziger netto-positiver Selektor).
+- **Edge ist REAL aber DÜNN:** netto ~PF 1.1–1.27, WR ~0.50, am besten bei ECN-Spread. 5m verliert ungated; **NY-Gate + Tier-1 macht es netto-positiv.** 30m ist netto am robustesten.
+- **Genau gestoppt bei:** Phase 1 ✅ (9-Feat-Ranker schlägt 73: net 1.19/std 0.25/Spearman 0.88), Phase 2 ✅ (State-Gate integriert). **NÄCHSTER SCHRITT = Phase 3: Cutoff-Kalibrierung auf 8-10 Trades/Tag** (`scripts/simplify_ranking.py` als Basis, Cutoff q97→~q90/dynamisch, Netto-PF/Frequenz-Tradeoff messen).
+
+### Was heute geändert wurde (neue Dateien/Artefakte)
+- **`core/state/`** (NEU): Market State Engine — `classify_market_state()`, deterministisch, no-lookahead (getestet), reuse engineer ema/atr/adx. `tests/test_market_state.py` (5 grün, inkl. No-Lookahead-Beweis).
+- **`core/features/cross_asset.py`** (NEU, **research_only**): Lean-4 Cross-Asset-Features — Claim zurückgezogen (netto-neutral auf clean Daten). `tests/test_cross_asset.py`.
+- **`core/features/market_structure.py`** (GEÄNDERT, **wichtig**): **FVG-Features 0-fill statt NaN** — fixte projektweiten Bug der ~90% der Bars droppte + Train/Serve-Skew. **→ HEIM-PC: `data/processed_v2/extended/*.parquet` LÖSCHEN, damit Cache mit Fix neu baut!**
+- **`core/config.py`** (GEÄNDERT): FX_SUPPORTED/CONDITIONAL/UNSUPPORTED_PAIRS, FX_PRODUCTION_TRAIN_PAIRS, FX_CROSS_ASSET_FEATURES (research_only).
+- **ADRs:** ANN-019 (Komplexität retired, 100-tree-core), ANN-020 (Supported-Pairs-Lock), ANN-021 (Calibration isotonic). ANN-013/014 auf Superseded.
+- **Design:** `docs/system_design_v2_state_driven.md`. Korrigiert: `docs/feature_registry.md` (Cross-Asset retracted + Reject-Record).
+- **Analyse-Scripts** (`scripts/`): model_validation_suite, audusd_investigation, supported_pairs, walkforward_stress, walkforward_ny, regime_filter_layer, tpsl_sweep, cross_asset(+harden), factor_features/lean(+perpair), vol_term_structure, net_performance, timeframe_net, confirm_30m, clean_revalidate, state_edge_analysis, setup_makeorbreak, simplify_ranking. Alle als `python scripts/X.py` vom Repo-Root laufen lassen (Cross-Script-Imports erwarten das).
+
+### Gelockte Erkenntnisse (NICHT re-litigieren — alles netto/Walk-Forward/multi-seed belegt)
+1. **Degeneracy:** historisches early_stopping = 2-Tree-Stump → erklärte alle Alt-Symptome. Gesundes 100-Tree-LGBM ohne early_stopping ist der Core (ANN-019). LGBM≈XGB (XGB nur Benchmark).
+2. **Supported-Pairs:** Tier-1 = GBPUSD/USDJPY/USDCAD (robust); Conditional NZD/CHF/AUD; **EURUSD = kein Edge** (ANN-020).
+3. **Kosten/TF:** 5m netto grenzwertig; **30m netto-viabel** (alte 5m-Lock war Stump-Artefakt). ALLE Eval ab jetzt NETTO (Spread + next-bar-open), nie brutto.
+4. **States/Setups haben KEINE eigenständige Edge:** „jeder Bar in State X" verliert; Pullback/Sweep-Setups netto-negativ (schlechter als baseline). Edge = **Selektion innerhalb schlechter Grundgesamtheit** (ML-Ranking). State-Engine = Gate (wo NICHT handeln), nicht Decision-Core.
+5. **Simplify gewinnt:** 9-Feat-Ranker > 73-Feat (net + Stabilität + Monotonie). Overfit-Kill bestätigt. Top-9: hour_sin/cos, in_ny, is_fx_market_open, rvol_20, atr_pct, htf_4h_atr_percentile_100, ema_20_dist_atr, htf_4h_rsi_14.
+6. **ZURÜCKGEZOGENE Artefakte (auf verzerrtem FVG-Sample gemessen — NICHT glauben):** „30m PF 1.94", „Lean-4 +0.154 PF". Clean: 30m ~1.14, Lean-4 ~+0.007.
+
+### Heim-PC Environment-Checkliste (vor Phase 3)
+- `cd C:\Users\ecoar\pace-algo` · `git pull origin main` (zieht alles oben).
+- **`Remove-Item data\processed_v2\extended\*.parquet`** (stale FVG-NaN-Cache → muss mit Fix neu bauen).
+- Python-Deps: `pyarrow` (vorhanden), `scipy` (für simplify_ranking spearmanr), `xgboost` (nur für model_validation_suite XGB-Variante; Phase 3 braucht's nicht).
+- Daten: `data/processed_v2/` (21 Roh-Parquets) sind auf Heim-PC vorhanden.
+- Scripts vom Repo-Root starten: `python scripts/simplify_ranking.py`.
+- TV-Live-Test erst relevant nach Pine-Export (Phase 3+); CDP via Desktop-Shortcut „TradingView (CDP)".
+
+### Phase 3 konkret (nächster Schritt)
+Auf dem **9-Feat-Ranker** (Top-9 oben) + State-Gate (NY + tradeable): Cutoff von q97 (~3.6 Trades/Tag) Richtung q90 / vol-adjustiert lockern, pro Cutoff den **Netto-PF + Trades/Tag** unter Walk-Forward messen → den Cutoff finden, der ~8-10 Trades/Tag bei noch tragbarer Netto-PF liefert. Basis-Script: `scripts/simplify_ranking.py` (Cutoff-Parameter variieren). Danach: finaler Kernel-Lock (mehr Seeds) → Pine-Export (9 Features + NY/State-Gate + simple R-Execution, bit-exact).
+
+---
+
 ## 19. Session Handoff Log
 
 Each Claude session MUST append a row here after meaningful work. This is the chain of custody between Arbeits-PC and Heim-PC.
@@ -2280,4 +2320,5 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-06-01 | arbeits-pc | work | **🔴 STATE EDGE MAP (V2 Phase 1) — KEIN State hat eigenständige Edge; Edge = SELEKTION, nicht Struktur.** `scripts/state_edge_analysis.py` (per-Bar-Barrier-Sim, State-aligned Richtung, netto@1.0pip, Tier-1). `results/.../state_edge_2026-06-01T12-55-34Z/`. **Ergebnis: ALLE Buckets netto negativ** — RANGE/NY/long PF 0.79 (avgR -0.14), TREND_UP/NY/long 0.72 (-0.19), TREND_DOWN/NY/short 0.75 (-0.17), non-NY schlechter, alle Paare. „Jeden Bar in gutem State handeln" verliert. Spread (~0.17-0.33 R/Trade) frisst die rohe State-Edge (gross ≈ breakeven). **WICHTIGE KORREKTUR:** Der frühere „5m+NY net 1.17" kam aus der MODELL-Selektion (q97 = top 3% Bars), NICHT aus NY-Bars selbst. Edge = Selektion *welcher* Bars, nicht State/Session. Nico-These „Edge aus Struktur" stimmt nur halb: Struktur = Kontext+Filter, Edge-pro-Trade = Selektion. **Konsequenz:** States = Kontext (nicht Edge); Setups MÜSSEN die Selektivität liefern die „jeder Bar" fehlt — sonst ist das Modell als Selektor nötig. | dieser Commit | **Make-or-Break-Test:** EIN struktureller Setup-Trigger (z.B. Pullback-Continuation in TREND_UP/NY oder Liquidity-Sweep) netto testen — selektiert er die profitable Teilmenge (netto >1.3) wo „jeder Bar" -0.19 macht? JA → regelbasierter Ansatz trägt, Setup Engine bauen. NEIN → ML-Selektivität nötig (Modell als Core/Strong-Filter, nicht nur Overlay). Das entscheidet ML-frei vs ML-nötig. |
 | 2026-06-01 | arbeits-pc | work | **🔴 MAKE-OR-BREAK ENTSCHIEDEN: Strukturelle Setups scheitern → ML IST der Selektor (nicht optional).** `scripts/setup_makeorbreak.py` (Pullback-Continuation + Liquidity-Sweep-Reversal, confirmed-bar, netto@1.0pip, Tier-1). **Beide Setups net-negativ und SCHLECHTER als Baseline:** baseline (jeder NY-Trend-Bar) PF 0.73/avgR-0.18; A_pullback 0.67/-0.24; B_sweep 0.69/-0.22. Net-negativ in JEDEM Jahr (2022-26) und JEDEM Paar. Klassische Price-Action-Trigger tragen auf 5m FX netto KEINE Edge. **DEFINITIVE ARCHITEKTUR-SCHLUSSFOLGERUNG:** (1) States/Sessions allein = keine Edge (State-Map), (2) hand-gebaute Setups = keine Edge (dieser Test), (3) **ML-Modell-Selektion = das EINZIGE was je netto-positiv selektierte** (q97→net 1.1-1.27 in NY). ML-frei ist empirisch widerlegt. **Validierte Architektur = Modell=Selektor (Core) + State/Session/Vol=Kontext-Filter-Wrapper** (der NY-Filter hob Modell 0.86→1.17). Die State-Engine-Arbeit ist die FILTER-Schicht (wertvoll), nicht der Decision-Core. | dieser Commit | **Hybrid produktisieren (der validierte Weg):** (1) Produktionsmodell base-73 auf CLEAN Daten (5m+15m, Tier-1), (2) Wrapper: State-Filter (NY + kein QUIET/SHOCK) auf Modell-q97-Signale, (3) Netto-WF-Bestätigung des finalen Hybrids, (4) Pine: Modell-Cascade + NY/State-Gate (NY ist Pine-Input, State-Engine nach Pine portierbar). ML-Overlay-Idee fällt weg — ML ist der Core. Nico-Entscheidung: Hybrid akzeptieren + bauen. |
 | 2026-06-01 | arbeits-pc | work | **🟢 Phase 1 (Simplify-Ranker) BESTÄTIGT: 9 Features schlagen 73.** `scripts/simplify_ranking.py` (Feature-Sets 9/18/73, gegatetes Universum NY+tradeable, netto@1.0pip, Ranking-Monotonie via Decile-Spearman, 2 Seeds × 10 Folds). **9-Feat ist best auf ALLEN Achsen:** net PF **1.19** (vs 73-Feat 1.10), std **0.25** (vs 0.30 = stabilster), Spearman 0.879 (monoton). Overfit-Kill bestätigt — komplexes Modell überfittete, schlanker Ranker generalisiert netto besser+stabiler. **Top-9 (interpretierbar):** hour_sin/cos, in_ny, is_fx_market_open, rvol_20, atr_pct, htf_4h_atr_percentile_100, ema_20_dist_atr, htf_4h_rsi_14. **= neuer Modell-Kernel (Order-Book of opportunities, monoton+stabil).** State-Gate (NY+tradeable) war aktiv = Phase 2 integriert. ~3.6 Trades/Tag @q97. | dieser Commit | **Phase 3: Frequenz-Kalibrierung auf 8-10 Trades/Tag** via Cutoff (q97→~q90/dynamisch) auf dem 9-Feat-Ranker — Netto-PF/Frequenz-Tradeoff messen, den Cutoff für ~8-10/Tag bei noch tragbarer PF finden. Danach: finaler Kernel-Lock (mehr Seeds) + Pine-Export (9 Features + NY/State-Gate, simple Execution). |
+| 2026-06-01 | arbeits-pc → heim-pc | work → home | **WORKSTATION-SWITCH zum Heim-PC.** Nico wechselt jetzt. Arbeits-PC-Seite stoppbar: working tree clean, alles gepusht (letzter Commit dieser Session-Reihe). **Vollständiges Resume-Briefing in Section 19d** (oben) — Sibling liest das ZUERST: validierte Architektur (9-Feat-Ranker + State-Gate + simple Exec), gelockte Erkenntnisse (Degeneracy/Supported-Pairs/Kosten-TF/Edge=Selektion/Simplify-gewinnt), zurückgezogene Artefakte, Heim-PC-Checkliste (**extended-Cache löschen wegen FVG-Fix!**), und Phase 3 (Cutoff→8-10 Trades/Tag) als nächster Schritt. | `(dieser Commit)` | **Sibling Heim-PC:** Section 19d abarbeiten → `extended/*.parquet` löschen → Phase 3 (Cutoff-Kalibrierung auf `scripts/simplify_ranking.py`). |
 
