@@ -1,0 +1,54 @@
+{
+  "trendfeat": [
+    "htf_4h_rsi_14",
+    "htf_4h_atr_percentile_100",
+    "hour_cos",
+    "ltf_rsi_minus_htf_rsi",
+    "adx_14",
+    "hour_sin",
+    "adx_slope",
+    "htf_1h_atr_percentile_100",
+    "htf_1h_rsi_14"
+  ],
+  "mrfeat": [
+    "htf_4h_rsi_14",
+    "htf_1h_rsi_14",
+    "hour_cos",
+    "dist_to_sl_atr_conf",
+    "htf_4h_atr_percentile_100",
+    "ltf_rsi_minus_htf_rsi",
+    "bars_since_vol_spike",
+    "ema_20_slope_atr",
+    "hour_sin"
+  ],
+  "costs": [
+    0.02,
+    0.05
+  ],
+  "results": {
+    "0.02ATR": {
+      "net_pf": 1.131,
+      "wr": 0.545,
+      "trades_per_day": 7.81,
+      "pf_by_year": {
+        "2024": 1.017,
+        "2025": 1.172,
+        "2026": 1.367
+      },
+      "bar_pass": false,
+      "all_years_pos": true
+    },
+    "0.05ATR": {
+      "net_pf": 1.078,
+      "wr": 0.545,
+      "trades_per_day": 7.81,
+      "pf_by_year": {
+        "2024": 0.97,
+        "2025": 1.117,
+        "2026": 1.298
+      },
+      "bar_pass": false,
+      "all_years_pos": false
+    }
+  }
+}

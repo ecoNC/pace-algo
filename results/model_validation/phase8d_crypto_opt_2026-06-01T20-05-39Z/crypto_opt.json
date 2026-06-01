@@ -1,0 +1,113 @@
+{
+  "trendfeat": [
+    "htf_4h_rsi_14",
+    "htf_4h_atr_percentile_100",
+    "hour_cos",
+    "ltf_rsi_minus_htf_rsi",
+    "adx_14",
+    "hour_sin",
+    "adx_slope",
+    "htf_1h_atr_percentile_100",
+    "htf_1h_rsi_14"
+  ],
+  "mrfeat": [
+    "htf_4h_rsi_14",
+    "htf_1h_rsi_14",
+    "hour_cos",
+    "dist_to_sl_atr_conf",
+    "htf_4h_atr_percentile_100",
+    "ltf_rsi_minus_htf_rsi",
+    "bars_since_vol_spike",
+    "ema_20_slope_atr",
+    "hour_sin"
+  ],
+  "costs": [
+    0.02,
+    0.05
+  ],
+  "topns": [
+    4,
+    6,
+    8
+  ],
+  "results": {
+    "top4_0.02ATR": {
+      "net_pf": 1.117,
+      "wr": 0.578,
+      "trades_per_day": 5.44,
+      "pct_folds_pos": 0.65,
+      "pf_by_year": {
+        "2024": 1.128,
+        "2025": 1.109,
+        "2026": 1.104
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "top4_0.05ATR": {
+      "net_pf": 1.065,
+      "wr": 0.578,
+      "trades_per_day": 5.44,
+      "pct_folds_pos": 0.65,
+      "pf_by_year": {
+        "2024": 1.076,
+        "2025": 1.058,
+        "2026": 1.048
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "top6_0.02ATR": {
+      "net_pf": 1.116,
+      "wr": 0.573,
+      "trades_per_day": 7.9,
+      "pct_folds_pos": 0.75,
+      "pf_by_year": {
+        "2024": 1.115,
+        "2025": 1.116,
+        "2026": 1.124
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "top6_0.05ATR": {
+      "net_pf": 1.064,
+      "wr": 0.573,
+      "trades_per_day": 7.9,
+      "pct_folds_pos": 0.65,
+      "pf_by_year": {
+        "2024": 1.063,
+        "2025": 1.064,
+        "2026": 1.068
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "top8_0.02ATR": {
+      "net_pf": 1.108,
+      "wr": 0.567,
+      "trades_per_day": 10.22,
+      "pct_folds_pos": 0.8,
+      "pf_by_year": {
+        "2024": 1.104,
+        "2025": 1.106,
+        "2026": 1.129
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "top8_0.05ATR": {
+      "net_pf": 1.056,
+      "wr": 0.567,
+      "trades_per_day": 10.22,
+      "pct_folds_pos": 0.65,
+      "pf_by_year": {
+        "2024": 1.053,
+        "2025": 1.055,
+        "2026": 1.073
+      },
+      "all_years_pos": true,
+      "bar_pass": false
+    }
+  }
+}
