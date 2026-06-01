@@ -45,6 +45,7 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-018](ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) | **Decision-Assisted Architecture + Multi-Timeframe Market Dashboard** (4-Layer-System, ersetzt Single-Signal-Modell) | Active | 2026-05-28 |
 | [ANN-019](ANN-019-validated-100-tree-ensemble-complexity-retired.md) | **Validated 100-Tree Ensemble — Cluster/Relative-Cutoff/Behavioral Complexity Retired** (early_stopping-Degeneracy root-caused, supersedes ANN-013/014) | Active | 2026-06-01 |
 | [ANN-020](ANN-020-supported-pairs-lock-fx-v1.md) | **Supported-Pairs Lock (FX V1)** — supported {JPY/NZD/GBP/CHF/CAD}, conditional {AUD@q99}, unsupported {EUR}; Produktions-Rezept + LOPO-Gate | Active | 2026-06-01 |
+| [ANN-021](ANN-021-probability-calibration-isotonic.md) | **Probability Calibration (Isotonic)** — ECE 0.105→0.008, monoton (Tiers unverändert); kalibrierte Proba für V1.5 Risk/Sizing, V1/Pine unberührt | Active | 2026-06-01 |
 
 ## Was hier NICHT hingehört
 
