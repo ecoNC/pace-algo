@@ -1,0 +1,27 @@
+{
+  "baseline": {
+    "n_folds": 10,
+    "pf_gt1": 10,
+    "pf_mean": 1.696,
+    "pf_min": 1.244,
+    "pf_std": 0.228,
+    "wr_mean": 0.5282
+  },
+  "cross_asset": {
+    "n_folds": 10,
+    "pf_gt1": 10,
+    "pf_mean": 1.798,
+    "pf_min": 1.373,
+    "pf_std": 0.319,
+    "wr_mean": 0.5411
+  },
+  "pf_lift": 0.102,
+  "verdict": "KEEP",
+  "new_features": [
+    "usd_mom_5",
+    "usd_mom_20",
+    "usd_breadth_20",
+    "pair_usd_corr_50",
+    "pair_idio_mom_20"
+  ]
+}
