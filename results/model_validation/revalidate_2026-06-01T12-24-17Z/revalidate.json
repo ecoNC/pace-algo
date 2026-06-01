@@ -1,0 +1,36 @@
+{
+  "0.3pip": {
+    "base73": {
+      "n": 30,
+      "pf_gt1": 22,
+      "pf_mean": 1.266,
+      "pf_min": 0.794,
+      "pf_std": 0.344
+    },
+    "base73+lean4": {
+      "n": 30,
+      "pf_gt1": 22,
+      "pf_mean": 1.274,
+      "pf_min": 0.722,
+      "pf_std": 0.41
+    },
+    "lean4_net_lift": 0.008
+  },
+  "1.0pip": {
+    "base73": {
+      "n": 30,
+      "pf_gt1": 18,
+      "pf_mean": 1.129,
+      "pf_min": 0.715,
+      "pf_std": 0.299
+    },
+    "base73+lean4": {
+      "n": 30,
+      "pf_gt1": 17,
+      "pf_mean": 1.135,
+      "pf_min": 0.663,
+      "pf_std": 0.36
+    },
+    "lean4_net_lift": 0.006
+  }
+}

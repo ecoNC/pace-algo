@@ -101,10 +101,17 @@ Macro-Daten bleiben in `core/features/macro.py` für zukünftige Higher-TF-Model
 
 ---
 
-## Cross-Asset / Currency-Factor Features (Lean-4) — VALIDATED 2026-06-01
+## Cross-Asset / Currency-Factor Features (Lean-4) — ⚠️ RESEARCH-ONLY (Claim zurückgezogen 2026-06-01)
 
-Quelle: `core/features/cross_asset.py`. Produktions-Feature-Set = 73 Base + diese 4 = **77**.
-Validierung: `scripts/factor_lean.py` + `scripts/factor_lean_perpair.py` (Walk-Forward, 3 Seeds).
+**KORREKTUR 2026-06-01:** Der ursprüngliche „+0.154 PF"-Claim wurde auf dem
+**verzerrten 10%-FVG-Sample** (5m, brutto) gemessen — siehe FVG-NaN-Bug (HANDOFF).
+**Clean Re-Validation** (`scripts/clean_revalidate.py`, 30m, Walk-Forward×3-Seeds,
+NETTO, volle Daten): **Lean-4-Lift = +0.006 bis +0.008** → **netto-neutral, KEIN
+validierter Produktions-Lift.** Status: `research_only`. NICHT als bewiesener
+Edge im Produktions-Set führen, bis ein sauberer ≥+0.05-Netto-Lift gezeigt ist.
+
+Quelle: `core/features/cross_asset.py` (Modul bleibt, korrekt + getestet).
+Historischer (verzerrter) Test: `scripts/factor_lean.py` + `factor_lean_perpair.py`.
 
 | Feature | Bedeutung | OOS-Beitrag | WF-Importance | Status |
 |---|---|---|---|---|
