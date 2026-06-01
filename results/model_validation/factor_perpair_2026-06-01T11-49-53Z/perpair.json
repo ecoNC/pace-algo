@@ -1,0 +1,68 @@
+{
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "lean": [
+    "idio_mom_20",
+    "usd_corr_50",
+    "usd_beta_50",
+    "usd_idx_vol_20"
+  ],
+  "per_pair": {
+    "GBPUSD": {
+      "base_pf": 1.664,
+      "aug_pf": 1.821,
+      "lift": 0.157,
+      "base_wr": 0.502,
+      "aug_wr": 0.513,
+      "n_obs": 30
+    },
+    "USDJPY": {
+      "base_pf": 1.25,
+      "aug_pf": 1.297,
+      "lift": 0.047,
+      "base_wr": 0.442,
+      "aug_wr": 0.443,
+      "n_obs": 30
+    },
+    "USDCAD": {
+      "base_pf": 1.484,
+      "aug_pf": 1.891,
+      "lift": 0.407,
+      "base_wr": 0.474,
+      "aug_wr": 0.525,
+      "n_obs": 30
+    },
+    "NZDUSD": {
+      "base_pf": 1.222,
+      "aug_pf": 1.541,
+      "lift": 0.319,
+      "base_wr": 0.433,
+      "aug_wr": 0.492,
+      "n_obs": 30
+    },
+    "USDCHF": {
+      "base_pf": 1.171,
+      "aug_pf": 1.268,
+      "lift": 0.097,
+      "base_wr": 0.425,
+      "aug_wr": 0.442,
+      "n_obs": 30
+    },
+    "AUDUSD": {
+      "base_pf": 1.153,
+      "aug_pf": 1.21,
+      "lift": 0.057,
+      "base_wr": 0.422,
+      "aug_wr": 0.43,
+      "n_obs": 30
+    }
+  },
+  "pairs_positive": 6,
+  "n_pairs": 6,
+  "mean_lift": 0.181,
+  "min_lift": 0.047,
+  "verdict": "broad-based"
+}
