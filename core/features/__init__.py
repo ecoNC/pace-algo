@@ -31,6 +31,13 @@ from .session import (
 from .htf_interaction import (
     compute_htf_interactions,
 )
+from .cross_asset import (
+    build_usd_strength,
+    compute_cross_asset_features,
+    attach_cross_asset,
+    CROSS_ASSET_FEATURES,
+    USD_SIGN,
+)
 
 __all__ = [
     "compute_features",
@@ -54,4 +61,9 @@ __all__ = [
     "vol_expansion_features",
     "compute_session_features",
     "compute_htf_interactions",
+    "build_usd_strength",
+    "compute_cross_asset_features",
+    "attach_cross_asset",
+    "CROSS_ASSET_FEATURES",
+    "USD_SIGN",
 ]

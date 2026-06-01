@@ -101,6 +101,33 @@ Macro-Daten bleiben in `core/features/macro.py` für zukünftige Higher-TF-Model
 
 ---
 
+## Cross-Asset / Currency-Factor Features (Lean-4) — VALIDATED 2026-06-01
+
+Quelle: `core/features/cross_asset.py`. Produktions-Feature-Set = 73 Base + diese 4 = **77**.
+Validierung: `scripts/factor_lean.py` + `scripts/factor_lean_perpair.py` (Walk-Forward, 3 Seeds).
+
+| Feature | Bedeutung | OOS-Beitrag | WF-Importance | Status |
+|---|---|---|---|---|
+| `usd_idx_vol_20` | USD-Index-Return-Volatilität (broad USD-Regime-Vol, 20-bar) | Teil von +0.154 PF | #3/77 | active |
+| `usd_corr_50` | rollende Korr. Pair-Return ↔ USD-Index (wie USD-getrieben) | Teil von +0.154 PF | #5/77 | active |
+| `idio_mom_20` | idiosynkratisches Momentum (Pair-Move minus USD-Beta×USD-Move) | Teil von +0.154 PF | #7/77 | active |
+| `usd_beta_50` | rollende Beta Pair↔USD-Index (Kopplungs-Stärke) | Teil von +0.154 PF | #8/77 | active |
+
+**Lift:** +0.154 PF (mean über 3 Seeds, min +0.106), **broad-based** (6/6 Paare positiv: USDCAD +0.41, NZDUSD +0.32, GBPUSD +0.16, USDCHF +0.10, AUDUSD +0.06, USDJPY +0.05). USD-Index = vorzeichen-korrigiertes Mittel der 7 FX-Majors (`USD_SIGN`).
+
+**Lean by design:** Vertiefung auf 10 Features (4× idio-Horizonte, 3× corr-Fenster) verwässerte den Lift (+0.044 < +0.154) → Signal ist niedrig-dimensional.
+
+### Verworfen im Cross-Asset-Research (Record)
+
+| Familie | Ergebnis | Warum |
+|---|---|---|
+| Broad-USD-Momentum (usd_mom_5/20, breadth) | schwach (Rang 29-50) | low signal, aus Lean-Set geprunt |
+| Vol-Term-Structure (vts_*, atr_accel) | REJECT (inkr. −0.024 über Lean-4) | Importance ≠ OOS-Wert; kein inkrementeller Edge, schon abgedeckt |
+
+**Methodische Regel (verschärft):** Feature-Aufnahme NUR via **inkrementellem** Multi-Seed-Walk-Forward (≥ +0.05 PF über aktuelles Produktions-Set). Importance/SHAP ist diagnostisch, NICHT hinreichend (VTS rankte top-4 by gain, addierte aber 0 OOS).
+
+---
+
 ## Phase-B-Vorbereitung (Cross-Asset)
 
 In NB13 wird pro Asset-Klasse die SHAP-Verteilung neu berechnet. Erwartet wird, dass **einige Features asset-spezifisch sind** (z.B. Session-Features für FX, Volatility für Crypto). Die Tabelle oben wird nach NB13 um eine Spalte **"Generalisiert über Asset-Klassen?"** erweitert.

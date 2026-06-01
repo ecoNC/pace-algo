@@ -44,6 +44,10 @@ FX_CONDITIONAL_PAIRS      = ["AUDUSD"]                                          
 FX_UNSUPPORTED_PAIRS      = ["EURUSD"]                                          # kein verlässlicher Edge (high-liquidity low-edge)
 FX_PRODUCTION_TRAIN_PAIRS = FX_SUPPORTED_PAIRS + FX_CONDITIONAL_PAIRS           # production model trains in-pool on these
 
+# ── Cross-Asset / Currency-Factor features (validated 2026-06-01, walk-forward +0.154 PF) ──
+# Lean-4 set in core/features/cross_asset.py. Production feature set = 73 base + these 4 = 77.
+FX_CROSS_ASSET_FEATURES = ["idio_mom_20", "usd_corr_50", "usd_beta_50", "usd_idx_vol_20"]
+
 # Crypto — 24/7 markets, different volatility regimes
 CRYPTO_SYMBOLS      = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ADAUSDT"]
 
