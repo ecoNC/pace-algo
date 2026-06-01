@@ -1,0 +1,93 @@
+{
+  "features": [
+    "hour_cos",
+    "hour_sin",
+    "rvol_20",
+    "ema_20_dist_atr",
+    "atr_pct",
+    "htf_4h_rsi_14",
+    "is_fx_market_open",
+    "in_ny",
+    "htf_4h_atr_percentile_100"
+  ],
+  "pairs": [
+    "GBPUSD",
+    "USDJPY",
+    "USDCAD"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "spread_pip": 1.0,
+  "quantiles": [
+    0.8,
+    0.85,
+    0.9,
+    0.93,
+    0.95,
+    0.97
+  ],
+  "vol_adj": [
+    [
+      "voladj_88/95",
+      0.88,
+      0.95
+    ],
+    [
+      "voladj_85/93",
+      0.85,
+      0.93
+    ]
+  ],
+  "results": {
+    "q80": {
+      "net_pf_mean": 0.813,
+      "net_pf_std": 0.095,
+      "folds": 20,
+      "trades_per_day": 21.46
+    },
+    "q85": {
+      "net_pf_mean": 0.825,
+      "net_pf_std": 0.102,
+      "folds": 20,
+      "trades_per_day": 16.28
+    },
+    "q90": {
+      "net_pf_mean": 0.874,
+      "net_pf_std": 0.133,
+      "folds": 20,
+      "trades_per_day": 11.12
+    },
+    "q93": {
+      "net_pf_mean": 0.898,
+      "net_pf_std": 0.15,
+      "folds": 20,
+      "trades_per_day": 8.14
+    },
+    "q95": {
+      "net_pf_mean": 0.987,
+      "net_pf_std": 0.191,
+      "folds": 20,
+      "trades_per_day": 6.0
+    },
+    "q97": {
+      "net_pf_mean": 1.192,
+      "net_pf_std": 0.254,
+      "folds": 20,
+      "trades_per_day": 3.62
+    },
+    "voladj_88/95": {
+      "net_pf_mean": 0.903,
+      "net_pf_std": 0.147,
+      "folds": 20,
+      "trades_per_day": 9.44
+    },
+    "voladj_85/93": {
+      "net_pf_mean": 0.862,
+      "net_pf_std": 0.131,
+      "folds": 20,
+      "trades_per_day": 11.95
+    }
+  }
+}

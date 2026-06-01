@@ -1,0 +1,170 @@
+{
+  "pairs": [
+    "GBPUSD",
+    "USDJPY",
+    "USDCAD",
+    "NZDUSD",
+    "USDCHF"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "cutoff_q": 0.97,
+  "spreads": [
+    0.3,
+    0.5,
+    1.0
+  ],
+  "topN": [
+    4,
+    6,
+    8,
+    10
+  ],
+  "folds": 20,
+  "results": {
+    "q97_long_vs_longshort": {
+      "0.3pip": {
+        "long_only": {
+          "trades_per_day": 5.39,
+          "net_pf": 1.684,
+          "pf_std": 0.525,
+          "wr": 0.55,
+          "n": 9483
+        },
+        "long_short": {
+          "trades_per_day": 11.25,
+          "net_pf": 1.395,
+          "pf_std": 0.304,
+          "wr": 0.497,
+          "n": 19771
+        }
+      },
+      "0.5pip": {
+        "long_only": {
+          "trades_per_day": 5.39,
+          "net_pf": 1.531,
+          "pf_std": 0.475,
+          "wr": 0.55,
+          "n": 9483
+        },
+        "long_short": {
+          "trades_per_day": 11.25,
+          "net_pf": 1.27,
+          "pf_std": 0.281,
+          "wr": 0.497,
+          "n": 19771
+        }
+      },
+      "1.0pip": {
+        "long_only": {
+          "trades_per_day": 5.39,
+          "net_pf": 1.211,
+          "pf_std": 0.373,
+          "wr": 0.55,
+          "n": 9483
+        },
+        "long_short": {
+          "trades_per_day": 11.25,
+          "net_pf": 1.007,
+          "pf_std": 0.238,
+          "wr": 0.497,
+          "n": 19771
+        }
+      }
+    },
+    "global_topN_per_day": {
+      "0.3pip": {
+        "top4": {
+          "trades_per_day": 3.2,
+          "net_pf": 2.097,
+          "pf_std": 0.739,
+          "wr": 0.582,
+          "n": 5620
+        },
+        "top6": {
+          "trades_per_day": 4.79,
+          "net_pf": 1.853,
+          "pf_std": 0.605,
+          "wr": 0.553,
+          "n": 8428
+        },
+        "top8": {
+          "trades_per_day": 6.39,
+          "net_pf": 1.726,
+          "pf_std": 0.54,
+          "wr": 0.536,
+          "n": 11236
+        },
+        "top10": {
+          "trades_per_day": 7.99,
+          "net_pf": 1.611,
+          "pf_std": 0.461,
+          "wr": 0.522,
+          "n": 14044
+        }
+      },
+      "0.5pip": {
+        "top4": {
+          "trades_per_day": 3.2,
+          "net_pf": 1.908,
+          "pf_std": 0.666,
+          "wr": 0.582,
+          "n": 5620
+        },
+        "top6": {
+          "trades_per_day": 4.79,
+          "net_pf": 1.687,
+          "pf_std": 0.546,
+          "wr": 0.553,
+          "n": 8428
+        },
+        "top8": {
+          "trades_per_day": 6.39,
+          "net_pf": 1.574,
+          "pf_std": 0.488,
+          "wr": 0.536,
+          "n": 11236
+        },
+        "top10": {
+          "trades_per_day": 7.99,
+          "net_pf": 1.471,
+          "pf_std": 0.416,
+          "wr": 0.522,
+          "n": 14044
+        }
+      },
+      "1.0pip": {
+        "top4": {
+          "trades_per_day": 3.2,
+          "net_pf": 1.512,
+          "pf_std": 0.52,
+          "wr": 0.582,
+          "n": 5620
+        },
+        "top6": {
+          "trades_per_day": 4.79,
+          "net_pf": 1.341,
+          "pf_std": 0.427,
+          "wr": 0.553,
+          "n": 8428
+        },
+        "top8": {
+          "trades_per_day": 6.39,
+          "net_pf": 1.255,
+          "pf_std": 0.383,
+          "wr": 0.536,
+          "n": 11236
+        },
+        "top10": {
+          "trades_per_day": 7.99,
+          "net_pf": 1.176,
+          "pf_std": 0.328,
+          "wr": 0.522,
+          "n": 14044
+        }
+      }
+    }
+  }
+}

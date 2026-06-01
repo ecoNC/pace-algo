@@ -1,6 +1,20 @@
 # PaceAlgo V2 — State-Driven Trading System (Design)
 
-**Status:** Design proposal · 2026-06-01
+> ⚠️ **PARTIALLY SUPERSEDED (2026-06-01, same day).** The core proposal of this doc — a
+> *deterministic Setup Engine* (§2 Setup Engine, §3) as the trade generator, with ML
+> demoted to optional — was **empirically refuted** later the same day:
+> - `99353ef` — no state has standalone edge → **edge is SELECTION, not structure**
+> - `85bfa97` — **structural setups fail net → ML IS the selector (ML-free refuted)**
+> - `541d2cd` — 9-feature ML ranker (net PF 1.19, lowest std) is the locked kernel
+>
+> **What survives:** the **State/Session GATE** (NY + tradeable vol-regime, §2 axes + §4
+> gates), the **R-based execution skeleton** (§5), and the **non-repaint guarantees** (§7).
+> **What is dead:** the per-state structural Setup Engine (§3) as a signal generator, and
+> the "ML-free decision path" verdict (§8). LOCKED architecture is now:
+> **9-feature ML ranker (SELECTOR) + state/session gate (context filter) + simple R-execution.**
+> Read §2/§4/§5/§7 as the gate+execution spec; treat §3 and §8 as historical.
+
+**Status:** Design proposal · 2026-06-01 · §3/§8 superseded by `85bfa97`
 **Shift:** from "an ML model decides trades" → **deterministic, state-driven system** (Swift-Algo-style),
 ML demoted to an *optional confluence filter* (see §8).
 
