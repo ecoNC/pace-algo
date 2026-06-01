@@ -1,0 +1,70 @@
+{
+  "5m": {
+    "none": {
+      "net10_pf": 0.858,
+      "folds_gt1": 8,
+      "n_folds": 30,
+      "net03_pf": 1.271,
+      "wr": 0.498,
+      "trades_per_day": 18.2
+    },
+    "NY": {
+      "net10_pf": 1.174,
+      "folds_gt1": 23,
+      "n_folds": 30,
+      "net03_pf": 1.631,
+      "wr": 0.546,
+      "trades_per_day": 6.9
+    },
+    "NY+vol": {
+      "net10_pf": 0.992,
+      "folds_gt1": 13,
+      "n_folds": 30,
+      "net03_pf": 1.274,
+      "wr": 0.479,
+      "trades_per_day": 4.3
+    },
+    "NY+vol+trend": {
+      "net10_pf": 1.02,
+      "folds_gt1": 14,
+      "n_folds": 30,
+      "net03_pf": 1.306,
+      "wr": 0.483,
+      "trades_per_day": 3.3
+    }
+  },
+  "15m": {
+    "none": {
+      "net10_pf": 0.91,
+      "folds_gt1": 7,
+      "n_folds": 30,
+      "net03_pf": 1.08,
+      "wr": 0.436,
+      "trades_per_day": 6.2
+    },
+    "NY": {
+      "net10_pf": 1.239,
+      "folds_gt1": 23,
+      "n_folds": 30,
+      "net03_pf": 1.441,
+      "wr": 0.498,
+      "trades_per_day": 2.4
+    },
+    "NY+vol": {
+      "net10_pf": 1.269,
+      "folds_gt1": 27,
+      "n_folds": 30,
+      "net03_pf": 1.473,
+      "wr": 0.498,
+      "trades_per_day": 2.1
+    },
+    "NY+vol+trend": {
+      "net10_pf": 1.182,
+      "folds_gt1": 19,
+      "n_folds": 30,
+      "net03_pf": 1.365,
+      "wr": 0.479,
+      "trades_per_day": 1.6
+    }
+  }
+}
