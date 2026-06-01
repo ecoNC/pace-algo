@@ -1,6 +1,6 @@
 # ANN-014: Per-Model Relative Cluster + Behavioral Stability
 
-**Status:** Active — **supersedes [ANN-013](ANN-013-cluster-based-premium-detection.md) für Stability-Definition** (Cluster-Detection-Mechanik bleibt gültig)
+**Status:** ⚠️ **SUPERSEDED durch [ANN-019](ANN-019-validated-100-tree-ensemble-complexity-retired.md)** (2026-06-01) — Per-Model-Relative-Cluster + Behavioral-Stability waren Workarounds um einen degenerierten `early_stopping`-Stump. Validierung (`scripts/model_validation_suite.py`) zeigt: gesunde Ensembles brauchen keine Relative-Cutoffs/Behavioral-Gates. Diagnose-Code bleibt nur als Audit-Werkzeug.
 **Datum:** 2026-05-28
 **Locked-By:** Nico-Decision nach NB14e Multi-Run-Analyse
 **Related:** [[ANN-013]] (Cluster-Detection) [[ANN-012]] (Filter-Stack) [[ANN-006]] (Robustness-Mantra) [[ANN-010]] (Quality-Anchor)

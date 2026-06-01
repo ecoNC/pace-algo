@@ -1,6 +1,6 @@
 # ANN-013: Cluster-Based Premium Detection (V1 Premium-Tier-Mechanik)
 
-**Status:** Active (Cluster-Detection-Mechanik gültig — **Stability-Definition durch [ANN-014](ANN-014-per-model-relative-cluster-behavioral-stability.md) superseded**)
+**Status:** ⚠️ **SUPERSEDED durch [ANN-019](ANN-019-validated-100-tree-ensemble-complexity-retired.md)** (2026-06-01) — Cluster-Detection war ein Workaround um einen degenerierten `early_stopping`-Stump (2 effektive Trees, 14 unique Probabilities). Auf einem validierten gesunden 100-Tree-Ensemble genügen plain VAL-Quantile; Cluster-Mechanik ist gegenstandslos. Code in `probability_diagnostic.py` bleibt nur als Audit-Werkzeug.
 **Datum:** 2026-05-28
 **Locked-By:** Nico-Decision nach NB14d Probability-Distribution-Diagnostik
 **Related:** [[ANN-006]] (Robustheits-Mantra) [[ANN-009]] (Multi-Model-Router) [[ANN-010]] (Quality-Anchor) [[ANN-011]] (V1-TF + Whitelist) [[ANN-012]] (Premium-Core + Filters) [[ANN-014]] (Per-Model Relative Cluster + Behavioral Stability)
