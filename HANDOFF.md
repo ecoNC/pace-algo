@@ -184,6 +184,30 @@ Memory files in `~/.claude/projects/C--Users-nico-flotz-Downloads/memory/` exist
 
 ## 1. Project Vision
 
+> ### ⚡ DIRECTION UPDATE — 2026-06-01 (Nico-approved, supersedes the universal-EDGE premise below)
+>
+> Two phases of rigorous testing (see `docs/phase3_4_state_and_goalfit.md`,
+> `docs/product_rethink_2026-06-01.md`, commits `…e4eba66`,`a98a36a`) proved a universal
+> *edge* does **not** exist: the ML edge is thin, FX-majors + NY-session + ECN + fixed-R
+> specific (cross-asset H1 fail: FX 1.11 / crypto 1.05 / metals 0.95 / indices 0.88; and
+> FX itself drops 1.27→1.11 without the NY gate).
+>
+> **New accepted direction — separate TOOL from EDGE:**
+> PaceAlgo V1 = an **adaptive, self-calibrating signal + risk-management TOOL** that works
+> on any asset/TF *by construction*, with **user-configurable risk (RR, ADR/ATR stops,
+> session filter)** and a **reproducible backtest panel** — plus an **optional ML
+> "Confidence" overlay** active only where validated (FX majors first; ANN-009 router adds
+> classes over time). ML is a premium quality layer, **not** the signal generator.
+> Hardcoded NY gate → **adaptive activity-window detection** (NY for FX, RTH for indices,
+> 24/7 for crypto). R is **unlocked** (user-set), since the tool does not promise a fixed PF.
+>
+> **§1.4 launch criteria below are SUPERSEDED** (they assumed a universal edge). Replace with
+> a split: (a) a tool quality/UX/non-repaint/backtest-reproducibility bar, and (b) a per-class
+> ML-overlay validation bar (the old PF≥1.7 standard applies only to a class's ML overlay,
+> not to the tool). Build order (adaptive core first vs FX overlay first): TBD by Nico.
+>
+> The text below (§1.1–1.4) is retained as the prior vision for context.
+
 ### 1.1 Long-Term Product Goal
 
 **PaceAlgo** is a premium, ML-driven, **UNIVERSAL** TradingView indicator. Sold via Invite-Only subscription ($39-49/month or $399-499 lifetime). Distribution planned via Whop/Stripe shop after TradingView Premium publish.

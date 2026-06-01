@@ -1,5 +1,8 @@
 # PaceAlgo — Fundamental Product Rethink (2026-06-01)
 
+> **STATUS: ACCEPTED by Nico 2026-06-01.** This is now the product direction (see HANDOFF
+> §1 Direction Update). Build order (adaptive core first vs FX overlay first) is TBD.
+
 Triggered by the cross-asset generalization result (`phase5`, commit `e4eba66`): the
 ML-edge approach does **not** deliver a universal, multi-asset, user-configurable product.
 This doc reframes the product around what the data actually supports.
