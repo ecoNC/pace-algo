@@ -541,10 +541,11 @@ if in_trade
 if bt_equity > bt_peak
     bt_peak := bt_equity
 
+// FIX 2026-06-01: Max-DD in R (absolute Equity-Drawdown) statt %-vom-Peak.
+// %-vom-Peak explodierte (1100%), wenn das Peak nahe 0 lag (Equity früh negativ).
 bt_dd_abs = bt_peak - bt_equity
-bt_dd_pct = bt_peak > 0 ? bt_dd_abs / bt_peak : 0.0
-if bt_dd_pct > bt_max_dd
-    bt_max_dd := bt_dd_pct
+if bt_dd_abs > bt_max_dd
+    bt_max_dd := bt_dd_abs
 
 bt_total_trades = bt_wins + bt_losses
 bt_wr  = bt_total_trades > 0 ? bt_wins / bt_total_trades : 0.0
@@ -645,8 +646,8 @@ if show_backtest and barstate.islast
     table.cell(stats, 1, 8, str.tostring(bt_pf, "#.##"), bgcolor=pf_color, text_size=size.small)
 
     table.cell(stats, 0, 9, "Max Drawdown", text_size=size.small)
-    dd_color = bt_max_dd <= 0.10 ? color.new(color.green, 70) : bt_max_dd <= 0.20 ? color.new(color.gray, 80) : color.new(color.red, 70)
-    table.cell(stats, 1, 9, str.tostring(bt_max_dd * 100, "#.#") + "%", bgcolor=dd_color, text_size=size.small)
+    dd_color = bt_max_dd <= 5.0 ? color.new(color.green, 70) : bt_max_dd <= 10.0 ? color.new(color.gray, 80) : color.new(color.red, 70)
+    table.cell(stats, 1, 9, str.tostring(bt_max_dd, "#.#") + " R", bgcolor=dd_color, text_size=size.small)
 
     table.cell(stats, 0, 10, "Current Equity",                                text_size=size.small)
     table.cell(stats, 1, 10, str.tostring(bt_equity, "#.##") + " R",          text_size=size.small)
