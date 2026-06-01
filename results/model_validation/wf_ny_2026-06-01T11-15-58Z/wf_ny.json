@@ -1,0 +1,181 @@
+{
+  "pairs": [
+    "USDJPY",
+    "NZDUSD",
+    "GBPUSD",
+    "USDCHF",
+    "USDCAD",
+    "AUDUSD"
+  ],
+  "tier1": [
+    "GBPUSD",
+    "USDJPY",
+    "USDCAD"
+  ],
+  "per_pair": {
+    "USDJPY": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 9,
+        "pf_gt1_pct": 0.9,
+        "pf_mean": 1.36,
+        "pf_min": 0.85,
+        "pf_std": 0.41,
+        "wr_mean": 0.465,
+        "avg_signals_per_fold": 80.2
+      },
+      "ny_only": {
+        "n_folds": 8,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 0.75,
+        "pf_mean": 1.36,
+        "pf_min": 0.5,
+        "pf_std": 0.56,
+        "wr_mean": 0.456,
+        "avg_signals_per_fold": 47.4
+      }
+    },
+    "NZDUSD": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 0.6,
+        "pf_mean": 1.26,
+        "pf_min": 0.45,
+        "pf_std": 0.62,
+        "wr_mean": 0.429,
+        "avg_signals_per_fold": 43.0
+      },
+      "ny_only": {
+        "n_folds": 6,
+        "pf_gt1": 5,
+        "pf_gt1_pct": 0.83,
+        "pf_mean": 2.61,
+        "pf_min": 0.23,
+        "pf_std": 1.8,
+        "wr_mean": 0.55,
+        "avg_signals_per_fold": 24.0
+      }
+    },
+    "GBPUSD": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 9,
+        "pf_gt1_pct": 0.9,
+        "pf_mean": 1.81,
+        "pf_min": 1.0,
+        "pf_std": 0.61,
+        "wr_mean": 0.532,
+        "avg_signals_per_fold": 80.5
+      },
+      "ny_only": {
+        "n_folds": 9,
+        "pf_gt1": 7,
+        "pf_gt1_pct": 0.78,
+        "pf_mean": 1.83,
+        "pf_min": 0.17,
+        "pf_std": 1.41,
+        "wr_mean": 0.465,
+        "avg_signals_per_fold": 27.4
+      }
+    },
+    "USDCHF": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 0.6,
+        "pf_mean": 1.24,
+        "pf_min": 0.42,
+        "pf_std": 0.61,
+        "wr_mean": 0.43,
+        "avg_signals_per_fold": 51.9
+      },
+      "ny_only": {
+        "n_folds": 7,
+        "pf_gt1": 5,
+        "pf_gt1_pct": 0.71,
+        "pf_mean": 2.93,
+        "pf_min": 0.56,
+        "pf_std": 2.51,
+        "wr_mean": 0.56,
+        "avg_signals_per_fold": 19.6
+      }
+    },
+    "USDCAD": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 8,
+        "pf_gt1_pct": 0.8,
+        "pf_mean": 1.5,
+        "pf_min": 0.73,
+        "pf_std": 0.57,
+        "wr_mean": 0.484,
+        "avg_signals_per_fold": 91.8
+      },
+      "ny_only": {
+        "n_folds": 9,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 0.67,
+        "pf_mean": 6.15,
+        "pf_min": 0.17,
+        "pf_std": 10.36,
+        "wr_mean": 0.546,
+        "avg_signals_per_fold": 32.1
+      }
+    },
+    "AUDUSD": {
+      "all_session": {
+        "n_folds": 10,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 0.6,
+        "pf_mean": 1.06,
+        "pf_min": 0.7,
+        "pf_std": 0.24,
+        "wr_mean": 0.408,
+        "avg_signals_per_fold": 48.4
+      },
+      "ny_only": {
+        "n_folds": 6,
+        "pf_gt1": 6,
+        "pf_gt1_pct": 1.0,
+        "pf_mean": 1.82,
+        "pf_min": 1.27,
+        "pf_std": 0.31,
+        "wr_mean": 0.545,
+        "avg_signals_per_fold": 24.0
+      }
+    }
+  },
+  "systems": {
+    "Tier1+NY": {
+      "n_folds": 10,
+      "pf_gt1": 8,
+      "pf_gt1_pct": 0.8,
+      "pf_mean": 1.65,
+      "pf_min": 0.53,
+      "pf_std": 0.89,
+      "wr_mean": 0.491,
+      "avg_signals_per_fold": 94.2
+    },
+    "Tier1_all": {
+      "n_folds": 10,
+      "pf_gt1": 10,
+      "pf_gt1_pct": 1.0,
+      "pf_mean": 1.51,
+      "pf_min": 1.12,
+      "pf_std": 0.44,
+      "wr_mean": 0.492,
+      "avg_signals_per_fold": 252.5
+    },
+    "All6+NY": {
+      "n_folds": 10,
+      "pf_gt1": 8,
+      "pf_gt1_pct": 0.8,
+      "pf_mean": 1.47,
+      "pf_min": 0.48,
+      "pf_std": 0.63,
+      "wr_mean": 0.473,
+      "avg_signals_per_fold": 143.0
+    }
+  }
+}
