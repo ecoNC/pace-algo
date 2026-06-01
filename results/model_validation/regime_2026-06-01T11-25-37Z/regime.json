@@ -1,0 +1,82 @@
+{
+  "baseline": {
+    "n_folds": 10,
+    "pf_gt1": 10,
+    "pf_gt1_pct": 1.0,
+    "pf_mean": 1.44,
+    "pf_min": 1.02,
+    "pf_std": 0.36,
+    "wr_mean": 0.484,
+    "avg_sig_fold": 238.0
+  },
+  "NY": {
+    "n_folds": 10,
+    "pf_gt1": 8,
+    "pf_gt1_pct": 0.8,
+    "pf_mean": 1.69,
+    "pf_min": 0.79,
+    "pf_std": 0.88,
+    "wr_mean": 0.502,
+    "avg_sig_fold": 94.0
+  },
+  "vol_mid": {
+    "n_folds": 10,
+    "pf_gt1": 8,
+    "pf_gt1_pct": 0.8,
+    "pf_mean": 1.29,
+    "pf_min": 0.72,
+    "pf_std": 0.33,
+    "wr_mean": 0.454,
+    "avg_sig_fold": 96.0
+  },
+  "trend": {
+    "n_folds": 10,
+    "pf_gt1": 10,
+    "pf_gt1_pct": 1.0,
+    "pf_mean": 1.48,
+    "pf_min": 1.01,
+    "pf_std": 0.39,
+    "wr_mean": 0.489,
+    "avg_sig_fold": 161.0
+  },
+  "htf_align": {
+    "n_folds": 10,
+    "pf_gt1": 9,
+    "pf_gt1_pct": 0.9,
+    "pf_mean": 1.49,
+    "pf_min": 0.99,
+    "pf_std": 0.46,
+    "wr_mean": 0.488,
+    "avg_sig_fold": 177.0
+  },
+  "NY+trend": {
+    "n_folds": 10,
+    "pf_gt1": 8,
+    "pf_gt1_pct": 0.8,
+    "pf_mean": 2.04,
+    "pf_min": 0.67,
+    "pf_std": 0.99,
+    "wr_mean": 0.543,
+    "avg_sig_fold": 58.0
+  },
+  "NY+vol_mid": {
+    "n_folds": 8,
+    "pf_gt1": 7,
+    "pf_gt1_pct": 0.88,
+    "pf_mean": 2.13,
+    "pf_min": 0.95,
+    "pf_std": 1.55,
+    "wr_mean": 0.535,
+    "avg_sig_fold": 41.0
+  },
+  "trend+vol_mid": {
+    "n_folds": 10,
+    "pf_gt1": 9,
+    "pf_gt1_pct": 0.9,
+    "pf_mean": 1.4,
+    "pf_min": 0.79,
+    "pf_std": 0.4,
+    "wr_mean": 0.473,
+    "avg_sig_fold": 70.0
+  }
+}
