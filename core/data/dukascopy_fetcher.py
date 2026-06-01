@@ -25,6 +25,13 @@ DUKASCOPY_INSTRUMENT = {
     "NZDUSD": "INSTRUMENT_FX_MAJORS_NZD_USD",   # added 2026-05-28 per ANN-015
     "USDCAD": "INSTRUMENT_FX_MAJORS_USD_CAD",   # added 2026-05-28 per ANN-015
     "XAUUSD": "INSTRUMENT_FX_METALS_XAU_USD",
+    # cross-asset generalization probe (2026-06-01) — testing universal-goal fit
+    "XAGUSD": "INSTRUMENT_FX_METALS_XAG_USD",        # silver (metal)
+    "BTCUSD": "INSTRUMENT_VCCY_BTC_USD",             # crypto (24/7 — asset-agnostic gate test)
+    "ETHUSD": "INSTRUMENT_VCCY_ETH_USD",             # crypto
+    "SPX500": "INSTRUMENT_IDX_AMERICA_E_SANDP_500",  # index
+    "NAS100": "INSTRUMENT_IDX_AMERICA_E_NQ_100",     # index
+    "GER40":  "INSTRUMENT_IDX_EUROPE_E_DAAX",        # index (DAX)
 }
 
 
