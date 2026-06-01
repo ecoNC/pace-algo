@@ -1,0 +1,174 @@
+{
+  "cost": 0.05,
+  "windows": {
+    "NY_13_22": [
+      13,
+      22
+    ],
+    "US_RTH_14_21": [
+      14,
+      21
+    ],
+    "LDN_NY_8_22": [
+      8,
+      22
+    ],
+    "LDN_7_16": [
+      7,
+      16
+    ],
+    "US_PM_16_22": [
+      16,
+      22
+    ],
+    "EU_US_12_21": [
+      12,
+      21
+    ],
+    "ASIA_0_9": [
+      0,
+      9
+    ],
+    "FULL": [
+      0,
+      24
+    ]
+  },
+  "per_class": {
+    "fx": {
+      "features": [
+        "hour_cos",
+        "hour_sin",
+        "rvol_20",
+        "ema_20_dist_atr",
+        "in_ny",
+        "rsi_14",
+        "dist_to_swing_low_atr",
+        "is_fx_market_open",
+        "in_london"
+      ],
+      "windows_picked": {
+        "US_PM_16_22": 5,
+        "FULL": 11,
+        "LDN_NY_8_22": 3,
+        "NY_13_22": 1
+      },
+      "trades_per_day": 6.71,
+      "net_pf": 2.253,
+      "wr": 0.555,
+      "pf_by_year": {
+        "2024": 2.054,
+        "2025": 2.603,
+        "2026": 1.948
+      }
+    },
+    "crypto": {
+      "features": [
+        "htf_4h_rsi_14",
+        "hour_cos",
+        "htf_1h_rsi_14",
+        "ltf_rsi_minus_htf_rsi",
+        "hour_sin",
+        "dist_to_swing_high_atr",
+        "dist_to_sh_atr_conf",
+        "bars_since_vol_spike",
+        "ema_50_dist_atr"
+      ],
+      "windows_picked": {
+        "LDN_NY_8_22": 3,
+        "EU_US_12_21": 3,
+        "US_RTH_14_21": 4,
+        "ASIA_0_9": 4,
+        "US_PM_16_22": 3,
+        "LDN_7_16": 2,
+        "FULL": 1
+      },
+      "trades_per_day": 8.47,
+      "net_pf": 1.058,
+      "wr": 0.429,
+      "pf_by_year": {
+        "2024": 1.045,
+        "2025": 1.06,
+        "2026": 1.078
+      }
+    },
+    "metal": {
+      "features": [
+        "hour_sin",
+        "hour_cos",
+        "htf_4h_rsi_14",
+        "htf_4h_ema_alignment",
+        "ema_50_dist_atr",
+        "htf_4h_atr_percentile_100",
+        "atr_pct",
+        "ema_200_dist_atr",
+        "bars_since_vol_spike"
+      ],
+      "windows_picked": {
+        "US_RTH_14_21": 1,
+        "ASIA_0_9": 12,
+        "LDN_7_16": 4,
+        "NY_13_22": 3
+      },
+      "trades_per_day": 4.9,
+      "net_pf": 0.977,
+      "wr": 0.416,
+      "pf_by_year": {
+        "2024": 0.918,
+        "2025": 0.987,
+        "2026": 1.082
+      }
+    },
+    "index": {
+      "features": [
+        "volume_z_score",
+        "vol_expansion_ratio",
+        "hour_cos",
+        "atr_percentile_100",
+        "hour_sin",
+        "rvol_20",
+        "htf_1h_atr_percentile_100",
+        "htf_4h_rsi_14",
+        "ema_200_dist_atr"
+      ],
+      "windows_picked": {
+        "US_PM_16_22": 4,
+        "LDN_NY_8_22": 4,
+        "LDN_7_16": 4,
+        "FULL": 4,
+        "US_RTH_14_21": 2,
+        "NY_13_22": 2
+      },
+      "trades_per_day": 6.24,
+      "net_pf": 1.049,
+      "wr": 0.417,
+      "pf_by_year": {
+        "2024": 1.22,
+        "2025": 0.916,
+        "2026": 1.02
+      }
+    }
+  },
+  "verdict": {
+    "fx": {
+      "net_pf": 2.253,
+      "all_years_pos": true,
+      "bar_pass": true
+    },
+    "crypto": {
+      "net_pf": 1.058,
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "metal": {
+      "net_pf": 0.977,
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "index": {
+      "net_pf": 1.049,
+      "all_years_pos": false,
+      "bar_pass": false
+    }
+  }
+}

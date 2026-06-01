@@ -1,0 +1,112 @@
+{
+  "cost": 0.05,
+  "topn": 8,
+  "per_class": {
+    "fx": {
+      "features": [
+        "hour_cos",
+        "hour_sin",
+        "rvol_20",
+        "ema_20_dist_atr",
+        "in_ny",
+        "rsi_14",
+        "dist_to_swing_low_atr",
+        "is_fx_market_open",
+        "in_london"
+      ],
+      "trades_per_day": 6.25,
+      "net_pf": 0.957,
+      "wr": 0.411,
+      "pf_by_year": {
+        "2024": 0.974,
+        "2025": 0.951,
+        "2026": 0.931
+      }
+    },
+    "crypto": {
+      "features": [
+        "htf_4h_rsi_14",
+        "hour_cos",
+        "htf_1h_rsi_14",
+        "ltf_rsi_minus_htf_rsi",
+        "hour_sin",
+        "dist_to_swing_high_atr",
+        "dist_to_sh_atr_conf",
+        "bars_since_vol_spike",
+        "ema_50_dist_atr"
+      ],
+      "trades_per_day": 9.22,
+      "net_pf": 1.094,
+      "wr": 0.436,
+      "pf_by_year": {
+        "2024": 1.097,
+        "2025": 1.125,
+        "2026": 1.006
+      }
+    },
+    "metal": {
+      "features": [
+        "hour_sin",
+        "hour_cos",
+        "htf_4h_rsi_14",
+        "htf_4h_ema_alignment",
+        "ema_50_dist_atr",
+        "htf_4h_atr_percentile_100",
+        "atr_pct",
+        "ema_200_dist_atr",
+        "bars_since_vol_spike"
+      ],
+      "trades_per_day": 5.64,
+      "net_pf": 0.967,
+      "wr": 0.418,
+      "pf_by_year": {
+        "2024": 0.947,
+        "2025": 0.974,
+        "2026": 1.014
+      }
+    },
+    "index": {
+      "features": [
+        "volume_z_score",
+        "vol_expansion_ratio",
+        "hour_cos",
+        "atr_percentile_100",
+        "hour_sin",
+        "rvol_20",
+        "htf_1h_atr_percentile_100",
+        "htf_4h_rsi_14",
+        "ema_200_dist_atr"
+      ],
+      "trades_per_day": 5.22,
+      "net_pf": 1.065,
+      "wr": 0.427,
+      "pf_by_year": {
+        "2024": 1.103,
+        "2025": 0.932,
+        "2026": 1.287
+      }
+    }
+  },
+  "verdict": {
+    "fx": {
+      "net_pf": 0.957,
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "crypto": {
+      "net_pf": 1.094,
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "metal": {
+      "net_pf": 0.967,
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "index": {
+      "net_pf": 1.065,
+      "all_years_pos": false,
+      "bar_pass": false
+    }
+  }
+}

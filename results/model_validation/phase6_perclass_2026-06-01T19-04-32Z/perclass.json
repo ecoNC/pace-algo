@@ -1,0 +1,229 @@
+{
+  "topn": 8,
+  "nfeat": 9,
+  "costs": [
+    0.0,
+    0.05,
+    0.1
+  ],
+  "per_class": {
+    "fx": {
+      "features": [
+        "hour_cos",
+        "hour_sin",
+        "rvol_20",
+        "ema_20_dist_atr",
+        "in_ny",
+        "rsi_14",
+        "dist_to_swing_low_atr",
+        "is_fx_market_open",
+        "in_london"
+      ],
+      "active_hours_last": [
+        0,
+        1,
+        2,
+        6,
+        7,
+        8,
+        9,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "trades_per_day": 5.72,
+      "cost0.0": {
+        "n": 10057,
+        "wr": 0.419,
+        "pf": 1.092
+      },
+      "cost0.05": {
+        "n": 10057,
+        "wr": 0.419,
+        "pf": 1.005
+      },
+      "cost0.1": {
+        "n": 10057,
+        "wr": 0.419,
+        "pf": 0.926
+      },
+      "pf_by_year_5pct": {
+        "2024": 1.07,
+        "2025": 0.963,
+        "2026": 0.963
+      }
+    },
+    "crypto": {
+      "features": [
+        "htf_4h_rsi_14",
+        "hour_cos",
+        "htf_1h_rsi_14",
+        "ltf_rsi_minus_htf_rsi",
+        "hour_sin",
+        "dist_to_swing_high_atr",
+        "dist_to_sh_atr_conf",
+        "bars_since_vol_spike",
+        "ema_50_dist_atr"
+      ],
+      "active_hours_last": [
+        0,
+        1,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "trades_per_day": 7.82,
+      "cost0.0": {
+        "n": 13760,
+        "wr": 0.437,
+        "pf": 1.195
+      },
+      "cost0.05": {
+        "n": 13760,
+        "wr": 0.437,
+        "pf": 1.099
+      },
+      "cost0.1": {
+        "n": 13760,
+        "wr": 0.437,
+        "pf": 1.012
+      },
+      "pf_by_year_5pct": {
+        "2024": 1.1,
+        "2025": 1.103,
+        "2026": 1.085
+      }
+    },
+    "metal": {
+      "features": [
+        "hour_sin",
+        "hour_cos",
+        "htf_4h_rsi_14",
+        "htf_4h_ema_alignment",
+        "ema_50_dist_atr",
+        "htf_4h_atr_percentile_100",
+        "atr_pct",
+        "ema_200_dist_atr",
+        "bars_since_vol_spike"
+      ],
+      "active_hours_last": [
+        1,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "trades_per_day": 4.77,
+      "cost0.0": {
+        "n": 8386,
+        "wr": 0.406,
+        "pf": 1.035
+      },
+      "cost0.05": {
+        "n": 8386,
+        "wr": 0.406,
+        "pf": 0.953
+      },
+      "cost0.1": {
+        "n": 8386,
+        "wr": 0.406,
+        "pf": 0.878
+      },
+      "pf_by_year_5pct": {
+        "2024": 1.011,
+        "2025": 0.936,
+        "2026": 0.84
+      }
+    },
+    "index": {
+      "features": [
+        "volume_z_score",
+        "vol_expansion_ratio",
+        "hour_cos",
+        "atr_percentile_100",
+        "hour_sin",
+        "rvol_20",
+        "htf_1h_atr_percentile_100",
+        "htf_4h_rsi_14",
+        "ema_200_dist_atr"
+      ],
+      "active_hours_last": [
+        7,
+        8,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "trades_per_day": 5.93,
+      "cost0.0": {
+        "n": 10425,
+        "wr": 0.423,
+        "pf": 1.126
+      },
+      "cost0.05": {
+        "n": 10425,
+        "wr": 0.423,
+        "pf": 1.035
+      },
+      "cost0.1": {
+        "n": 10425,
+        "wr": 0.423,
+        "pf": 0.953
+      },
+      "pf_by_year_5pct": {
+        "2024": 1.133,
+        "2025": 0.96,
+        "2026": 0.992
+      }
+    }
+  },
+  "verdict": {
+    "fx": {
+      "pf5": 1.005,
+      "wr": 0.419,
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "crypto": {
+      "pf5": 1.099,
+      "wr": 0.437,
+      "all_years_pos": true,
+      "bar_pass": false
+    },
+    "metal": {
+      "pf5": 0.953,
+      "wr": 0.406,
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "index": {
+      "pf5": 1.035,
+      "wr": 0.423,
+      "all_years_pos": false,
+      "bar_pass": false
+    }
+  }
+}
