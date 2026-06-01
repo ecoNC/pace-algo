@@ -1,0 +1,274 @@
+{
+  "seed": 7,
+  "cuts": {
+    "q90": 0.5352530408472094,
+    "q97": 0.5539274124557775,
+    "q99": 0.5771771560331714
+  },
+  "pattern": {
+    "GBPUSD": {
+      "label_base_rate": 0.3968,
+      "n_bars": 7641,
+      "q90": {
+        "n": 887,
+        "wr": 0.4543,
+        "pf": 1.249,
+        "signals": 888
+      },
+      "q97": {
+        "n": 194,
+        "wr": 0.5103,
+        "pf": 1.563,
+        "signals": 194
+      },
+      "q99": {
+        "n": 63,
+        "wr": 0.5556,
+        "pf": 1.875,
+        "signals": 63
+      }
+    },
+    "AUDUSD": {
+      "label_base_rate": 0.3936,
+      "n_bars": 7884,
+      "q90": {
+        "n": 800,
+        "wr": 0.3775,
+        "pf": 0.91,
+        "signals": 807
+      },
+      "q97": {
+        "n": 181,
+        "wr": 0.337,
+        "pf": 0.762,
+        "signals": 183
+      },
+      "q99": {
+        "n": 26,
+        "wr": 0.3846,
+        "pf": 0.938,
+        "signals": 26
+      }
+    },
+    "USDCHF": {
+      "label_base_rate": 0.3974,
+      "n_bars": 8302,
+      "q90": {
+        "n": 857,
+        "wr": 0.4072,
+        "pf": 1.031,
+        "signals": 862
+      },
+      "q97": {
+        "n": 158,
+        "wr": 0.4873,
+        "pf": 1.426,
+        "signals": 158
+      },
+      "q99": {
+        "n": 35,
+        "wr": 0.4286,
+        "pf": 1.125,
+        "signals": 35
+      }
+    },
+    "USDCAD": {
+      "label_base_rate": 0.3906,
+      "n_bars": 7892,
+      "q90": {
+        "n": 1203,
+        "wr": 0.4431,
+        "pf": 1.193,
+        "signals": 1221
+      },
+      "q97": {
+        "n": 250,
+        "wr": 0.544,
+        "pf": 1.789,
+        "signals": 256
+      },
+      "q99": {
+        "n": 75,
+        "wr": 0.6933,
+        "pf": 3.391,
+        "signals": 80
+      }
+    }
+  },
+  "audusd_confidence_bins": [
+    {
+      "bin": "[0.400,0.500)",
+      "n": 3267,
+      "mean_pred": 0.4763,
+      "actual_win": 0.3917
+    },
+    {
+      "bin": "[0.500,0.535)",
+      "n": 3728,
+      "mean_pred": 0.5165,
+      "actual_win": 0.4233
+    },
+    {
+      "bin": "[0.535,0.554)",
+      "n": 639,
+      "mean_pred": 0.5428,
+      "actual_win": 0.3912
+    },
+    {
+      "bin": "[0.554,0.577)",
+      "n": 155,
+      "mean_pred": 0.5616,
+      "actual_win": 0.3333
+    },
+    {
+      "bin": "[0.577,0.620)",
+      "n": 21,
+      "mean_pred": 0.5859,
+      "actual_win": 0.3333
+    },
+    {
+      "bin": "[0.620,1.010)",
+      "n": 5,
+      "mean_pred": 0.64,
+      "actual_win": 0.6
+    }
+  ],
+  "covariate_shift": [
+    {
+      "feature": "htf_4h_ema_alignment",
+      "std_mean_diff": 0.322,
+      "train_mean": 0.0233,
+      "audusd_mean": 0.3026
+    },
+    {
+      "feature": "bars_since_vol_spike",
+      "std_mean_diff": 0.181,
+      "train_mean": 65.337,
+      "audusd_mean": 72.2477
+    },
+    {
+      "feature": "vol_contracting",
+      "std_mean_diff": -0.148,
+      "train_mean": 0.2646,
+      "audusd_mean": 0.1994
+    },
+    {
+      "feature": "htf_4h_rsi_14",
+      "std_mean_diff": 0.146,
+      "train_mean": 50.7329,
+      "audusd_mean": 52.6532
+    },
+    {
+      "feature": "htf_1h_ema_alignment",
+      "std_mean_diff": 0.131,
+      "train_mean": 0.0417,
+      "audusd_mean": 0.1537
+    },
+    {
+      "feature": "htf_ltf_agree_bear",
+      "std_mean_diff": -0.121,
+      "train_mean": 0.1634,
+      "audusd_mean": 0.1187
+    },
+    {
+      "feature": "htf_4h_atr_percentile_100",
+      "std_mean_diff": -0.103,
+      "train_mean": 0.4876,
+      "audusd_mean": 0.4544
+    },
+    {
+      "feature": "in_ny",
+      "std_mean_diff": -0.099,
+      "train_mean": 0.4149,
+      "audusd_mean": 0.3663
+    },
+    {
+      "feature": "eqhigh_present",
+      "std_mean_diff": 0.095,
+      "train_mean": 0.2432,
+      "audusd_mean": 0.2841
+    },
+    {
+      "feature": "both_high_vol",
+      "std_mean_diff": 0.086,
+      "train_mean": 0.1126,
+      "audusd_mean": 0.1399
+    },
+    {
+      "feature": "fvg_bear_size_atr",
+      "std_mean_diff": 0.085,
+      "train_mean": 0.6566,
+      "audusd_mean": 0.7137
+    },
+    {
+      "feature": "hour_sin",
+      "std_mean_diff": 0.069,
+      "train_mean": -0.0452,
+      "audusd_mean": 0.0045
+    },
+    {
+      "feature": "atr_percentile_100",
+      "std_mean_diff": 0.062,
+      "train_mean": 0.497,
+      "audusd_mean": 0.5182
+    },
+    {
+      "feature": "htf_ltf_counter_trend",
+      "std_mean_diff": -0.062,
+      "train_mean": 0.1843,
+      "audusd_mean": 0.1605
+    },
+    {
+      "feature": "dist_to_swing_low_atr",
+      "std_mean_diff": 0.061,
+      "train_mean": 2.6691,
+      "audusd_mean": 2.7426
+    }
+  ],
+  "decisive_test": {
+    "with_in_pool": {
+      "label_base_rate": 0.3936,
+      "n_bars": 7884,
+      "q90": {
+        "n": 1002,
+        "wr": 0.4042,
+        "pf": 1.018,
+        "signals": 1007
+      },
+      "q97": {
+        "n": 264,
+        "wr": 0.3864,
+        "pf": 0.944,
+        "signals": 265
+      },
+      "q99": {
+        "n": 57,
+        "wr": 0.5439,
+        "pf": 1.788,
+        "signals": 57
+      }
+    },
+    "baseline_oos": {
+      "label_base_rate": 0.3936,
+      "n_bars": 7884,
+      "q90": {
+        "n": 800,
+        "wr": 0.3775,
+        "pf": 0.91,
+        "signals": 807
+      },
+      "q97": {
+        "n": 181,
+        "wr": 0.337,
+        "pf": 0.762,
+        "signals": 183
+      },
+      "q99": {
+        "n": 26,
+        "wr": 0.3846,
+        "pf": 0.938,
+        "signals": 26
+      }
+    }
+  }
+}
