@@ -1,0 +1,90 @@
+{
+  "symbols": [
+    "BTCUSD",
+    "ETHUSD",
+    "XRPUSD",
+    "LTCUSD",
+    "BCHUSD",
+    "ADAUSD"
+  ],
+  "xs_in_top": [
+    false,
+    false
+  ],
+  "trendfeat": [
+    "atr_pct",
+    "dist_to_swing_high_atr",
+    "dist_to_swing_low_atr",
+    "ema_alignment",
+    "ema_50_dist_atr",
+    "ema_200_dist_atr",
+    "adx_14",
+    "htf_4h_rsi_14",
+    "ltf_rsi_minus_htf_rsi"
+  ],
+  "mrfeat": [
+    "htf_4h_rsi_14",
+    "htf_4h_atr_percentile_100",
+    "hour_sin",
+    "dist_to_swing_high_atr",
+    "hour_cos",
+    "atr_pct",
+    "atr_percentile_100",
+    "fvg_bull_size_atr",
+    "adx_slope"
+  ],
+  "results": {
+    "top6_0.02ATR": {
+      "net_pf": 5.211,
+      "wr": 0.771,
+      "trades_per_day": 11.03,
+      "pct_folds_pos": 1.0,
+      "pf_by_year": {
+        "2024": 6.184,
+        "2025": 2.118,
+        "2026": 7.675
+      },
+      "all_years_pos": true,
+      "bar_pass": true
+    },
+    "top6_0.05ATR": {
+      "net_pf": 4.954,
+      "wr": 0.771,
+      "trades_per_day": 11.03,
+      "pct_folds_pos": 1.0,
+      "pf_by_year": {
+        "2024": 5.883,
+        "2025": 2.019,
+        "2026": 7.268
+      },
+      "all_years_pos": true,
+      "bar_pass": true
+    },
+    "top8_0.02ATR": {
+      "net_pf": 4.56,
+      "wr": 0.76,
+      "trades_per_day": 13.59,
+      "pct_folds_pos": 0.9,
+      "pf_by_year": {
+        "2024": 5.278,
+        "2025": 1.886,
+        "2026": 7.11
+      },
+      "all_years_pos": true,
+      "bar_pass": true
+    },
+    "top8_0.05ATR": {
+      "net_pf": 4.342,
+      "wr": 0.76,
+      "trades_per_day": 13.59,
+      "pct_folds_pos": 0.9,
+      "pf_by_year": {
+        "2024": 5.027,
+        "2025": 1.799,
+        "2026": 6.738
+      },
+      "all_years_pos": true,
+      "bar_pass": true
+    }
+  }
+}

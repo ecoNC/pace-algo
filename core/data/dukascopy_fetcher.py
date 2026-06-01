@@ -29,6 +29,10 @@ DUKASCOPY_INSTRUMENT = {
     "XAGUSD": "INSTRUMENT_FX_METALS_XAG_USD",        # silver (metal)
     "BTCUSD": "INSTRUMENT_VCCY_BTC_USD",             # crypto (24/7 — asset-agnostic gate test)
     "ETHUSD": "INSTRUMENT_VCCY_ETH_USD",             # crypto
+    "XRPUSD": "INSTRUMENT_VCCY_XRP_USD",             # crypto (more coins — phase8 cross-sectional)
+    "LTCUSD": "INSTRUMENT_VCCY_LTC_USD",
+    "BCHUSD": "INSTRUMENT_VCCY_BCH_USD",
+    "ADAUSD": "INSTRUMENT_VCCY_ADA_USD",
     "SPX500": "INSTRUMENT_IDX_AMERICA_E_SANDP_500",  # index
     "NAS100": "INSTRUMENT_IDX_AMERICA_E_NQ_100",     # index
     "GER40":  "INSTRUMENT_IDX_EUROPE_E_DAAX",        # index (DAX)
