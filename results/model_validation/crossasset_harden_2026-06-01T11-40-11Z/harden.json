@@ -1,0 +1,109 @@
+{
+  "seeds": [
+    42,
+    1,
+    7
+  ],
+  "per_seed": {
+    "42": {
+      "base": {
+        "pf_mean": 1.421,
+        "pf_gt1": 9,
+        "n_folds": 10,
+        "pf_min": 0.882,
+        "pf_std": 0.363,
+        "wr_mean": 0.4792
+      },
+      "aug": {
+        "pf_mean": 1.45,
+        "pf_gt1": 9,
+        "n_folds": 10,
+        "pf_min": 0.912,
+        "pf_std": 0.394,
+        "wr_mean": 0.4834
+      },
+      "lift": 0.029
+    },
+    "1": {
+      "base": {
+        "pf_mean": 1.357,
+        "pf_gt1": 9,
+        "n_folds": 10,
+        "pf_min": 0.896,
+        "pf_std": 0.286,
+        "wr_mean": 0.4699
+      },
+      "aug": {
+        "pf_mean": 1.476,
+        "pf_gt1": 9,
+        "n_folds": 10,
+        "pf_min": 0.994,
+        "pf_std": 0.384,
+        "wr_mean": 0.4883
+      },
+      "lift": 0.119
+    },
+    "7": {
+      "base": {
+        "pf_mean": 1.412,
+        "pf_gt1": 9,
+        "n_folds": 10,
+        "pf_min": 0.803,
+        "pf_std": 0.464,
+        "wr_mean": 0.4737
+      },
+      "aug": {
+        "pf_mean": 1.473,
+        "pf_gt1": 8,
+        "n_folds": 10,
+        "pf_min": 0.933,
+        "pf_std": 0.449,
+        "wr_mean": 0.4847
+      },
+      "lift": 0.061
+    }
+  },
+  "lift_mean": 0.07,
+  "lift_std": 0.037,
+  "lift_min": 0.029,
+  "verdict": "ROBUST",
+  "feature_importance": [
+    {
+      "feature": "usd_mom_5",
+      "gain_share": 0.0014,
+      "rank": 50
+    },
+    {
+      "feature": "usd_mom_20",
+      "gain_share": 0.0096,
+      "rank": 29
+    },
+    {
+      "feature": "usd_breadth_20",
+      "gain_share": 0.0028,
+      "rank": 45
+    },
+    {
+      "feature": "pair_usd_corr_50",
+      "gain_share": 0.0497,
+      "rank": 3
+    },
+    {
+      "feature": "pair_idio_mom_20",
+      "gain_share": 0.0342,
+      "rank": 6
+    }
+  ],
+  "top10_overall": [
+    "hour_cos",
+    "hour_sin",
+    "pair_usd_corr_50",
+    "htf_4h_rsi_14",
+    "rvol_20",
+    "pair_idio_mom_20",
+    "htf_1h_rsi_14",
+    "ema_20_dist_atr",
+    "fvg_bear_size_atr",
+    "htf_4h_atr_percentile_100"
+  ]
+}
