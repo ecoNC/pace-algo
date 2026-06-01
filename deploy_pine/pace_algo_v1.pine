@@ -485,38 +485,57 @@ market_state_color = market_state_score > 0.20 ? color.new(color.green, 60) : ma
 // Trade-Simulation: TP = 1.5 × ATR / SL = 1.0 × ATR  (Triple-Barrier-Equivalent).
 // =============================================================================
 
-var int   bt_wins    = 0
-var int   bt_losses  = 0
-var float bt_equity  = 0.0
-var float bt_peak    = 0.0
-var float bt_max_dd  = 0.0
+var int   bt_wins       = 0
+var int   bt_losses     = 0
+var float bt_equity     = 0.0
+var float bt_peak       = 0.0
+var float bt_max_dd     = 0.0
+var float bt_gross_win  = 0.0
+var float bt_gross_loss = 0.0
 
-var bool  in_trade   = false
-var float entry_px   = na
-var float tp_px      = na
-var float sl_px      = na
+var bool  in_trade     = false
+var float entry_px     = na
+var float tp_px        = na
+var float sl_px        = na
+var int   bt_bars_held = 0
 
-// Reset bei Profile-Wechsel oder neuer Symbol-Session — nicht nötig hier weil
-// `var` über bars persistiert, Reset erfolgt nur bei Indicator-Re-Add.
+// Time-Barrier = 24 Bars — matcht Training (core/labeling/triple_barrier.py
+// time_barrier_bars=24). OHNE dieses Limit driften Trades tagelang bis SL →
+// vernichtet WR/PF UND blockiert neue Signale (in_trade bleibt zu lange true).
+TIME_BARRIER_BARS = 24
 
 // Trade-Logic (simplified — keine Pyramiding, immer eine offene Position)
-if signal_active and not in_trade
+// FIX 2026-06-01: _atr14 (top-level, jeden Bar berechnet) statt bedingtem
+// ta.atr(14) im if-Block — letzteres lieferte na → tp/sl na → Trade-Exit
+// feuerte nie → in_trade blieb fuer immer true → nur 1 Signal-Label total.
+if signal_active and not in_trade and not na(_atr14) and _atr14 > 0.0
     entry_px := close
-    atr_now = ta.atr(14)
-    tp_px   := entry_px + 1.5 * atr_now
-    sl_px   := entry_px - 1.0 * atr_now
+    tp_px   := entry_px + 1.5 * _atr14
+    sl_px   := entry_px - 1.0 * _atr14
     in_trade := true
+    bt_bars_held := 0
 
 if in_trade
-    // TP zuerst checken bei beidem-touched-Bar = konservative Annahme SL first
+    bt_bars_held += 1
+    float trade_r = na
+    // SL zuerst checken (konservative Annahme bei beidem-touched-Bar)
     if low <= sl_px
-        bt_losses += 1
-        bt_equity -= 1.0
-        in_trade  := false
+        trade_r := -1.0
     else if high >= tp_px
-        bt_wins   += 1
-        bt_equity += 1.5
-        in_trade  := false
+        trade_r := 1.5
+    else if bt_bars_held >= TIME_BARRIER_BARS
+        // Time-Exit: realisiertes R am aktuellen Close (Risk = entry - sl = 1 ATR)
+        risk = entry_px - sl_px
+        trade_r := risk > 0.0 ? (close - entry_px) / risk : 0.0
+    if not na(trade_r)
+        bt_equity += trade_r
+        if trade_r >= 0.0
+            bt_wins      += 1
+            bt_gross_win += trade_r
+        else
+            bt_losses     += 1
+            bt_gross_loss += -trade_r
+        in_trade := false
 
 // Drawdown-Tracking
 if bt_equity > bt_peak
@@ -529,8 +548,6 @@ if bt_dd_pct > bt_max_dd
 
 bt_total_trades = bt_wins + bt_losses
 bt_wr  = bt_total_trades > 0 ? bt_wins / bt_total_trades : 0.0
-bt_gross_win  = bt_wins * 1.5
-bt_gross_loss = bt_losses * 1.0
 bt_pf = bt_gross_loss > 0 ? bt_gross_win / bt_gross_loss : (bt_gross_win > 0 ? 999.0 : 0.0)
 
 
@@ -639,15 +656,27 @@ if show_backtest and barstate.islast
 // UI — SIGNAL-VISUALISIERUNG
 // =============================================================================
 
-if show_signals and signal_active and not in_trade[1]
-    label_color = tier == "Premium" ? color.yellow : tier == "High" ? color.lime : color.aqua
-    label.new(bar_index, low, "▲ " + tier, style=label.style_label_up, color=label_color, textcolor=color.black, size=size.small)
+// V1 = Long-only (Triple-Barrier-Labeling, siehe core/labeling/triple_barrier.py).
+// Jedes Signal ist ein BUY; Tier (Standard/High/Premium) = Confidence-Stufe.
+var box tp_box = na   // grüne Reward-Zone Entry→TP
+var box sl_box = na   // rote Risk-Zone   Entry→SL
 
-// TP/SL Boxen für aktuell offenen Trade
-var box current_trade_box = na
+// --- Neuer Trade: BUY-Label + beide Zonen anlegen ---
 if in_trade and not in_trade[1]
-    current_trade_box := box.new(bar_index, tp_px, bar_index, sl_px, border_color=color.new(color.blue, 50), bgcolor=color.new(color.blue, 90))
+    if show_signals
+        tier_color = tier == "Premium" ? color.yellow : tier == "High" ? color.lime : color.aqua
+        label.new(bar_index, low, "BUY " + tier, style=label.style_label_up, color=tier_color, textcolor=color.black, size=size.small)
+    tp_box := box.new(bar_index, tp_px, bar_index, entry_px, border_color=color.new(color.green, 40), bgcolor=color.new(color.green, 82))
+    sl_box := box.new(bar_index, entry_px, bar_index, sl_px, border_color=color.new(color.red, 40),   bgcolor=color.new(color.red, 82))
 
-if not in_trade and not na(current_trade_box)
-    box.set_right(current_trade_box, bar_index)
-    current_trade_box := na
+// --- Während Trade offen: Zonen jeden Bar nach rechts verlängern ---
+if in_trade and not na(tp_box)
+    box.set_right(tp_box, bar_index)
+    box.set_right(sl_box, bar_index)
+
+// --- Trade geschlossen (TP/SL durchbrochen): rechte Kante fixieren, Referenzen freigeben ---
+if not in_trade and not na(tp_box)
+    box.set_right(tp_box, bar_index)
+    box.set_right(sl_box, bar_index)
+    tp_box := na
+    sl_box := na
