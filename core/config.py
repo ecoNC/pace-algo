@@ -32,9 +32,17 @@ ARTIFACTS_PINE = PROJECT_ROOT / "artifacts" / "pine_exports"
 # profiles) were a pool-width artifact vs. a deeper architectural issue.
 
 # FX — sauber getrennt in Train vs Hold-Out
-FX_TRAIN_SYMBOLS    = ["EURUSD", "USDJPY", "NZDUSD"]                       # core training pool (ANN-015: +NZDUSD)
-FX_HOLDOUT_SYMBOLS  = ["GBPUSD", "AUDUSD", "USDCHF", "USDCAD"]             # never trained on (ANN-015: +USDCAD)
+FX_TRAIN_SYMBOLS    = ["EURUSD", "USDJPY", "NZDUSD"]                       # validation training pool (ANN-015: +NZDUSD)
+FX_HOLDOUT_SYMBOLS  = ["GBPUSD", "AUDUSD", "USDCHF", "USDCAD"]             # validation hold-out (ANN-015: +USDCAD)
 FX_SYMBOLS          = FX_TRAIN_SYMBOLS + FX_HOLDOUT_SYMBOLS
+
+# ── Supported-Pairs Lock (ANN-020, 2026-06-01) ─────────────────────────────────
+# Scientifically locked via scripts/supported_pairs.py (in-pool time-OOS + LOPO).
+# Drives PRODUCT scope + production training recipe, NOT the validation split above.
+FX_SUPPORTED_PAIRS        = ["USDJPY", "NZDUSD", "GBPUSD", "USDCHF", "USDCAD"]  # monoton, PF@q97>=1.3 & q99>=1.5, OOS-stabil
+FX_CONDITIONAL_PAIRS      = ["AUDUSD"]                                          # nur Conservative/q99 (experimental, concept-shift)
+FX_UNSUPPORTED_PAIRS      = ["EURUSD"]                                          # kein verlässlicher Edge (high-liquidity low-edge)
+FX_PRODUCTION_TRAIN_PAIRS = FX_SUPPORTED_PAIRS + FX_CONDITIONAL_PAIRS           # production model trains in-pool on these
 
 # Crypto — 24/7 markets, different volatility regimes
 CRYPTO_SYMBOLS      = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ADAUSDT"]

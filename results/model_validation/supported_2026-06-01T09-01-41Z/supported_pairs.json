@@ -1,0 +1,392 @@
+{
+  "cuts": {
+    "q90": 0.5290368537559161,
+    "q97": 0.5442158887977806,
+    "q99": 0.5719854297107853
+  },
+  "inpool": {
+    "EURUSD": {
+      "label_base_rate": 0.3879,
+      "n_bars": 7593,
+      "q90": {
+        "n": 1175,
+        "wr": 0.3889,
+        "pf": 0.955,
+        "signals": 1175
+      },
+      "q97": {
+        "n": 319,
+        "wr": 0.3574,
+        "pf": 0.834,
+        "signals": 319
+      },
+      "q99": {
+        "n": 89,
+        "wr": 0.427,
+        "pf": 1.118,
+        "signals": 89
+      }
+    },
+    "USDJPY": {
+      "label_base_rate": 0.3958,
+      "n_bars": 7949,
+      "q90": {
+        "n": 978,
+        "wr": 0.4335,
+        "pf": 1.148,
+        "signals": 984
+      },
+      "q97": {
+        "n": 317,
+        "wr": 0.4669,
+        "pf": 1.314,
+        "signals": 317
+      },
+      "q99": {
+        "n": 110,
+        "wr": 0.5364,
+        "pf": 1.735,
+        "signals": 110
+      }
+    },
+    "NZDUSD": {
+      "label_base_rate": 0.4094,
+      "n_bars": 7985,
+      "q90": {
+        "n": 717,
+        "wr": 0.4351,
+        "pf": 1.156,
+        "signals": 719
+      },
+      "q97": {
+        "n": 198,
+        "wr": 0.5,
+        "pf": 1.5,
+        "signals": 199
+      },
+      "q99": {
+        "n": 70,
+        "wr": 0.5571,
+        "pf": 1.887,
+        "signals": 71
+      }
+    },
+    "GBPUSD": {
+      "label_base_rate": 0.3968,
+      "n_bars": 7641,
+      "q90": {
+        "n": 945,
+        "wr": 0.4614,
+        "pf": 1.285,
+        "signals": 948
+      },
+      "q97": {
+        "n": 236,
+        "wr": 0.5169,
+        "pf": 1.605,
+        "signals": 238
+      },
+      "q99": {
+        "n": 101,
+        "wr": 0.5941,
+        "pf": 2.195,
+        "signals": 102
+      }
+    },
+    "AUDUSD": {
+      "label_base_rate": 0.3936,
+      "n_bars": 7884,
+      "q90": {
+        "n": 815,
+        "wr": 0.4037,
+        "pf": 1.015,
+        "signals": 819
+      },
+      "q97": {
+        "n": 253,
+        "wr": 0.3953,
+        "pf": 0.98,
+        "signals": 255
+      },
+      "q99": {
+        "n": 65,
+        "wr": 0.5231,
+        "pf": 1.645,
+        "signals": 67
+      }
+    },
+    "USDCHF": {
+      "label_base_rate": 0.3974,
+      "n_bars": 8302,
+      "q90": {
+        "n": 852,
+        "wr": 0.4261,
+        "pf": 1.113,
+        "signals": 852
+      },
+      "q97": {
+        "n": 168,
+        "wr": 0.4762,
+        "pf": 1.364,
+        "signals": 168
+      },
+      "q99": {
+        "n": 39,
+        "wr": 0.5385,
+        "pf": 1.75,
+        "signals": 39
+      }
+    },
+    "USDCAD": {
+      "label_base_rate": 0.3906,
+      "n_bars": 7892,
+      "q90": {
+        "n": 1342,
+        "wr": 0.4426,
+        "pf": 1.191,
+        "signals": 1359
+      },
+      "q97": {
+        "n": 320,
+        "wr": 0.5125,
+        "pf": 1.577,
+        "signals": 329
+      },
+      "q99": {
+        "n": 122,
+        "wr": 0.6311,
+        "pf": 2.567,
+        "signals": 128
+      }
+    }
+  },
+  "lopo": {
+    "EURUSD": {
+      "label_base_rate": 0.3879,
+      "n_bars": 7593,
+      "q90": {
+        "n": 1146,
+        "wr": 0.3909,
+        "pf": 0.963,
+        "signals": 1146
+      },
+      "q97": {
+        "n": 311,
+        "wr": 0.3955,
+        "pf": 0.981,
+        "signals": 311
+      },
+      "q99": {
+        "n": 78,
+        "wr": 0.4103,
+        "pf": 1.043,
+        "signals": 78
+      }
+    },
+    "USDJPY": {
+      "label_base_rate": 0.3958,
+      "n_bars": 7949,
+      "q90": {
+        "n": 910,
+        "wr": 0.4165,
+        "pf": 1.071,
+        "signals": 915
+      },
+      "q97": {
+        "n": 300,
+        "wr": 0.46,
+        "pf": 1.278,
+        "signals": 300
+      },
+      "q99": {
+        "n": 111,
+        "wr": 0.5225,
+        "pf": 1.642,
+        "signals": 111
+      }
+    },
+    "NZDUSD": {
+      "label_base_rate": 0.4094,
+      "n_bars": 7985,
+      "q90": {
+        "n": 653,
+        "wr": 0.4778,
+        "pf": 1.372,
+        "signals": 655
+      },
+      "q97": {
+        "n": 164,
+        "wr": 0.5244,
+        "pf": 1.654,
+        "signals": 164
+      },
+      "q99": {
+        "n": 39,
+        "wr": 0.641,
+        "pf": 2.679,
+        "signals": 39
+      }
+    },
+    "GBPUSD": {
+      "label_base_rate": 0.3968,
+      "n_bars": 7641,
+      "q90": {
+        "n": 1066,
+        "wr": 0.4362,
+        "pf": 1.161,
+        "signals": 1070
+      },
+      "q97": {
+        "n": 252,
+        "wr": 0.5119,
+        "pf": 1.573,
+        "signals": 253
+      },
+      "q99": {
+        "n": 105,
+        "wr": 0.5714,
+        "pf": 2.0,
+        "signals": 105
+      }
+    },
+    "AUDUSD": {
+      "label_base_rate": 0.3936,
+      "n_bars": 7884,
+      "q90": {
+        "n": 763,
+        "wr": 0.4102,
+        "pf": 1.043,
+        "signals": 766
+      },
+      "q97": {
+        "n": 212,
+        "wr": 0.4104,
+        "pf": 1.044,
+        "signals": 214
+      },
+      "q99": {
+        "n": 66,
+        "wr": 0.4697,
+        "pf": 1.329,
+        "signals": 68
+      }
+    },
+    "USDCHF": {
+      "label_base_rate": 0.3974,
+      "n_bars": 8302,
+      "q90": {
+        "n": 918,
+        "wr": 0.39,
+        "pf": 0.959,
+        "signals": 921
+      },
+      "q97": {
+        "n": 172,
+        "wr": 0.4244,
+        "pf": 1.106,
+        "signals": 172
+      },
+      "q99": {
+        "n": 36,
+        "wr": 0.5,
+        "pf": 1.5,
+        "signals": 36
+      }
+    },
+    "USDCAD": {
+      "label_base_rate": 0.3906,
+      "n_bars": 7892,
+      "q90": {
+        "n": 1237,
+        "wr": 0.4349,
+        "pf": 1.155,
+        "signals": 1258
+      },
+      "q97": {
+        "n": 310,
+        "wr": 0.5161,
+        "pf": 1.6,
+        "signals": 322
+      },
+      "q99": {
+        "n": 113,
+        "wr": 0.6726,
+        "pf": 3.081,
+        "signals": 117
+      }
+    }
+  },
+  "classification": {
+    "EURUSD": {
+      "classification": "unsupported",
+      "inpool_q97_pf": 0.834,
+      "inpool_q99_pf": 1.118,
+      "lopo_q97_pf": 0.981,
+      "lopo_q99_pf": 1.043,
+      "generalizes_oos": false
+    },
+    "USDJPY": {
+      "classification": "supported",
+      "inpool_q97_pf": 1.314,
+      "inpool_q99_pf": 1.735,
+      "lopo_q97_pf": 1.278,
+      "lopo_q99_pf": 1.642,
+      "generalizes_oos": true
+    },
+    "NZDUSD": {
+      "classification": "supported",
+      "inpool_q97_pf": 1.5,
+      "inpool_q99_pf": 1.887,
+      "lopo_q97_pf": 1.654,
+      "lopo_q99_pf": 2.679,
+      "generalizes_oos": true
+    },
+    "GBPUSD": {
+      "classification": "supported",
+      "inpool_q97_pf": 1.605,
+      "inpool_q99_pf": 2.195,
+      "lopo_q97_pf": 1.573,
+      "lopo_q99_pf": 2.0,
+      "generalizes_oos": true
+    },
+    "AUDUSD": {
+      "classification": "conditional",
+      "inpool_q97_pf": 0.98,
+      "inpool_q99_pf": 1.645,
+      "lopo_q97_pf": 1.044,
+      "lopo_q99_pf": 1.329,
+      "generalizes_oos": true
+    },
+    "USDCHF": {
+      "classification": "supported",
+      "inpool_q97_pf": 1.364,
+      "inpool_q99_pf": 1.75,
+      "lopo_q97_pf": 1.106,
+      "lopo_q99_pf": 1.5,
+      "generalizes_oos": true
+    },
+    "USDCAD": {
+      "classification": "supported",
+      "inpool_q97_pf": 1.577,
+      "inpool_q99_pf": 2.567,
+      "lopo_q97_pf": 1.6,
+      "lopo_q99_pf": 3.081,
+      "generalizes_oos": true
+    }
+  },
+  "summary": {
+    "supported": [
+      "USDJPY",
+      "NZDUSD",
+      "GBPUSD",
+      "USDCHF",
+      "USDCAD"
+    ],
+    "conditional": [
+      "AUDUSD"
+    ],
+    "unsupported": [
+      "EURUSD"
+    ]
+  }
+}

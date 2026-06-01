@@ -44,6 +44,7 @@ Zusätzlich am Anfang jedes ADRs:
 | [ANN-016](ANN-016-fx-as-reference-blueprint-industrialization-first.md) | **FX as Reference Blueprint — Industrialization-First Strategy** (V1-Definition verschärft: ≥ 2 Asset-Klassen über Blueprint nötig) | Active | 2026-05-28 |
 | [ANN-018](ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md) | **Decision-Assisted Architecture + Multi-Timeframe Market Dashboard** (4-Layer-System, ersetzt Single-Signal-Modell) | Active | 2026-05-28 |
 | [ANN-019](ANN-019-validated-100-tree-ensemble-complexity-retired.md) | **Validated 100-Tree Ensemble — Cluster/Relative-Cutoff/Behavioral Complexity Retired** (early_stopping-Degeneracy root-caused, supersedes ANN-013/014) | Active | 2026-06-01 |
+| [ANN-020](ANN-020-supported-pairs-lock-fx-v1.md) | **Supported-Pairs Lock (FX V1)** — supported {JPY/NZD/GBP/CHF/CAD}, conditional {AUD@q99}, unsupported {EUR}; Produktions-Rezept + LOPO-Gate | Active | 2026-06-01 |
 
 ## Was hier NICHT hingehört
 
