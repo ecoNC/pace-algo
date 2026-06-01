@@ -1,0 +1,169 @@
+{
+  "tf": "1h",
+  "htf": "4h",
+  "r_mults": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "costs": [
+    0.01,
+    0.03,
+    0.05
+  ],
+  "results": {
+    "R1.0": {
+      "features": [
+        "adx_14",
+        "realized_vol_20",
+        "atr_pct",
+        "fvg_bear_size_atr",
+        "vol_pct_diff_htf",
+        "vol_expansion_ratio",
+        "ema_50_dist_atr",
+        "bars_since_vol_spike",
+        "htf_1h_rsi_14"
+      ],
+      "costs": {
+        "0.01ATR": {
+          "net_pf": 0.984,
+          "wr": 0.493,
+          "trades_per_day": 5.87,
+          "pct_folds_pos": 0.6,
+          "pf_by_year": {
+            "2024": 0.921,
+            "2025": 1.146,
+            "2026": 0.804
+          },
+          "bar_pass": false
+        },
+        "0.03ATR": {
+          "net_pf": 0.945,
+          "wr": 0.493,
+          "trades_per_day": 5.87,
+          "pct_folds_pos": 0.55,
+          "pf_by_year": {
+            "2024": 0.885,
+            "2025": 1.1,
+            "2026": 0.772
+          },
+          "bar_pass": false
+        },
+        "0.05ATR": {
+          "net_pf": 0.908,
+          "wr": 0.493,
+          "trades_per_day": 5.87,
+          "pct_folds_pos": 0.35,
+          "pf_by_year": {
+            "2024": 0.85,
+            "2025": 1.056,
+            "2026": 0.742
+          },
+          "bar_pass": false
+        }
+      }
+    },
+    "R1.5": {
+      "features": [
+        "vol_pct_diff_htf",
+        "adx_14",
+        "bars_since_vol_spike",
+        "htf_1h_rsi_14",
+        "realized_vol_20",
+        "ema_200_dist_atr",
+        "fvg_bear_size_atr",
+        "vol_expansion_ratio",
+        "htf_1h_atr_percentile_100"
+      ],
+      "costs": {
+        "0.01ATR": {
+          "net_pf": 0.953,
+          "wr": 0.394,
+          "trades_per_day": 5.89,
+          "pct_folds_pos": 0.45,
+          "pf_by_year": {
+            "2024": 0.865,
+            "2025": 1.081,
+            "2026": 0.838
+          },
+          "bar_pass": false
+        },
+        "0.03ATR": {
+          "net_pf": 0.921,
+          "wr": 0.394,
+          "trades_per_day": 5.89,
+          "pct_folds_pos": 0.3,
+          "pf_by_year": {
+            "2024": 0.836,
+            "2025": 1.045,
+            "2026": 0.811
+          },
+          "bar_pass": false
+        },
+        "0.05ATR": {
+          "net_pf": 0.891,
+          "wr": 0.394,
+          "trades_per_day": 5.89,
+          "pct_folds_pos": 0.25,
+          "pf_by_year": {
+            "2024": 0.808,
+            "2025": 1.01,
+            "2026": 0.784
+          },
+          "bar_pass": false
+        }
+      }
+    },
+    "R2.0": {
+      "features": [
+        "bars_since_vol_spike",
+        "htf_1h_rsi_14",
+        "adx_14",
+        "ema_200_dist_atr",
+        "realized_vol_20",
+        "atr_pct",
+        "macd_hist_atr",
+        "vol_expansion_ratio",
+        "htf_1h_atr_percentile_100"
+      ],
+      "costs": {
+        "0.01ATR": {
+          "net_pf": 1.059,
+          "wr": 0.34,
+          "trades_per_day": 5.79,
+          "pct_folds_pos": 0.55,
+          "pf_by_year": {
+            "2024": 1.04,
+            "2025": 1.168,
+            "2026": 0.855
+          },
+          "bar_pass": false
+        },
+        "0.03ATR": {
+          "net_pf": 1.027,
+          "wr": 0.34,
+          "trades_per_day": 5.79,
+          "pct_folds_pos": 0.55,
+          "pf_by_year": {
+            "2024": 1.009,
+            "2025": 1.133,
+            "2026": 0.829
+          },
+          "bar_pass": false
+        },
+        "0.05ATR": {
+          "net_pf": 0.997,
+          "wr": 0.34,
+          "trades_per_day": 5.79,
+          "pct_folds_pos": 0.55,
+          "pf_by_year": {
+            "2024": 0.979,
+            "2025": 1.099,
+            "2026": 0.805
+          },
+          "bar_pass": false
+        }
+      }
+    }
+  }
+}
