@@ -15,6 +15,7 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 |---|---|---|---|---|---|---|
 | **FX-NY** (ML) | GBPUSD, USDJPY, USDCAD, NZDUSD, USDCHF | 5m | ✅ alle 5 | ✅ nur USDCHF | PF 1.51 (sized), WR 0.51, 9.3/Tag, 80% Folds+, alle Jahre+ (net, ECN 0.5pip) | `fx_module_LOCK.md`, phase7 |
 | **INDEX-DIPBUY** (deterministisch) | 10 Indices (SPX→HangSeng) | Daily | ✅ | ❌ (strukturell tot) | Holdout 15–21: PF 1.63/WR 74% · Formation 22–26: PF 1.32 · 36/36 Grid+ · 9/11 Jahre+ | `index_dipbuy_LOCK.md`, phase12 — **Nico-approved 2026-06-02** |
+| **METAL-TREND_L** (deterministisch, **EXPERIMENTAL-Label**) | XAUUSD, XAGUSD | Daily | ✅ | ❌ (tot, 0.84–0.86) | Grid 27/27+ (Median 1.42, Min 1.16) · Hälften 15–20: 1.70 / 21–26: 1.27 · 9/11 Jahre+ | phase13/13b — **Nico-approved 2026-06-02 als Experimental** (dünn: 2 Symbole, ~14 Trades/Jahr, kein formales Holdout) |
 
 ## 🟡 DÜNNE PULSE (real, aber unter der Bar — nicht shippen, beobachten)
 
@@ -23,11 +24,10 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 | Metal high-R intraday | XAUUSD, XAGUSD | 15m, R=3 | PF 1.07 @0.05ATR, alle Jahre+ (1.02/1.08/1.22) | dünn, nur bei Niedrigkosten | superseded durch METAL-TREND_L-Kandidat (Daily, 🟢 oben) |
 | Metal DIPBUY | XAUUSD, XAGUSD | Daily | PF 1.03 | transferiert NICHT von Indices — Klassen-Wahrheit erneut bestätigt | geschlossen (phase13) |
 
-## 🟢 KANDIDAT VALIDIERT (Nico-Entscheidung zur Aufnahme offen)
+## 🟢 KANDIDAT VALIDIERT
 
-| Kandidat | Universum | TF | Kennzahlen | Charakter |
-|---|---|---|---|---|
-| **METAL-TREND_L** (frischer Close>EMA50-Cross bei steigender EMA50 → long, SL 2·ATR, Hold 20d) | XAUUSD, XAGUSD | Daily | Grid **27/27 profitabel** (Median 1.42, Min 1.16) · Zeit-Hälften 15–20: 1.70 / 21–26: 1.27 · 9/11 Jahre+ (schwach 2021/2023) | Deterministisch, long-only (Metal-Shorts tot: 0.84–0.86, auch Trend-Short 0.86). DÜNN: 2 Symbole, ~14 Trades/Jahr. Kein formales Holdout (Grid auf voller Historie), aber generisches Trend-Following = minimales Fit-Risiko. Quelle: phase13/13b |
+*(leer — METAL-TREND_L am 2026-06-02 als Experimental-Modul angenommen, siehe ✅. Spec:
+frischer Close>EMA50-Cross bei steigender EMA50 → long, SL 2·ATR, Hold 20d.)*
 
 ## ❌ DURCHGEFALLEN (geschlossen — NICHT re-litigieren ohne NEUE Informationsbasis)
 
