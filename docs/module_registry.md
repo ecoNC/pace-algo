@@ -19,7 +19,6 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 
 | Kandidat | Universum | TF | Kennzahlen | Limitierung | Nächster Hebel |
 |---|---|---|---|---|---|
-| Crypto regime-routed | BTC, ETH | 5m | PF ~1.11, alle Jahre+ | dünn; Dukascopy-Daten ohne Volumen/Funding | **Crypto v2: Binance-Daten + Funding/OI-Features (in Arbeit)** |
 | Metal high-R | XAUUSD, XAGUSD | 15m, R=3 | PF 1.07 @0.05ATR, alle Jahre+ (1.02/1.08/1.22) | dünn, nur bei Niedrigkosten | Swing-TF-Test; DXY-Kontext brachte als Feature nichts (10c) |
 
 ## ❌ DURCHGEFALLEN (geschlossen — NICHT re-litigieren ohne NEUE Informationsbasis)
@@ -33,15 +32,16 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 | Regime-Routing auf Indices/Metals | phase10e: PF ~0.95 | 2026-06-02 |
 | Klassen-Features (Gap/OR/DXY/Weekend) intraday | phase10c (nach Leak-Fix): Lift −0.10/−0.22/±0 | 2026-06-02 |
 | EURUSD (long wie short) | ANN-020: kein Edge | 2026-05-31 |
+| **Crypto-Modul (alle Architekturen, beste Informationsbasis)** | phase11: ML auf 8 sauberen Binance-Perps, native Features liften (+0.08) aber 2026 stirbt (0.94) · phase11b: Routing bei ECHTEN Fees ~breakeven (2026 +, 24/25 flach) · phase11c: Synthese Routing×ML×native PF ≤1.03, ML zerstört den 2026-Routing-Vorteil. **v1-Puls (PF 1.11) hiermit INVALIDIERT: war mit 0.03R Fantasie-Kosten gerechnet, echte 5m-Perp-Fees ~0.7R.** Edge-Mechanismus (Selektion in Trend-Regimen) bricht im Chop-Regime 2026 strukturell — kein Selektions-, sondern ein Regime-Problem. | 2026-06-02 |
 
 ## 🔬 OFFEN / UNGETESTET (die ehrlichen verbleibenden Hebel)
 
 | Hypothese | Warum noch offen | Status |
 |---|---|---|
-| **Crypto v2: Binance-Perp-Daten + Funding/OI** | Dukascopy-Test war doppelt limitiert (kaputte Altcoin-Daten, keine Crypto-nativen Features) | **IN ARBEIT** |
-| Indices auf Swing-TF (4h/D): Overnight-Drift, Monatswende, Dip-Buying | Nur intraday getestet; dokumentierte Anomalien leben höher | pending |
-| Cross-sektionale Formulierung (Ranking innerhalb Klasse) | Anderes Problem-Design, nie als Kern getestet (nur als Feature in phase9) | pending |
+| **Indices auf Swing-TF (4h/D): Overnight-Drift, Monatswende, Dip-Buying** | Nur intraday getestet; dokumentierte Anomalien leben höher | **IN ARBEIT** |
+| Cross-sektionale Formulierung (Ranking innerhalb Klasse) | Anderes Problem-Design, nie als Kern getestet (nur als Feature in phase9). Für Crypto der einzig verbliebene Pfad (Long-Stärkste/Short-Schwächste statt direktional) | pending |
 | Metals Swing-TF | analog Indices | pending |
+| Crypto direktional | — | **GESCHLOSSEN 2026-06-02** (siehe ❌) — nur noch via Cross-Sectional oder neuem Datentyp (OI/Liquidations) re-openbar |
 
 ## 📐 PRODUKT-ARCHITEKTUR (Nico-approved Richtung 2026-06-02)
 

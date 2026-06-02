@@ -1,0 +1,124 @@
+{
+  "tf": "4h",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "LTCUSDT"
+  ],
+  "trendfeat": [
+    "htf_1h_atr_percentile_100",
+    "dist_to_sh_atr_conf",
+    "bars_since_vol_spike",
+    "fvg_bear_size_atr",
+    "nat_dow_cos",
+    "atr_percentile_100",
+    "htf_1h_rsi_14",
+    "vol_pct_diff_htf",
+    "realized_vol_20"
+  ],
+  "mrfeat": [
+    "adx_slope",
+    "vol_expansion_ratio",
+    "nat_dow_cos",
+    "atr_pct",
+    "ltf_rsi_minus_htf_rsi",
+    "ema_200_dist_atr",
+    "nat_funding_z",
+    "htf_1h_atr_percentile_100",
+    "roc_10"
+  ],
+  "fees": [
+    0.0005,
+    0.001
+  ],
+  "topns": [
+    4,
+    6,
+    8
+  ],
+  "results": {
+    "top4_fee0.0005": {
+      "net_pf": 0.992,
+      "wr": 0.526,
+      "trades_per_day": 4.08,
+      "pct_folds_pos": 0.5,
+      "pf_by_year": {
+        "2024": 1.057,
+        "2025": 1.002,
+        "2026": 0.812
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "top4_fee0.001": {
+      "net_pf": 0.951,
+      "wr": 0.526,
+      "trades_per_day": 4.08,
+      "pct_folds_pos": 0.5,
+      "pf_by_year": {
+        "2024": 1.014,
+        "2025": 0.961,
+        "2026": 0.776
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "top6_fee0.0005": {
+      "net_pf": 1.026,
+      "wr": 0.505,
+      "trades_per_day": 6.03,
+      "pct_folds_pos": 0.45,
+      "pf_by_year": {
+        "2024": 1.053,
+        "2025": 1.056,
+        "2026": 0.882
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "top6_fee0.001": {
+      "net_pf": 0.983,
+      "wr": 0.505,
+      "trades_per_day": 6.03,
+      "pct_folds_pos": 0.45,
+      "pf_by_year": {
+        "2024": 1.01,
+        "2025": 1.012,
+        "2026": 0.842
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "top8_fee0.0005": {
+      "net_pf": 1.021,
+      "wr": 0.485,
+      "trades_per_day": 7.91,
+      "pct_folds_pos": 0.45,
+      "pf_by_year": {
+        "2024": 1.03,
+        "2025": 1.055,
+        "2026": 0.908
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "top8_fee0.001": {
+      "net_pf": 0.979,
+      "wr": 0.485,
+      "trades_per_day": 7.91,
+      "pct_folds_pos": 0.4,
+      "pf_by_year": {
+        "2024": 0.987,
+        "2025": 1.012,
+        "2026": 0.867
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    }
+  }
+}
