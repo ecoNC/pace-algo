@@ -82,12 +82,12 @@ f_tfTrend(tf) =>
 f_mtfCell(_t, _r, _lbl, _v) =>
     txt = _v > 0 ? "Bull" : _v < 0 ? "Bear" : "Flat"
     col = _v > 0 ? color.new(color.teal, 0) : _v < 0 ? color.new(color.red, 0) : color.new(color.gray, 0)
-    table.cell(_t, 0, _r, _lbl, text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+    table.cell(_t, 0, _r, _lbl, text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = size.small)
     table.cell(_t, 1, _r, txt,  text_color = color.white, bgcolor = col,                       text_size = size.small)
 
 f_btCell(_t, _r, _lbl, _val) =>
-    table.cell(_t, 0, _r, _lbl, text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
-    table.cell(_t, 1, _r, _val, text_color = color.white, bgcolor = color.new(color.gray, 85), text_size = size.small)
+    table.cell(_t, 0, _r, _lbl, text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = size.small)
+    table.cell(_t, 1, _r, _val, text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = size.small)
 
 // regime-based profile recommendation (forward-looking; NOT fitted to past P/L)
 f_regimeRec(_adx) =>
@@ -327,12 +327,12 @@ if showRec and barstate.islast
     table.cell(rec, 1, 0, "PaceAlgo",    text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
     f_btCell(rec, 1, "Trend (ADX)", str.tostring(adxVal, "#.0") + (adxVal >= 18 ? " trending" : " ranging"))
     f_btCell(rec, 2, "Volatility",  volState)
-    table.cell(rec, 0, 3, "Suggested", text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+    table.cell(rec, 0, 3, "Suggested", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = size.small)
     table.cell(rec, 1, 3, recProf,     text_color = color.white, bgcolor = recCol,                    text_size = size.small)
     f_btCell(rec, 4, "Suggested RR", f_rrRec(adxVal))
     f_btCell(rec, 5, "Your profile", matchTxt)
-    table.cell(rec, 0, 6, "Regime guide - not a performance guarantee", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 90), text_size = size.tiny)
-    table.cell(rec, 1, 6, "", bgcolor = color.new(color.gray, 90))
+    table.cell(rec, 0, 6, "Regime guide - not a performance guarantee", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 20), text_size = size.tiny)
+    table.cell(rec, 1, 6, "", bgcolor = color.new(color.gray, 20))
 
 // =============================================================================
 // LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
