@@ -7,23 +7,29 @@
 //   The tool is SELECTIVE. It only fires when 3 conditions align:
 //    1. Regime is trending      -> ADX above a profile threshold (skip chop)
 //    2. Higher-TF trend agrees  -> trade only WITH the dominant direction
+//                                  (TRUE higher resolution via request.security,
+//                                  lookahead_off + [1] = non-repaint, replay-verified)
 //    3. Pullback continuation   -> enter on a retracement inside the trend
-//                                  (cross back through fast EMA), NOT on the
-//                                  exhaustion flip. This is what fixes the
-//                                  sub-random win rate.
-//   Exit: FIXED TP/SL (Swift-Algo style). SL = recent pullback structure,
-//   clamped to a style-dependent ATR band. TP = Risk/Reward x SL distance.
-//   Scale-invariant by construction; non-repaint (commits on confirmed bars).
+//
+//  EXIT MODEL (Multi-TP, CEO-locked 2026-06-02):
+//   TP1 fixed at 1R (NEVER tighter — sub-1R token targets are win-rate inflation
+//   and are rejected, HANDOFF §15). At TP1: bank half, stop to break-even, runner
+//   trails toward TP2 = RR x SL. Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
+//   PF / expectancy is the headline metric, win rate is derived. Multi-TP improves
+//   the payoff DISTRIBUTION — it does not create edge and is not marketed as such.
+//   SL = pullback structure, clamped to a style-dependent ATR band.
+//   Scale-invariant by construction; commits on confirmed bars only.
 // =============================================================================
 indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count = 500, max_lines_count = 500)
 
 // =============================================================================
-// INPUTS  (whitelist: profile / display toggles / bounded risk only)
+// INPUTS  (whitelist: profile / style / display / bounded risk only)
 // =============================================================================
-profile   = input.string("Balanced", "Profile", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
-style     = input.string("Intraday", "Trading Style", options = ["Scalp", "Intraday", "Swing"], group = "Strategy", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades.")
-rrRatio   = input.float(1.2, "Risk / Reward Ratio", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Take-Profit distance as a multiple of the Stop-Loss distance. Lower = higher win rate, smaller wins.")
+profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
+style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
+rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
+useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = "Risk", tooltip = "Banks half the position at exactly 1R, moves the stop to break-even and lets the runner trail toward TP2. Improves the payoff distribution; profit factor is the headline metric. TP1 is fixed at 1R by design - tighter token targets would inflate the win rate and are rejected.")
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
@@ -33,8 +39,13 @@ showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
 showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
 showRec   = input.bool(true,  "Show recommended settings",   group = "Display")
 
+posOpts   = "Top Left;Top Right;Middle Left;Middle Right;Bottom Left;Bottom Right"
+recPosIn  = input.string("Bottom Left",  "Recommended panel position", options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+mtfPosIn  = input.string("Top Right",    "MTF dashboard position",     options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+btPosIn   = input.string("Bottom Right", "Backtest panel position",    options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+
 // =============================================================================
-// PROFILE -> internal parameters (fixed; no free curve-fitting inputs)
+// PROFILE / STYLE -> internal parameters (fixed; no free curve-fitting inputs)
 // =============================================================================
 baseLen   = 50
 fastLen   = 10            // fast EMA for pullback detection
@@ -54,9 +65,15 @@ adxMin    = profile == "Aggressive" ? 18.0 : profile == "Balanced" ? 22.0 : 28.0
 useHTF    = profile != "Aggressive"
 useVolGate= profile == "Conservative"
 
+// multi-TP active only when TP2 is meaningfully beyond TP1 (1R)
+mtpOn     = useMTP and rrRatio > 1.05
+
 // =============================================================================
 // GLOBAL HELPER FUNCTIONS
 // =============================================================================
+f_pos(s) =>
+    s == "Top Left" ? position.top_left : s == "Top Right" ? position.top_right : s == "Middle Left" ? position.middle_left : s == "Middle Right" ? position.middle_right : s == "Bottom Left" ? position.bottom_left : position.bottom_right
+
 f_tfTrend(tf) =>
     e1 = request.security(syminfo.tickerid, tf, ta.ema(close, 20)[1], lookahead = barmerge.lookahead_off)
     e2 = request.security(syminfo.tickerid, tf, ta.ema(close, 50)[1], lookahead = barmerge.lookahead_off)
@@ -104,17 +121,14 @@ float trail = dir == 1 ? lower : upper
 
 // --- gates -----------------------------------------------------------------
 // TRUE higher-timeframe gate: chart-TF EMA structure alone is NOT a higher TF on
-// intraday charts (live finding 2026-06-02: EURUSD 5m traded longs against a clear
-// 1H/4H/D bear consensus). The dominant direction comes from a genuinely higher
-// resolution via request.security (lookahead_off, non-repaint).
+// intraday charts. Dominant direction from a genuinely higher resolution via
+// request.security ([1] + lookahead_off = non-repaint; replay-verified 2026-06-02).
 htfRes    = timeframe.in_seconds() <= 900 ? "240" : timeframe.in_seconds() <= 14400 ? "D" : "W"
 htfDir    = f_tfTrend(htfRes)
 htfEma    = ta.ema(close, baseLen * 4)
 htfBull   = close > htfEma and htfEma > htfEma[slopeLen] and htfDir > 0
 htfBear   = close < htfEma and htfEma < htfEma[slopeLen] and htfDir < 0
-// ADX PERSISTENCE: the threshold must hold for 3 consecutive bars. A single ADX
-// blip above the line no longer opens the gate -> suppresses chop whipsaw
-// (live finding 2026-06-02: EURUSD 5m fired 94 trades at PF 0.79 on ADX blips).
+// ADX persistence: threshold must hold 3 consecutive bars (suppresses blips)
 trendRaw  = adxVal > adxMin
 trending  = trendRaw and trendRaw[1] and trendRaw[2]
 volOK     = atrPctl > 0.20 and atrPctl < 0.90
@@ -130,12 +144,16 @@ buySig    = longOK  and crossUp and barstate.isconfirmed
 sellSig   = shortOK and crossDn and barstate.isconfirmed
 
 // =============================================================================
-// TRADE STATE + LEVELS  (one position at a time; fixed TP/SL)
+// TRADE STATE + LEVELS  (one position at a time; multi-TP exit model)
 // =============================================================================
 var int    posDir   = 0
 var float  entryP   = na
 var float  slP      = na
-var float  tpP      = na
+var float  tp1P     = na
+var float  tp2P     = na
+var float  runStop  = na       // runner stop after TP1 (break-even, then trails)
+var bool   tp1Hit   = false
+var float  slDistV  = na
 var int    entryBar = na
 var box    tpBox    = na
 var box    slBox    = na
@@ -144,6 +162,10 @@ var float  grossWin = 0.0
 var float  grossLos = 0.0
 var int    wins     = 0
 var int    losses   = 0
+var int    nTP2     = 0
+var int    nTrail   = 0
+var int    nBE      = 0
+var int    nLoss    = 0
 var float  equityR  = 0.0
 var float  peakR    = 0.0
 var float  maxDDR   = 0.0
@@ -152,35 +174,68 @@ var float  maxDDR   = 0.0
 pbLow  = ta.lowest(low,  styleLb)
 pbHigh = ta.highest(high, styleLb)
 
-// signals that actually OPEN a trade this bar (fixes ghost labels inside open trades)
+// signals that actually OPEN a trade this bar (no ghost labels in open trades)
 bool openedLong  = false
 bool openedShort = false
 
-// --- close logic: TP / SL only --------------------------------------------
+// --- close logic (confirmed bars). Conservative ordering: SL before TP; on the
+// --- bar TP1 triggers, no second event; runner exits use the PRIOR stop level.
+float closedR = na
+string outcome = na
 if posDir != 0 and barstate.isconfirmed
-    closedR = 0.0
-    closed  = false
     if posDir == 1
-        if low <= slP
-            closedR := -1.0
-            closed  := true
-        else if high >= tpP
-            closedR := rrRatio
-            closed  := true
-    else if posDir == -1
-        if high >= slP
-            closedR := -1.0
-            closed  := true
-        else if low <= tpP
-            closedR := rrRatio
-            closed  := true
-    if closed
+        if not tp1Hit
+            if low <= slP
+                closedR := -1.0
+                outcome := "LOSS"
+            else if mtpOn and high >= tp1P
+                tp1Hit  := true
+                runStop := entryP
+            else if not mtpOn and high >= tp2P
+                closedR := rrRatio
+                outcome := "TP2"
+        else
+            if low <= runStop
+                runnerR = (runStop - entryP) / slDistV
+                closedR := 0.5 * 1.0 + 0.5 * runnerR
+                outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+            else if high >= tp2P
+                closedR := 0.5 * (1.0 + rrRatio)
+                outcome := "TP2"
+            else
+                runStop := math.max(runStop, trail)   // ratchet AFTER exit checks
+    else
+        if not tp1Hit
+            if high >= slP
+                closedR := -1.0
+                outcome := "LOSS"
+            else if mtpOn and low <= tp1P
+                tp1Hit  := true
+                runStop := entryP
+            else if not mtpOn and low <= tp2P
+                closedR := rrRatio
+                outcome := "TP2"
+        else
+            if high >= runStop
+                runnerR = (entryP - runStop) / slDistV
+                closedR := 0.5 * 1.0 + 0.5 * runnerR
+                outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+            else if low <= tp2P
+                closedR := 0.5 * (1.0 + rrRatio)
+                outcome := "TP2"
+            else
+                runStop := math.min(runStop, trail)   // ratchet AFTER exit checks
+    if not na(closedR)
         if closedR > 0
             grossWin += closedR
             wins     += 1
         else
             grossLos += math.abs(closedR)
             losses   += 1
+        nTP2   += outcome == "TP2"   ? 1 : 0
+        nTrail += outcome == "TRAIL" ? 1 : 0
+        nBE    += outcome == "BE"    ? 1 : 0
+        nLoss  += outcome == "LOSS"  ? 1 : 0
         equityR += closedR
         peakR   := math.max(peakR, equityR)
         maxDDR  := math.max(maxDDR, peakR - equityR)
@@ -189,6 +244,7 @@ if posDir != 0 and barstate.isconfirmed
         if not na(slBox)
             box.set_right(slBox, bar_index)
         posDir := 0
+        tp1Hit := false
 
 // --- open logic on confirmed bars (only when flat) -------------------------
 if posDir == 0 and barstate.isconfirmed
@@ -198,11 +254,13 @@ if posDir == 0 and barstate.isconfirmed
         openedLong := true
         posDir   := 1
         entryP   := close
+        slDistV  := slDist
         slP      := entryP - slDist
-        tpP      := entryP + rrRatio * slDist
+        tp1P     := entryP + 1.0 * slDist
+        tp2P     := entryP + rrRatio * slDist
         entryBar := bar_index
         if showZones
-            tpBox := box.new(entryBar, tpP, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
+            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
     else if sellSig
         structD  = pbHigh - close
@@ -210,11 +268,13 @@ if posDir == 0 and barstate.isconfirmed
         openedShort := true
         posDir   := -1
         entryP   := close
+        slDistV  := slDist
         slP      := entryP + slDist
-        tpP      := entryP - rrRatio * slDist
+        tp1P     := entryP - 1.0 * slDist
+        tp2P     := entryP - rrRatio * slDist
         entryBar := bar_index
         if showZones
-            tpBox := box.new(entryBar, entryP, bar_index, tpP, border_color = na, bgcolor = color.new(color.green, 80))
+            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
 
 // --- while in trade: extend zone boxes -------------------------------------
@@ -227,22 +287,19 @@ if posDir != 0 and showZones
 // =============================================================================
 // PLOTTING
 // =============================================================================
-// only the signal that actually opened a trade is shown — no ghost labels while a
-// position is running (user finding 2026-06-02)
 plotshape(showSig and openedLong,  title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(color.teal, 0), text = "BUY",  textcolor = color.white, size = size.small)
 plotshape(showSig and openedShort, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(color.red, 0),  text = "SELL", textcolor = color.white, size = size.small)
 
 plot(showLvls and posDir != 0 ? entryP : na, "Entry", color = color.new(color.blue, 0),  style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 ? slP    : na, "SL",    color = color.new(color.red, 0),   style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 ? tpP    : na, "TP",    color = color.new(color.green, 0), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(color.red, 0), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(color.green, 50), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 ? tp2P   : na, "TP2",   color = color.new(color.green, 0), style = plot.style_linebr, linewidth = 1)
 plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(color.teal, 50) : color.new(color.red, 50), linewidth = 2)
 
 // =============================================================================
-// RECOMMENDED SETTINGS PANEL — regime-based (top-left)
-//   Suggests a profile from the CURRENT market state (ADX trend strength +
-//   volatility percentile). Forward-looking by design => cannot overfit.
+// RECOMMENDED SETTINGS PANEL — regime-based (position user-configurable)
 // =============================================================================
-var table rec = table.new(position.top_left, 2, 7, border_width = 1)
+var table rec = table.new(f_pos(recPosIn), 2, 7, border_width = 1)
 if showRec and barstate.islast
     recProf  = f_regimeRec(adxVal)
     isWait   = adxVal < 18
@@ -261,7 +318,7 @@ if showRec and barstate.islast
     table.cell(rec, 1, 6, "", bgcolor = color.new(color.gray, 90))
 
 // =============================================================================
-// LAYER 2 — MTF TREND DASHBOARD
+// LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
 // =============================================================================
 t15  = f_tfTrend("15")
 t60  = f_tfTrend("60")
@@ -269,7 +326,7 @@ t240 = f_tfTrend("240")
 tD   = f_tfTrend("D")
 mtfCons = t15 + t60 + t240 + tD
 
-var table mt = table.new(position.top_right, 2, 6, border_width = 1)
+var table mt = table.new(f_pos(mtfPosIn), 2, 6, border_width = 1)
 if showMTF and barstate.islast
     table.cell(mt, 0, 0, "MTF Trend", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
     table.cell(mt, 1, 0, "PaceAlgo",  text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
@@ -280,9 +337,9 @@ if showMTF and barstate.islast
     f_mtfCell(mt, 5, "Consensus", mtfCons > 0 ? 1 : mtfCons < 0 ? -1 : 0)
 
 // =============================================================================
-// LAYER 3 — LIVE BACKTEST PANEL
+// LAYER 3 — LIVE BACKTEST PANEL (PF is the headline; outcomes split honestly)
 // =============================================================================
-var table bt = table.new(position.bottom_right, 2, 8, border_width = 1)
+var table bt = table.new(f_pos(btPosIn), 2, 10, border_width = 1)
 if showBT and barstate.islast
     total = wins + losses
     pf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
@@ -290,13 +347,15 @@ if showBT and barstate.islast
     avgR  = total > 0 ? equityR / total : 0.0
     table.cell(bt, 0, 0, "Backtest", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
     table.cell(bt, 1, 0, profile + " / " + style, text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
-    f_btCell(bt, 1, "Trades",     str.tostring(total))
-    f_btCell(bt, 2, "Win Rate",   str.tostring(wr, "#.0") + "%")
-    f_btCell(bt, 3, "Profit F.",  pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
-    f_btCell(bt, 4, "Avg R",      str.tostring(avgR, "#.00"))
-    f_btCell(bt, 5, "Total R",    str.tostring(equityR, "#.0"))
-    f_btCell(bt, 6, "Max DD (R)", str.tostring(maxDDR, "#.0"))
-    f_btCell(bt, 7, "In Trade",   posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
+    f_btCell(bt, 1, "Net PF",     pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
+    f_btCell(bt, 2, "Avg R",      str.tostring(avgR, "#.00"))
+    f_btCell(bt, 3, "Trades",     str.tostring(total))
+    f_btCell(bt, 4, "TP2 / Trail", str.tostring(nTP2) + " / " + str.tostring(nTrail))
+    f_btCell(bt, 5, "BE / Loss",  str.tostring(nBE) + " / " + str.tostring(nLoss))
+    f_btCell(bt, 6, "Win Rate",   str.tostring(wr, "#.0") + "%")
+    f_btCell(bt, 7, "Total R",    str.tostring(equityR, "#.0"))
+    f_btCell(bt, 8, "Max DD (R)", str.tostring(maxDDR, "#.0"))
+    f_btCell(bt, 9, "In Trade",   posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
 
 // =============================================================================
 // ALERTS
