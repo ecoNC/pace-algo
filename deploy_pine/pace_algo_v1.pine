@@ -12,7 +12,7 @@
 //                                  exhaustion flip. This is what fixes the
 //                                  sub-random win rate.
 //   Exit: FIXED TP/SL (Swift-Algo style). SL = recent pullback structure,
-//   clamped to a [0.8 .. 3.0] x ATR band. TP = Risk/Reward x SL distance.
+//   clamped to a style-dependent ATR band. TP = Risk/Reward x SL distance.
 //   Scale-invariant by construction; non-repaint (commits on confirmed bars).
 // =============================================================================
 indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count = 500, max_lines_count = 500)
@@ -21,7 +21,8 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 // INPUTS  (whitelist: profile / display toggles / bounded risk only)
 // =============================================================================
 profile   = input.string("Balanced", "Profile", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
-rrRatio   = input.float(1.5, "Risk / Reward Ratio", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Take-Profit distance as a multiple of the Stop-Loss distance. Lower = higher win rate, smaller wins.")
+style     = input.string("Intraday", "Trading Style", options = ["Scalp", "Intraday", "Swing"], group = "Strategy", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades.")
+rrRatio   = input.float(1.2, "Risk / Reward Ratio", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Take-Profit distance as a multiple of the Stop-Loss distance. Lower = higher win rate, smaller wins.")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
@@ -42,8 +43,11 @@ adxLen    = 14
 volLook   = 100
 slopeLen  = 5
 volSens   = 0.6
-atrFloor  = 0.8           // min SL distance in ATR
-atrCap    = 3.0           // max SL distance in ATR
+
+// trading style -> structure lookback + SL clamp band (bounded presets, no free fit)
+styleLb   = style == "Scalp" ? 5   : style == "Intraday" ? 10  : 20    // pullback structure window
+atrFloor  = style == "Scalp" ? 0.5 : style == "Intraday" ? 0.8 : 1.5   // min SL distance in ATR
+atrCap    = style == "Scalp" ? 1.5 : style == "Intraday" ? 3.0 : 5.0   // max SL distance in ATR
 
 baseMult  = profile == "Aggressive" ? 2.0  : profile == "Balanced" ? 2.5  : 3.0
 adxMin    = profile == "Aggressive" ? 18.0 : profile == "Balanced" ? 22.0 : 28.0
@@ -72,6 +76,11 @@ f_btCell(_t, _r, _lbl, _val) =>
 f_regimeRec(_adx) =>
     _adx < 18 ? "WAIT - ranging" : _adx < 22 ? "Aggressive" : _adx < 28 ? "Balanced" : "Conservative"
 
+// regime-based RR suggestion: strong trend carries further -> higher RR pays;
+// weaker trend -> lower RR = structurally higher win rate. Forward-looking only.
+f_rrRec(_adx) =>
+    _adx < 18 ? "-" : _adx < 22 ? "1.0 (max WR)" : _adx < 28 ? "1.2" : "1.5 (strong trend)"
+
 // =============================================================================
 // LAYER 1 — SELECTIVE TREND ENGINE (regime gate + HTF + pullback entries)
 // =============================================================================
@@ -94,10 +103,20 @@ dir   := na(dir[1]) ? 1 : (dir[1] == -1 and close > upper[1] ? 1 : (dir[1] == 1 
 float trail = dir == 1 ? lower : upper
 
 // --- gates -----------------------------------------------------------------
+// TRUE higher-timeframe gate: chart-TF EMA structure alone is NOT a higher TF on
+// intraday charts (live finding 2026-06-02: EURUSD 5m traded longs against a clear
+// 1H/4H/D bear consensus). The dominant direction comes from a genuinely higher
+// resolution via request.security (lookahead_off, non-repaint).
+htfRes    = timeframe.in_seconds() <= 900 ? "240" : timeframe.in_seconds() <= 14400 ? "D" : "W"
+htfDir    = f_tfTrend(htfRes)
 htfEma    = ta.ema(close, baseLen * 4)
-htfBull   = close > htfEma and htfEma > htfEma[slopeLen]
-htfBear   = close < htfEma and htfEma < htfEma[slopeLen]
-trending  = adxVal > adxMin
+htfBull   = close > htfEma and htfEma > htfEma[slopeLen] and htfDir > 0
+htfBear   = close < htfEma and htfEma < htfEma[slopeLen] and htfDir < 0
+// ADX PERSISTENCE: the threshold must hold for 3 consecutive bars. A single ADX
+// blip above the line no longer opens the gate -> suppresses chop whipsaw
+// (live finding 2026-06-02: EURUSD 5m fired 94 trades at PF 0.79 on ADX blips).
+trendRaw  = adxVal > adxMin
+trending  = trendRaw and trendRaw[1] and trendRaw[2]
 volOK     = atrPctl > 0.20 and atrPctl < 0.90
 
 // --- pullback continuation entries -----------------------------------------
@@ -129,9 +148,13 @@ var float  equityR  = 0.0
 var float  peakR    = 0.0
 var float  maxDDR   = 0.0
 
-// recent pullback structure for the stop
-pbLow  = ta.lowest(low,  fastLen)
-pbHigh = ta.highest(high, fastLen)
+// recent pullback structure for the stop (window scales with trading style)
+pbLow  = ta.lowest(low,  styleLb)
+pbHigh = ta.highest(high, styleLb)
+
+// signals that actually OPEN a trade this bar (fixes ghost labels inside open trades)
+bool openedLong  = false
+bool openedShort = false
 
 // --- close logic: TP / SL only --------------------------------------------
 if posDir != 0 and barstate.isconfirmed
@@ -172,6 +195,7 @@ if posDir == 0 and barstate.isconfirmed
     if buySig
         structD  = close - pbLow
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
+        openedLong := true
         posDir   := 1
         entryP   := close
         slP      := entryP - slDist
@@ -183,6 +207,7 @@ if posDir == 0 and barstate.isconfirmed
     else if sellSig
         structD  = pbHigh - close
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
+        openedShort := true
         posDir   := -1
         entryP   := close
         slP      := entryP + slDist
@@ -202,8 +227,10 @@ if posDir != 0 and showZones
 // =============================================================================
 // PLOTTING
 // =============================================================================
-plotshape(showSig and buySig,  title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(color.teal, 0), text = "BUY",  textcolor = color.white, size = size.small)
-plotshape(showSig and sellSig, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(color.red, 0),  text = "SELL", textcolor = color.white, size = size.small)
+// only the signal that actually opened a trade is shown — no ghost labels while a
+// position is running (user finding 2026-06-02)
+plotshape(showSig and openedLong,  title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(color.teal, 0), text = "BUY",  textcolor = color.white, size = size.small)
+plotshape(showSig and openedShort, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(color.red, 0),  text = "SELL", textcolor = color.white, size = size.small)
 
 plot(showLvls and posDir != 0 ? entryP : na, "Entry", color = color.new(color.blue, 0),  style = plot.style_linebr, linewidth = 1)
 plot(showLvls and posDir != 0 ? slP    : na, "SL",    color = color.new(color.red, 0),   style = plot.style_linebr, linewidth = 1)
@@ -215,7 +242,7 @@ plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(c
 //   Suggests a profile from the CURRENT market state (ADX trend strength +
 //   volatility percentile). Forward-looking by design => cannot overfit.
 // =============================================================================
-var table rec = table.new(position.top_left, 2, 6, border_width = 1)
+var table rec = table.new(position.top_left, 2, 7, border_width = 1)
 if showRec and barstate.islast
     recProf  = f_regimeRec(adxVal)
     isWait   = adxVal < 18
@@ -228,9 +255,10 @@ if showRec and barstate.islast
     f_btCell(rec, 2, "Volatility",  volState)
     table.cell(rec, 0, 3, "Suggested", text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
     table.cell(rec, 1, 3, recProf,     text_color = color.white, bgcolor = recCol,                    text_size = size.small)
-    f_btCell(rec, 4, "Your profile", matchTxt)
-    table.cell(rec, 0, 5, "Regime guide - not a performance guarantee", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 90), text_size = size.tiny)
-    table.cell(rec, 1, 5, "", bgcolor = color.new(color.gray, 90))
+    f_btCell(rec, 4, "Suggested RR", f_rrRec(adxVal))
+    f_btCell(rec, 5, "Your profile", matchTxt)
+    table.cell(rec, 0, 6, "Regime guide - not a performance guarantee", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 90), text_size = size.tiny)
+    table.cell(rec, 1, 6, "", bgcolor = color.new(color.gray, 90))
 
 // =============================================================================
 // LAYER 2 — MTF TREND DASHBOARD
@@ -261,7 +289,7 @@ if showBT and barstate.islast
     wr    = total > 0 ? 100.0 * wins / total : 0.0
     avgR  = total > 0 ? equityR / total : 0.0
     table.cell(bt, 0, 0, "Backtest", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
-    table.cell(bt, 1, 0, profile,    text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
+    table.cell(bt, 1, 0, profile + " / " + style, text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = size.small)
     f_btCell(bt, 1, "Trades",     str.tostring(total))
     f_btCell(bt, 2, "Win Rate",   str.tostring(wr, "#.0") + "%")
     f_btCell(bt, 3, "Profit F.",  pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
