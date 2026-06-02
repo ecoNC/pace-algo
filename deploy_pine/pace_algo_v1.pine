@@ -34,6 +34,7 @@ useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
 showZones = input.bool(true,  "Show TP/SL zones (boxes)",    group = "Display")
+showPrices = input.bool(true, "Show SL/TP price tags",       group = "Display", tooltip = "Prints the exact SL and TP2 price next to each trade's zone. Visual only - does not affect signals or backtest.")
 showTrend = input.bool(true,  "Show trend baseline",         group = "Display")
 showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
 showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
@@ -157,6 +158,8 @@ var float  slDistV  = na
 var int    entryBar = na
 var box    tpBox    = na
 var box    slBox    = na
+var label  slLbl    = na       // price tag at the (effective) stop
+var label  tpLbl    = na       // price tag at TP2
 
 var float  grossWin = 0.0
 var float  grossLos = 0.0
@@ -243,6 +246,10 @@ if posDir != 0 and barstate.isconfirmed
             box.set_right(tpBox, bar_index)
         if not na(slBox)
             box.set_right(slBox, bar_index)
+        if not na(slLbl)
+            label.set_x(slLbl, bar_index)
+        if not na(tpLbl)
+            label.set_x(tpLbl, bar_index)
         posDir := 0
         tp1Hit := false
 
@@ -262,6 +269,9 @@ if posDir == 0 and barstate.isconfirmed
         if showZones
             tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
+        if showPrices
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_left, color = color.new(color.red, 100),   textcolor = color.red,   size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_left, color = color.new(color.green, 100), textcolor = color.green, size = size.small)
     else if sellSig
         structD  = pbHigh - close
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
@@ -276,6 +286,9 @@ if posDir == 0 and barstate.isconfirmed
         if showZones
             tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
+        if showPrices
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_left, color = color.new(color.red, 100),   textcolor = color.red,   size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_left, color = color.new(color.green, 100), textcolor = color.green, size = size.small)
 
 // --- while in trade: extend zone boxes -------------------------------------
 if posDir != 0 and showZones
@@ -283,6 +296,13 @@ if posDir != 0 and showZones
         box.set_right(tpBox, bar_index)
     if not na(slBox)
         box.set_right(slBox, bar_index)
+if posDir != 0 and showPrices
+    effSL = tp1Hit ? runStop : slP
+    if not na(slLbl)
+        label.set_xy(slLbl, bar_index, effSL)
+        label.set_text(slLbl, (tp1Hit ? "BE " : "SL ") + str.tostring(effSL, format.mintick))
+    if not na(tpLbl)
+        label.set_x(tpLbl, bar_index)
 
 // =============================================================================
 // PLOTTING
