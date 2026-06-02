@@ -1,0 +1,67 @@
+{
+  "cost": 0.05,
+  "results": {
+    "crypto": {
+      "symbols": [
+        "BTCUSD",
+        "ETHUSD",
+        "XRPUSD",
+        "LTCUSD",
+        "BCHUSD",
+        "ADAUSD"
+      ],
+      "tf": "5m",
+      "R": 1.5,
+      "arms": {
+        "BASE": {
+          "top_features": [
+            "atr_pct",
+            "dist_to_swing_high_atr",
+            "dist_to_swing_low_atr",
+            "ema_20_dist_atr",
+            "adx_14",
+            "ema_50_dist_atr",
+            "fvg_bull_active",
+            "dist_to_sh_atr_conf",
+            "macd_hist_atr"
+          ],
+          "net_pf": 6.167,
+          "wr": 0.777,
+          "trades_per_day": 11.9,
+          "pct_folds_pos": 1.0,
+          "pf_by_year": {
+            "2024": 7.518,
+            "2025": 3.043,
+            "2026": 7.719
+          },
+          "n_class_feats_in_top": 0
+        },
+        "BASE+CLASS": {
+          "top_features": [
+            "dist_to_swing_high_atr",
+            "atr_pct",
+            "dist_to_swing_low_atr",
+            "ema_20_dist_atr",
+            "realized_vol_20",
+            "adx_14",
+            "dist_to_sh_atr_conf",
+            "ema_50_dist_atr",
+            "dist_to_sl_atr_conf"
+          ],
+          "net_pf": 6.333,
+          "wr": 0.778,
+          "trades_per_day": 11.95,
+          "pct_folds_pos": 1.0,
+          "pf_by_year": {
+            "2024": 7.987,
+            "2025": 3.13,
+            "2026": 7.679
+          },
+          "n_class_feats_in_top": 0
+        },
+        "lift": 0.166,
+        "lift_pass": true
+      }
+    }
+  }
+}

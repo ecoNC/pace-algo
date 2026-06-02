@@ -1,0 +1,70 @@
+{
+  "cost": 0.05,
+  "results": {
+    "index": {
+      "symbols": [
+        "SPX500",
+        "NAS100",
+        "US30",
+        "US2000",
+        "UK100",
+        "FRA40",
+        "EUSTX50",
+        "JPN225",
+        "HKG33"
+      ],
+      "tf": "15m",
+      "R": 1.5,
+      "arms": {
+        "BASE": {
+          "top_features": [
+            "hour_cos",
+            "bars_since_vol_spike",
+            "volume_z_score",
+            "hour_sin",
+            "atr_percentile_100",
+            "htf_4h_atr_percentile_100",
+            "dist_to_sl_atr_conf",
+            "ema_200_dist_atr",
+            "dist_to_swing_high_atr"
+          ],
+          "net_pf": 1.07,
+          "wr": 0.418,
+          "trades_per_day": 4.37,
+          "pct_folds_pos": 0.7,
+          "pf_by_year": {
+            "2024": 1.25,
+            "2025": 0.895,
+            "2026": 1.064
+          },
+          "n_class_feats_in_top": 0
+        },
+        "BASE+CLASS": {
+          "top_features": [
+            "hour_cos",
+            "bars_since_vol_spike",
+            "hour_sin",
+            "volume_z_score",
+            "dist_to_sl_atr_conf",
+            "cl_dow_sin",
+            "atr_percentile_100",
+            "vol_expansion_ratio",
+            "macd_hist_atr"
+          ],
+          "net_pf": 0.975,
+          "wr": 0.396,
+          "trades_per_day": 4.34,
+          "pct_folds_pos": 0.4,
+          "pf_by_year": {
+            "2024": 1.146,
+            "2025": 0.763,
+            "2026": 1.072
+          },
+          "n_class_feats_in_top": 1
+        },
+        "lift": -0.095,
+        "lift_pass": false
+      }
+    }
+  }
+}

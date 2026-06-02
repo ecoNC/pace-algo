@@ -68,14 +68,19 @@ def session_feats(df, sym):
     with np.errstate(invalid="ignore", divide="ignore"):
         out["cl_prev_high_dist"] = (pday - c) / a
         out["cl_prev_low_dist"] = (c - plo) / a
-        # overnight gap: first home-session open of today vs prev day close
+        # overnight gap: first home-session open of today vs prev day close.
+        # CAUSAL: NaN before the session opens (pre-open bars must not see the open).
         sess = hour >= h0
         sopen = pd.Series(np.where(sess, df["_o"].values, np.nan), index=df.index).groupby(day).transform("first")
-        out["cl_overnight_gap"] = (sopen.values - pcl) / a
-        # opening range (first hour of home session): position of close in OR
+        out["cl_overnight_gap"] = np.where(sess, (sopen.values - pcl) / a, np.nan)
+        # opening range (first hour of home session): position of close in OR.
+        # CAUSAL: running cummax/cummin within the OR window (a bar inside the first
+        # hour sees only the range UP TO ITSELF), final OR carried forward after.
         in_or = sess & (hour < h0 + 1)
-        orh = pd.Series(np.where(in_or, df["_h"].values, np.nan), index=df.index).groupby(day).transform("max")
-        orl = pd.Series(np.where(in_or, df["_l"].values, np.nan), index=df.index).groupby(day).transform("min")
+        orh = (pd.Series(np.where(in_or, df["_h"].values, np.nan), index=df.index)
+               .groupby(day).cummax().groupby(day).ffill())
+        orl = (pd.Series(np.where(in_or, df["_l"].values, np.nan), index=df.index)
+               .groupby(day).cummin().groupby(day).ffill())
         rng = (orh - orl).values
         out["cl_or_pos"] = np.where(rng > 0, (c - orl.values) / rng, np.nan)
     # minutes since session open

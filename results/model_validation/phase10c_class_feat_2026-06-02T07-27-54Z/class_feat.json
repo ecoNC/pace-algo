@@ -1,0 +1,63 @@
+{
+  "cost": 0.05,
+  "results": {
+    "crypto": {
+      "symbols": [
+        "BTCUSD",
+        "ETHUSD"
+      ],
+      "tf": "5m",
+      "R": 1.5,
+      "arms": {
+        "BASE": {
+          "top_features": [
+            "htf_4h_rsi_14",
+            "htf_1h_rsi_14",
+            "hour_cos",
+            "ltf_rsi_minus_htf_rsi",
+            "dist_to_sh_atr_conf",
+            "bars_since_vol_spike",
+            "dist_to_swing_high_atr",
+            "ema_50_dist_atr",
+            "adx_slope"
+          ],
+          "net_pf": 1.095,
+          "wr": 0.434,
+          "trades_per_day": 5.7,
+          "pct_folds_pos": 0.8,
+          "pf_by_year": {
+            "2024": 1.112,
+            "2025": 1.108,
+            "2026": 1.008
+          },
+          "n_class_feats_in_top": 0
+        },
+        "BASE+CLASS": {
+          "top_features": [
+            "htf_4h_rsi_14",
+            "cl_hrs_to_funding",
+            "cl_dow_sin",
+            "htf_1h_rsi_14",
+            "cl_dow_cos",
+            "ltf_rsi_minus_htf_rsi",
+            "hour_cos",
+            "dist_to_swing_high_atr",
+            "htf_4h_atr_percentile_100"
+          ],
+          "net_pf": 1.094,
+          "wr": 0.435,
+          "trades_per_day": 5.62,
+          "pct_folds_pos": 0.8,
+          "pf_by_year": {
+            "2024": 1.104,
+            "2025": 1.063,
+            "2026": 1.151
+          },
+          "n_class_feats_in_top": 3
+        },
+        "lift": -0.001,
+        "lift_pass": false
+      }
+    }
+  }
+}

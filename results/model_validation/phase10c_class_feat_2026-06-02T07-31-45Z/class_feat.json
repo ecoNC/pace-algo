@@ -1,0 +1,63 @@
+{
+  "cost": 0.05,
+  "results": {
+    "metal": {
+      "symbols": [
+        "XAUUSD",
+        "XAGUSD"
+      ],
+      "tf": "15m",
+      "R": 3.0,
+      "arms": {
+        "BASE": {
+          "top_features": [
+            "hour_sin",
+            "atr_percentile_100",
+            "htf_4h_rsi_14",
+            "bars_since_vol_spike",
+            "htf_1h_atr_percentile_100",
+            "hour_cos",
+            "htf_4h_atr_percentile_100",
+            "realized_vol_20",
+            "macd_hist_atr"
+          ],
+          "net_pf": 1.074,
+          "wr": 0.267,
+          "trades_per_day": 3.88,
+          "pct_folds_pos": 0.55,
+          "pf_by_year": {
+            "2024": 1.02,
+            "2025": 1.077,
+            "2026": 1.22
+          },
+          "n_class_feats_in_top": 0
+        },
+        "BASE+CLASS": {
+          "top_features": [
+            "hour_sin",
+            "cl_dow_sin",
+            "hour_cos",
+            "htf_4h_rsi_14",
+            "adx_14",
+            "cl_prev_low_dist",
+            "atr_percentile_100",
+            "cl_dow_cos",
+            "bars_since_vol_spike"
+          ],
+          "net_pf": 0.85,
+          "wr": 0.226,
+          "trades_per_day": 4.04,
+          "pct_folds_pos": 0.35,
+          "pf_by_year": {
+            "2024": 0.887,
+            "2025": 0.801,
+            "2026": 0.885
+          },
+          "n_class_feats_in_top": 3
+        },
+        "lift": -0.224,
+        "lift_pass": false
+      }
+    }
+  }
+}
