@@ -204,7 +204,14 @@ Memory files in `~/.claude/projects/C--Users-nico-flotz-Downloads/memory/` exist
 > **§1.4 launch criteria below are SUPERSEDED** (they assumed a universal edge). Replace with
 > a split: (a) a tool quality/UX/non-repaint/backtest-reproducibility bar, and (b) a per-class
 > ML-overlay validation bar (the old PF≥1.7 standard applies only to a class's ML overlay,
-> not to the tool). Build order (adaptive core first vs FX overlay first): TBD by Nico.
+> not to the tool). Build order: **RESOLVED 2026-06-02 (Nico, Web-Session): ADAPTIVE RULE-CORE
+> FIRST.** V1 = Pine-nativer, selbst-kalibrierender, selektiver Trend-Core (ADX-Regime-Gate +
+> HTF-Alignment + Pullback-Entry, fixes TP/SL, Profile, MTF-Dashboard, Backtest-Panel,
+> regime-basiertes Recommended-Settings-Panel) — `deploy_pine/pace_algo_v1.pine`. Der ML-Ranker
+> wird NICHT Signalgenerator, sondern V1.5-Confidence-Overlay (nur validierte Klassen,
+> siehe `docs/module_registry.md`). ML-Pine-Export-Kette (NB15c/pine_codegen/bit-exact) =
+> GEPARKT, nicht gelöscht (`pace_algo_v1_ml_export_PARKED.pine`). WR via SELEKTIVITÄT, nie
+> via Optimizer/Curve-Fit (Swift-Algo-Analyse: deren WR-Optimizer = In-Sample-Fit, kein Edge).
 >
 > The text below (§1.1–1.4) is retained as the prior vision for context.
 
@@ -1425,7 +1432,28 @@ For V1, default to High tier (24/day across symbols) — frequent enough to be "
 
 ## 16. Open Action Items for New Session
 
-### 🚦 TL;DR FÜR SIBLING-CLAUDE — Stand 2026-05-28 (lies das ZUERST)
+### 🚦 TL;DR — Stand 2026-06-02 (ÜBERSCHREIBT alles Ältere unten — lies das ZUERST)
+
+**Build-Status: V1-Core = REGELBASIERT, SELEKTIV (ADX-Regime-Gate + HTF-Alignment +
+Pullback-Entry), Pine-nativ — `deploy_pine/pace_algo_v1.pine` (Web-Session-Prototyp v6,
+inkl. MTF-Dashboard, Backtest-Panel, regime-basiertem Recommended-Settings-Panel).
+ML = GEPARKTER V1.5-Overlay** (NB15c/pine_codegen/bit-exact-Kette PARKED for V1;
+ML-Pine archiviert als `pace_algo_v1_ml_export_PARKED.pine`).
+
+**Validierte Modul-Landkarte (Source of Truth: `docs/module_registry.md`):**
+- ✅ FX-NY (ML): Long 5 Paare + Short USDCHF, net PF 1.51 sized — `fx_module_LOCK.md`
+- ✅ INDEX-DIPBUY (deterministisch, Daily, long-only): Holdout 2015-21 PF 1.63 — `index_dipbuy_LOCK.md`
+- 🟢 METAL-TREND_L (deterministisch, Daily, long-only): Kandidat, 27/27 Grid (Nico: Experimental-Annahme offen)
+- ❌ Crypto direktional: FINAL ZU (phase11a-c, echte Fees); Index-/Metal-Shorts strukturell tot
+
+**Nächste Schritte:** (1) Regel-Core auf trendendem + rangebound Asset via TV-MCP prüfen
+(im Range schweigen = GEWOLLT), (2) iteratives Feintuning mit Nico (OHNE per-Asset-Fit),
+(3) V1.5: Module/ML-Confidence über Klassen-Router einstecken. Crypto-Daten: Dukascopy-
+Altcoins UNBRAUCHBAR — Binance-Pipeline (`data/binance/`, `scripts/fetch_binance.py`) nutzen.
+
+---
+
+### TL;DR-Archiv — Stand 2026-05-28 (historisch, vom Block oben überholt)
 
 **Aktueller Build-Status — V1 KANDIDAT GELOCKED 2026-05-29:**
 
@@ -2350,3 +2378,4 @@ Each Claude session MUST append a row here after meaningful work. This is the ch
 | 2026-06-02 | arbeits-pc | work | **REKONSTRUIERTER Heim-PC-Eintrag (Session 2026-06-01, Log-Row fehlte — Heim-PC hat Code gepusht, aber End-of-Turn-Protokoll nicht abgeschlossen).** Heim-PC lief Phase 3–9 komplett durch, alles committet (f09f49e..0dfb8a1): (1) FVG-Single-Slot-Bug in Pine gefixt (0-Signal-Root-Cause). (2) **Phase 3:** Density gelöst — long+short POOLED Selection erreicht 8-10 Trades/Tag netto-viabel. (3) **Phase 4:** META-Labeling + Proba-Sizing Stack PF 1.28→1.60; META passt ins Pine-Budget bei 50 Trees. (4) **Phase 5:** Cross-Asset-Generalisierung SCHEITERT — Edge ist FX+Session-spezifisch (FX 1.11, Crypto 1.05, Metals 0.95, Indices 0.88 agnostisch). (5) **Produkt-Rethink (Nico-approved):** Tool vs. Edge getrennt — universelles Tool + FX-only AI-Overlay, Expansion klassenweise via ANN-009-Router (`docs/product_rethink_2026-06-01.md`, `docs/roadmap_2026-06-01.md`). (6) **Phase 6:** Per-Class-Multi-Model 3-fach getestet — nur FX ist viable ML-Klasse. (7) **Phase 7: FX-MODUL GELOCKT** (`docs/fx_module_LOCK.md`): net PF 1.51 @0.5pip ECN, WR 0.51, 9.3 Trades/Tag, 80% Folds positiv, alle Jahre positiv. (8) **Phase 7b/c:** Crypto mit gleicher Logik passt NICHT (dünn+decaying), höherer TF fixt nicht — Problem ist REGIME. (9) **Phase 8:** Crypto via Regime-Routing robust + all-years-positive, aber DÜNN (PF ~1.11). (10) **Phase 9 DISCARDED:** 6-Coin-Push PF 5.2 = Lookahead-Leak, nicht vertraut. | `f09f49e`..`0dfb8a1` (15 Commits, alle vom Heim-PC gepusht) + dieser Log-Fix | **Entscheidung Nico:** Crypto-Modul bei PF ~1.11 shippen oder skippen? Danach **Roadmap Phase 0: FX-Modul Pine-Export** (Kernel-Lock-Snapshot → 4 Cascades @50t + Feature-Engine + Gate + R-Exec → bit-exact + ops<5000 verify). |
 | 2026-06-02 | arbeits-pc | work | **PHASE 10 — UNIVERSALITY BATTERY KOMPLETT (Nico-Frage: „FX-Ansatz auf allen Assets, long+short?" → Antwort: NEIN, final).** (1) **10a FX-Shorts unter Voll-Stack:** META rettet die Paar-Shorts NICHT (Short-PF 0.87–1.00, ALL5 bricht 2026 ein) — USDCHF-only-Short-Lock final bestätigt. (2) **10b:** +8 Symbole gefetcht (Dow/Russell/FTSE/CAC/EuroStoxx/Nikkei/HangSeng/**DXY**), Index-Klasse 2→9 Symbole, Daten sauber. (3) **10d TF×R-Sweep mit Heimat-Session-Gates** (RTH/Xetra/TSE/London): **0/72 Konfigs bestehen die Bar**; einziger all-years-positive-Kandidat: Metal 15m R=3, dünn (PF ~1.07). (4) **10e Regime-Routing auf Indices/Metals: negativ** (PF ~0.95 raw). (5) **10c Klassen-Features: negativ überall** (Index −0.10, Metal −0.22, Crypto ±0) — NACH zwei wichtigen Hygiene-Funden: (a) **Phase 9 ROOT-CAUSED:** PF 5.2/6.2 = Daten-Artefakt — Dukascopy XRP/LTC/ADA-5m haben 5–12% Flat-Bars + 4–8% Gaps → ATR≈0 macht Barrier trivial. **REGEL: Dukascopy-Altcoin-Intraday-Daten (non-BTC/ETH) für Forschung UNBRAUCHBAR.** (b) **Opening-Range-Lookahead-Falle:** transform(max) über OR-Fenster ließ Bars in der ersten Stunde die volle Stunden-Range sehen (+0.67-Schein-Lift → −0.10 nach kausalem cummax-Fix). Alles in `docs/phase10_universality_findings.md`. **Produkt-Konsequenz: Tool-vs-Edge-Reframe empirisch zementiert — FX-Modul ist DIE Edge, Rest tool-only.** | `dbd48ab` `ccf6623` `26d0a10` + dieser Commit | **Roadmap Phase 0: FX-Modul Pine-Export** (Kernel-Lock-Snapshot → 4 Cascades @50t + Feature-Engine + Gate + R-Exec → bit-exact + ops<5000). Nico-Entscheidung offen: dünne Pulse (Metal/Crypto ~1.1) als „experimental" Tier oder ganz weglassen. |
 | 2026-06-02 | arbeits-pc | work | **NICO-DIREKTIVE: kein Release-Druck, Produkt universal (jedes Asset/TF, long+short) via Mehr-Modul-Architektur; Register führen, was funktioniert.** Umsetzung: (1) **`docs/module_registry.md`** angelegt — Source of Truth ✅/🟢/🟡/❌/🔬 pro Klasse. (2) **3-Schichten-Architektur festgelegt:** universeller adaptiver Kern (R-Einheiten, adaptives Aktivitätsfenster, Backtest-Panel — läuft überall) + Klassen-Router (syminfo.type) + Edge-Module pro Klasse. (3) **Crypto FINAL GESCHLOSSEN (direktional):** Binance-Pipeline gebaut (8 Perps, makellose Daten + Funding), phase11 ML (native Features liften +0.08, 2026 stirbt), 11b Routing@echte Fees (~breakeven), 11c Synthese (ML zerstört Routing-2026-Vorteil, PF ≤1.03). v1-Puls (PF 1.11) INVALIDIERT — war 0.03R Fantasie-Kosten, real ~0.7R auf 5m. Nur noch Cross-Sectional als Re-Open-Pfad. (4) **INDICES: ERSTER NEUER MODUL-KANDIDAT — DIPBUY** (`close<EMA20−1·ATR & close>EMA200` → long, Daily): Formation 22-26 PF 1.32 · 36/36 Grid-Zellen profitabel · **ECHTER HOLDOUT 2015-21 (ungesehen): PF 1.63, WR 74%, 5/7 Jahre+, 9/11 gesamt** — deterministisch, kein ML, trivial Pine-bar. Index-Shorts strukturell tot; TOM zerfallen. | `30c23c9` `4c5be86` `4dc9cfe` `797b13b` + dieser | **Nico entscheidet:** INDEX-DIPBUY als Modul 2 annehmen? Danach: Universal-Core+Router-Pine-Architektur bauen (FX-Modul + ggf. DIPBUY einstecken); Forschung weiter mit Metals-Swing + Cross-Sectional-Crypto. |
+| 2026-06-02 | arbeits-pc | work | **WEB-SESSION INTEGRIERT: Rule-Core-first + Swift-Algo-Analyse + selektiver Trend-Core-Prototyp.** (1) **Build-Order RESOLVED (Nico):** V1 = regelbasierter selektiver Trend-Core (ADX-Regime-Gate + HTF-Alignment + Pullback-Entry statt Erschöpfungs-Flip — fixt die Sub-Zufalls-WR; fixes TP/SL 0.8-3.0 ATR; 3 Profile; MTF-Dashboard; Backtest-Panel; **regime-basiertes Recommended-Settings-Panel bereits integriert, Variante A, kein In-Sample-Optimizer**). Web-Prototyp v6 → `deploy_pine/pace_algo_v1.pine`; ML-Export archiviert als `pace_algo_v1_ml_export_PARKED.pine`; Skeleton behalten. (2) **HANDOFF §1 Build-TBD → RESOLVED, §16 TL;DR neu (2026-06-02), roadmap §4 Update.** (3) **Swift-Algo-Erkenntnis dokumentiert:** kein ML, In-Sample-WR-Optimizer = Curve-Fit; ihr Erfolg = Tool+UX, nicht Edge — deckt sich mit TOOL≠EDGE-Pivot; kein Klon. (4) **Konvergenz-Befund:** Web-Prototyp-Philosophie (Pullback im Trend) = unabhängig identisch mit heute holdout-validiertem INDEX-DIPBUY und METAL-TREND_L → zwei Wege, eine Wahrheit. (5) TV-Live-Check NICHT möglich (TV Desktop nicht auf Arbeits-PC installiert) → an Heim-PC delegiert: trendendes + rangebound Asset, Skaleninvarianz, Non-Repaint, Box-Verhalten. | `(dieser Commit)` | **Heim-PC:** pace_algo_v1.pine in TV laden, Trend-vs-Range-Check (Range-Stille = GEWOLLT), Zahlen hier dokumentieren. **Nico:** ANN-022-ADR ja/nein + METAL-TREND_L-Annahme als Experimental. Danach iteratives Feintuning mit Nico. |
