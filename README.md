@@ -1,5 +1,9 @@
 # PaceAlgo — Multi-Model AI Trading Indicator
 
+> **Betriebsmodell (Haltung & aktueller Stand): [`STRATEGY_BRIEF.md`](STRATEGY_BRIEF.md)**
+> Two-Tier-Architektur · [`docs/COVERAGE_MATRIX.md`](docs/COVERAGE_MATRIX.md) ·
+> [`docs/IMPROVEMENT_PROTOCOL.md`](docs/IMPROVEMENT_PROTOCOL.md) · [`docs/BENCHMARK_SUITE.md`](docs/BENCHMARK_SUITE.md)
+
 **Tagline:** *Universal UX + Specialized Intelligence* — ein Pine-Indikator, mehrere asset-spezialisierte AI-Modelle, eine konsistente User-Experience.
 
 **Was:** Premium ML-getriebener TradingView-Indikator. Asset-aware Router routet User-Charts zu spezialisierten Modellen (FX, Crypto, Indices, Commodity). V1 startet mit FX-Modell, V2 erweitert auf alle Asset-Klassen.
