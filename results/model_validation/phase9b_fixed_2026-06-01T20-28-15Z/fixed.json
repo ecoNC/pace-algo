@@ -1,0 +1,32 @@
+{
+  "cost": 0.05,
+  "topn": 8,
+  "results": {
+    "2coin": {
+      "net_pf": 1.041,
+      "wr": 0.577,
+      "trades_per_day": 8.09,
+      "pct_folds_pos": 0.6,
+      "pf_by_year": {
+        "2024": 0.99,
+        "2025": 1.071,
+        "2026": 1.109
+      },
+      "all_years_pos": false,
+      "bar_pass": false
+    },
+    "6coin": {
+      "net_pf": 4.114,
+      "wr": 0.772,
+      "trades_per_day": 12.6,
+      "pct_folds_pos": 0.95,
+      "pf_by_year": {
+        "2024": 4.309,
+        "2025": 1.742,
+        "2026": 6.685
+      },
+      "all_years_pos": true,
+      "bar_pass": true
+    }
+  }
+}
