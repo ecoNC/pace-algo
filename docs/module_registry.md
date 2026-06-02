@@ -11,15 +11,10 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 
 ## ✅ MODULE (bestanden, gelockt)
 
-| Modul | Universum | TF | Long | Short | Kennzahlen (net, ECN 0.5pip) | Quelle |
+| Modul | Universum | TF | Long | Short | Kennzahlen | Quelle |
 |---|---|---|---|---|---|---|
-| **FX-NY** | GBPUSD, USDJPY, USDCAD, NZDUSD, USDCHF | 5m | ✅ alle 5 | ✅ nur USDCHF | PF 1.51 (sized), WR 0.51, 9.3/Tag, 80% Folds+, alle Jahre+ | `fx_module_LOCK.md`, phase7 |
-
-## 🟢 KANDIDAT VALIDIERT (inkl. echtem Zeit-Holdout — Nico-Entscheidung zur Aufnahme offen)
-
-| Kandidat | Universum | TF | Kennzahlen | Charakter |
-|---|---|---|---|---|
-| **INDEX-DIPBUY** (`close < EMA20−1·ATR` & `close > EMA200` → long, SL 2·ATR, Exit EMA20-Touch/10d) | 10 Indices (SPX, NAS, Dow, Russell, DAX, FTSE, CAC, EuroStoxx, Nikkei, HangSeng) | **Daily** | **Holdout 2015–21 (ungesehen): PF 1.63, WR 74%, n=415** · Formation 22–26: PF 1.32 · 9/11 Jahren positiv · 36/36 Parameter-Zellen profitabel (Median 1.35) · Regime-EMA-unempfindlich | **Deterministisch — kein ML, trivial Pine-implementierbar, bit-exact gratis, kein Ops-Budget.** Long-only (Index-Shorts strukturell tot). Schwäche: scharfe Korrekturjahre (2018: 0.84, 2020: 0.87) — moderat, erklärbar. ~65 Trades/Jahr über 10 Indices. Quelle: phase12/12b/12c/12d |
+| **FX-NY** (ML) | GBPUSD, USDJPY, USDCAD, NZDUSD, USDCHF | 5m | ✅ alle 5 | ✅ nur USDCHF | PF 1.51 (sized), WR 0.51, 9.3/Tag, 80% Folds+, alle Jahre+ (net, ECN 0.5pip) | `fx_module_LOCK.md`, phase7 |
+| **INDEX-DIPBUY** (deterministisch) | 10 Indices (SPX→HangSeng) | Daily | ✅ | ❌ (strukturell tot) | Holdout 15–21: PF 1.63/WR 74% · Formation 22–26: PF 1.32 · 36/36 Grid+ · 9/11 Jahre+ | `index_dipbuy_LOCK.md`, phase12 — **Nico-approved 2026-06-02** |
 
 ## 🟡 DÜNNE PULSE (real, aber unter der Bar — nicht shippen, beobachten)
 
