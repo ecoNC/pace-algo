@@ -1,0 +1,228 @@
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "LTCUSDT"
+  ],
+  "tfs": [
+    "1h",
+    "4h"
+  ],
+  "tp_r": 1.5,
+  "fees": [
+    0.0005,
+    0.001
+  ],
+  "topN": 8,
+  "seeds": [
+    42,
+    7
+  ],
+  "results": {
+    "1h_BASE": {
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "DOGEUSDT",
+        "LTCUSDT"
+      ],
+      "top_features": [
+        "vol_compression",
+        "hour_sin",
+        "macd_hist_atr",
+        "vol_pct_diff_htf",
+        "is_fx_market_open",
+        "realized_vol_20",
+        "htf_1h_atr_percentile_100",
+        "fvg_bear_size_atr",
+        "vol_expansion_ratio"
+      ],
+      "n_native_in_top": 0,
+      "costs": {
+        "fee0.0005": {
+          "net_pf": 0.944,
+          "wr": 0.396,
+          "trades_per_day": 8.54,
+          "pct_folds_pos": 0.5,
+          "pf_by_year": {
+            "2024": 0.994,
+            "2025": 0.926,
+            "2026": 0.857
+          },
+          "bar_pass": false
+        },
+        "fee0.001": {
+          "net_pf": 0.872,
+          "wr": 0.396,
+          "trades_per_day": 8.54,
+          "pct_folds_pos": 0.4,
+          "pf_by_year": {
+            "2024": 0.919,
+            "2025": 0.858,
+            "2026": 0.781
+          },
+          "bar_pass": false
+        }
+      }
+    },
+    "1h_BASE+NATIVE": {
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "DOGEUSDT",
+        "LTCUSDT"
+      ],
+      "top_features": [
+        "hour_sin",
+        "nat_dow_sin",
+        "vol_pct_diff_htf",
+        "nat_dow_cos",
+        "nat_funding",
+        "vol_compression",
+        "fvg_bull_size_atr",
+        "htf_1h_atr_percentile_100",
+        "nat_funding_z"
+      ],
+      "n_native_in_top": 4,
+      "costs": {
+        "fee0.0005": {
+          "net_pf": 0.989,
+          "wr": 0.412,
+          "trades_per_day": 8.5,
+          "pct_folds_pos": 0.5,
+          "pf_by_year": {
+            "2024": 1.027,
+            "2025": 1.018,
+            "2026": 0.824
+          },
+          "bar_pass": false
+        },
+        "fee0.001": {
+          "net_pf": 0.912,
+          "wr": 0.412,
+          "trades_per_day": 8.5,
+          "pct_folds_pos": 0.45,
+          "pf_by_year": {
+            "2024": 0.953,
+            "2025": 0.934,
+            "2026": 0.758
+          },
+          "bar_pass": false
+        }
+      }
+    },
+    "4h_BASE": {
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "DOGEUSDT",
+        "LTCUSDT"
+      ],
+      "top_features": [
+        "vol_pct_diff_htf",
+        "dist_to_sh_atr_conf",
+        "htf_1h_rsi_14",
+        "fvg_bear_size_atr",
+        "bars_since_vol_spike",
+        "atr_pct",
+        "ema_20_slope_atr",
+        "adx_slope",
+        "vol_compression"
+      ],
+      "n_native_in_top": 0,
+      "costs": {
+        "fee0.0005": {
+          "net_pf": 1.06,
+          "wr": 0.42,
+          "trades_per_day": 7.45,
+          "pct_folds_pos": 0.65,
+          "pf_by_year": {
+            "2024": 1.057,
+            "2025": 1.082,
+            "2026": 0.999
+          },
+          "bar_pass": false
+        },
+        "fee0.001": {
+          "net_pf": 1.019,
+          "wr": 0.42,
+          "trades_per_day": 7.45,
+          "pct_folds_pos": 0.6,
+          "pf_by_year": {
+            "2024": 1.017,
+            "2025": 1.04,
+            "2026": 0.957
+          },
+          "bar_pass": false
+        }
+      }
+    },
+    "4h_BASE+NATIVE": {
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "DOGEUSDT",
+        "LTCUSDT"
+      ],
+      "top_features": [
+        "vol_pct_diff_htf",
+        "dist_to_sh_atr_conf",
+        "fvg_bear_size_atr",
+        "nat_funding_z",
+        "htf_1h_atr_percentile_100",
+        "dist_to_sl_atr_conf",
+        "stoch_rsi_k",
+        "bb_width_pct",
+        "bars_since_vol_spike"
+      ],
+      "n_native_in_top": 1,
+      "costs": {
+        "fee0.0005": {
+          "net_pf": 1.138,
+          "wr": 0.429,
+          "trades_per_day": 7.49,
+          "pct_folds_pos": 0.8,
+          "pf_by_year": {
+            "2024": 1.202,
+            "2025": 1.177,
+            "2026": 0.94
+          },
+          "bar_pass": false
+        },
+        "fee0.001": {
+          "net_pf": 1.09,
+          "wr": 0.429,
+          "trades_per_day": 7.49,
+          "pct_folds_pos": 0.8,
+          "pf_by_year": {
+            "2024": 1.153,
+            "2025": 1.127,
+            "2026": 0.897
+          },
+          "bar_pass": false
+        }
+      }
+    }
+  }
+}
