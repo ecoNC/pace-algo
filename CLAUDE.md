@@ -5,10 +5,11 @@ Lies zuerst `HANDOFF.md` vollständig — das ist die Single Source of Truth.
 
 ## Kurzüberblick
 
-- **Ziel:** Universeller TradingView-Indikator (FX, Crypto, Indices) — $39–499/mo SaaS
-- **Modell:** LightGBM, 100 Trees, Depth 3, 27 Features — V1 Kandidat `v1b_100_noes` gesperrt
-- **Pipeline:** Google Colab (NB01–NB16) → `pine_codegen.py` → `deploy_pine/pace_algo_v1.pine` → TradingView
-- **Aktueller Stand:** NB15c muss mit `AUTO_PUSH=True` re-run werden um echtes Pine Script nach GitHub zu pushen
+- **Ziel:** Universelles TradingView-TOOL + validierte Edge-Module pro Klasse — $39–499/mo SaaS (TOOL ≠ EDGE)
+- **V1 (RESOLVED 2026-06-02):** regelbasierter selektiver Trend-Core, Pine-nativ — `deploy_pine/pace_algo_v1.pine` (ADX-Gate + HTF + Pullback-Entry, Profile, MTF-Dashboard, Backtest- + Recommended-Panel)
+- **ML = geparkter V1.5-Overlay** (NB15c/pine_codegen-Kette PARKED; Archiv: `pace_algo_v1_ml_export_PARKED.pine`)
+- **Modul-Landkarte:** `docs/module_registry.md` — ✅ FX-NY (PF 1.51) · ✅ INDEX-DIPBUY (Holdout PF 1.63) · 🟢 METAL-TREND_L · ❌ Crypto direktional
+- **Aktueller Stand:** V1-Core in TV validieren (Heim-PC, trendend vs. rangebound), dann Feintuning mit Nico — kein per-Asset-Curve-Fit
 
 ## Workstations
 
@@ -46,5 +47,7 @@ git pull origin main
 
 ## Nächste offene Aufgabe
 
-**NB15c in Google Colab re-run:** `AUTO_PUSH=True` setzen (Section 0) + Section 7 Bug ist gefixt.
-Danach: `deploy_pine/pace_algo_v1.pine` in TradingView testen → Signale prüfen.
+**`deploy_pine/pace_algo_v1.pine` (Regel-Core v6) in TradingView testen** (nur Heim-PC — TV
+Desktop fehlt auf Arbeits-PC): (a) trendendes Asset → saubere Pullback-Entries, WR ~45–55%,
+PF >1.2; (b) rangebound Asset → wenige/keine Signale (Regime-Gate schweigt = GEWOLLT).
+Dazu Skaleninvarianz, Non-Repaint, Box-Verhalten. Zahlen in HANDOFF §19 dokumentieren.
