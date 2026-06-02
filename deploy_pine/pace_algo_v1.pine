@@ -40,7 +40,6 @@ showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
 showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
 showRec   = input.bool(true,  "Show recommended settings",   group = "Display")
 
-posOpts   = "Top Left;Top Right;Middle Left;Middle Right;Bottom Left;Bottom Right"
 recPosIn  = input.string("Bottom Left",  "Recommended panel position", options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
 mtfPosIn  = input.string("Top Right",    "MTF dashboard position",     options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
 btPosIn   = input.string("Bottom Right", "Backtest panel position",    options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
@@ -121,9 +120,7 @@ dir   := na(dir[1]) ? 1 : (dir[1] == -1 and close > upper[1] ? 1 : (dir[1] == 1 
 float trail = dir == 1 ? lower : upper
 
 // --- gates -----------------------------------------------------------------
-// TRUE higher-timeframe gate: chart-TF EMA structure alone is NOT a higher TF on
-// intraday charts. Dominant direction from a genuinely higher resolution via
-// request.security ([1] + lookahead_off = non-repaint; replay-verified 2026-06-02).
+// TRUE higher-timeframe gate (non-repaint: [1] + lookahead_off; replay-verified)
 htfRes    = timeframe.in_seconds() <= 900 ? "240" : timeframe.in_seconds() <= 14400 ? "D" : "W"
 htfDir    = f_tfTrend(htfRes)
 htfEma    = ta.ema(close, baseLen * 4)
