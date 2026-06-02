@@ -20,7 +20,14 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 
 | Kandidat | Universum | TF | Kennzahlen | Limitierung | Nächster Hebel |
 |---|---|---|---|---|---|
-| Metal high-R | XAUUSD, XAGUSD | 15m, R=3 | PF 1.07 @0.05ATR, alle Jahre+ (1.02/1.08/1.22) | dünn, nur bei Niedrigkosten | Swing-TF-Test; DXY-Kontext brachte als Feature nichts (10c) |
+| Metal high-R intraday | XAUUSD, XAGUSD | 15m, R=3 | PF 1.07 @0.05ATR, alle Jahre+ (1.02/1.08/1.22) | dünn, nur bei Niedrigkosten | superseded durch METAL-TREND_L-Kandidat (Daily, 🟢 oben) |
+| Metal DIPBUY | XAUUSD, XAGUSD | Daily | PF 1.03 | transferiert NICHT von Indices — Klassen-Wahrheit erneut bestätigt | geschlossen (phase13) |
+
+## 🟢 KANDIDAT VALIDIERT (Nico-Entscheidung zur Aufnahme offen)
+
+| Kandidat | Universum | TF | Kennzahlen | Charakter |
+|---|---|---|---|---|
+| **METAL-TREND_L** (frischer Close>EMA50-Cross bei steigender EMA50 → long, SL 2·ATR, Hold 20d) | XAUUSD, XAGUSD | Daily | Grid **27/27 profitabel** (Median 1.42, Min 1.16) · Zeit-Hälften 15–20: 1.70 / 21–26: 1.27 · 9/11 Jahre+ (schwach 2021/2023) | Deterministisch, long-only (Metal-Shorts tot: 0.84–0.86, auch Trend-Short 0.86). DÜNN: 2 Symbole, ~14 Trades/Jahr. Kein formales Holdout (Grid auf voller Historie), aber generisches Trend-Following = minimales Fit-Risiko. Quelle: phase13/13b |
 
 ## ❌ DURCHGEFALLEN (geschlossen — NICHT re-litigieren ohne NEUE Informationsbasis)
 
