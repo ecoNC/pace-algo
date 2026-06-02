@@ -36,6 +36,15 @@ DUKASCOPY_INSTRUMENT = {
     "SPX500": "INSTRUMENT_IDX_AMERICA_E_SANDP_500",  # index
     "NAS100": "INSTRUMENT_IDX_AMERICA_E_NQ_100",     # index
     "GER40":  "INSTRUMENT_IDX_EUROPE_E_DAAX",        # index (DAX)
+    # phase10b: per-class universe expansion (2026-06-02) — density for class modules
+    "US30":   "INSTRUMENT_IDX_AMERICA_E_D_J_IND",        # Dow Jones
+    "US2000": "INSTRUMENT_IDX_AMERICA_USSC2000_IDX_USD", # Russell 2000
+    "UK100":  "INSTRUMENT_IDX_EUROPE_E_FUTSEE_100",      # FTSE 100
+    "FRA40":  "INSTRUMENT_IDX_EUROPE_E_CAAC_40",         # CAC 40
+    "EUSTX50": "INSTRUMENT_IDX_EUROPE_E_DJE50XX",        # Euro Stoxx 50
+    "JPN225": "INSTRUMENT_IDX_ASIA_E_N225JAP",           # Nikkei 225
+    "HKG33":  "INSTRUMENT_IDX_ASIA_E_H_KONG",            # Hang Seng
+    "USDIDX": "INSTRUMENT_IDX_AMERICA_DOLLAR_IDX_USD",   # DXY — phase10c metals feature
 }
 
 

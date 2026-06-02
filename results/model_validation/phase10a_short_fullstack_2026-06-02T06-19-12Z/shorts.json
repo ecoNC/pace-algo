@@ -1,0 +1,328 @@
+{
+  "spread": 0.5,
+  "topN": 10,
+  "seeds": [
+    42,
+    7
+  ],
+  "folds": 20,
+  "configs": [
+    "none",
+    "USDCHF",
+    "GBPUSD",
+    "USDJPY",
+    "USDCAD",
+    "NZDUSD",
+    "ALL5"
+  ],
+  "results": {
+    "none": {
+      "NOMETA": {
+        "trades_per_day": 8.94,
+        "net_pf": 1.198,
+        "pf_std": 0.302,
+        "wr": 0.495,
+        "pf_by_year": {
+          "2024": 1.073,
+          "2025": 1.344,
+          "2026": 1.206
+        },
+        "short_trades_per_day": 0.0,
+        "short_pf": null,
+        "short_wr": null
+      },
+      "META": {
+        "trades_per_day": 9.15,
+        "net_pf": 1.289,
+        "pf_std": 0.32,
+        "wr": 0.507,
+        "pf_by_year": {
+          "2024": 1.083,
+          "2025": 1.452,
+          "2026": 1.442
+        },
+        "short_trades_per_day": 0.0,
+        "short_pf": null,
+        "short_wr": null
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.15,
+        "net_pf": 1.53,
+        "pf_std": 0.487,
+        "wr": 0.507,
+        "pf_by_year": {
+          "2024": 1.243,
+          "2025": 1.736,
+          "2026": 1.69
+        },
+        "short_trades_per_day": 0.0,
+        "short_pf": null,
+        "short_wr": null
+      }
+    },
+    "USDCHF": {
+      "NOMETA": {
+        "trades_per_day": 8.76,
+        "net_pf": 1.268,
+        "pf_std": 0.361,
+        "wr": 0.51,
+        "pf_by_year": {
+          "2024": 1.072,
+          "2025": 1.545,
+          "2026": 1.272
+        },
+        "short_trades_per_day": 0.93,
+        "short_pf": 1.474,
+        "short_wr": 0.532
+      },
+      "META": {
+        "trades_per_day": 9.25,
+        "net_pf": 1.365,
+        "pf_std": 0.381,
+        "wr": 0.52,
+        "pf_by_year": {
+          "2024": 1.098,
+          "2025": 1.645,
+          "2026": 1.448
+        },
+        "short_trades_per_day": 1.6,
+        "short_pf": 1.107,
+        "short_wr": 0.47
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.25,
+        "net_pf": 1.574,
+        "pf_std": 0.549,
+        "wr": 0.52,
+        "pf_by_year": {
+          "2024": 1.233,
+          "2025": 1.915,
+          "2026": 1.666
+        },
+        "short_trades_per_day": 1.6,
+        "short_pf": 1.107,
+        "short_wr": 0.47
+      }
+    },
+    "GBPUSD": {
+      "NOMETA": {
+        "trades_per_day": 8.94,
+        "net_pf": 1.207,
+        "pf_std": 0.313,
+        "wr": 0.492,
+        "pf_by_year": {
+          "2024": 1.088,
+          "2025": 1.402,
+          "2026": 1.11
+        },
+        "short_trades_per_day": 0.92,
+        "short_pf": 0.949,
+        "short_wr": 0.387
+      },
+      "META": {
+        "trades_per_day": 9.29,
+        "net_pf": 1.311,
+        "pf_std": 0.329,
+        "wr": 0.506,
+        "pf_by_year": {
+          "2024": 1.109,
+          "2025": 1.482,
+          "2026": 1.375
+        },
+        "short_trades_per_day": 1.52,
+        "short_pf": 0.872,
+        "short_wr": 0.393
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.29,
+        "net_pf": 1.529,
+        "pf_std": 0.503,
+        "wr": 0.506,
+        "pf_by_year": {
+          "2024": 1.25,
+          "2025": 1.76,
+          "2026": 1.577
+        },
+        "short_trades_per_day": 1.52,
+        "short_pf": 0.872,
+        "short_wr": 0.393
+      }
+    },
+    "USDJPY": {
+      "NOMETA": {
+        "trades_per_day": 8.74,
+        "net_pf": 1.228,
+        "pf_std": 0.34,
+        "wr": 0.499,
+        "pf_by_year": {
+          "2024": 1.109,
+          "2025": 1.461,
+          "2026": 1.118
+        },
+        "short_trades_per_day": 1.58,
+        "short_pf": 1.038,
+        "short_wr": 0.431
+      },
+      "META": {
+        "trades_per_day": 9.11,
+        "net_pf": 1.33,
+        "pf_std": 0.318,
+        "wr": 0.512,
+        "pf_by_year": {
+          "2024": 1.166,
+          "2025": 1.57,
+          "2026": 1.255
+        },
+        "short_trades_per_day": 2.02,
+        "short_pf": 0.963,
+        "short_wr": 0.414
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.11,
+        "net_pf": 1.531,
+        "pf_std": 0.492,
+        "wr": 0.512,
+        "pf_by_year": {
+          "2024": 1.309,
+          "2025": 1.831,
+          "2026": 1.459
+        },
+        "short_trades_per_day": 2.02,
+        "short_pf": 0.963,
+        "short_wr": 0.414
+      }
+    },
+    "USDCAD": {
+      "NOMETA": {
+        "trades_per_day": 9.31,
+        "net_pf": 1.226,
+        "pf_std": 0.28,
+        "wr": 0.492,
+        "pf_by_year": {
+          "2024": 1.054,
+          "2025": 1.41,
+          "2026": 1.346
+        },
+        "short_trades_per_day": 3.03,
+        "short_pf": 0.953,
+        "short_wr": 0.418
+      },
+      "META": {
+        "trades_per_day": 9.39,
+        "net_pf": 1.304,
+        "pf_std": 0.297,
+        "wr": 0.51,
+        "pf_by_year": {
+          "2024": 1.138,
+          "2025": 1.515,
+          "2026": 1.355
+        },
+        "short_trades_per_day": 2.79,
+        "short_pf": 0.922,
+        "short_wr": 0.416
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.39,
+        "net_pf": 1.521,
+        "pf_std": 0.465,
+        "wr": 0.51,
+        "pf_by_year": {
+          "2024": 1.255,
+          "2025": 1.808,
+          "2026": 1.651
+        },
+        "short_trades_per_day": 2.79,
+        "short_pf": 0.922,
+        "short_wr": 0.416
+      }
+    },
+    "NZDUSD": {
+      "NOMETA": {
+        "trades_per_day": 8.84,
+        "net_pf": 1.223,
+        "pf_std": 0.309,
+        "wr": 0.501,
+        "pf_by_year": {
+          "2024": 1.093,
+          "2025": 1.411,
+          "2026": 1.203
+        },
+        "short_trades_per_day": 1.14,
+        "short_pf": 1.017,
+        "short_wr": 0.45
+      },
+      "META": {
+        "trades_per_day": 9.22,
+        "net_pf": 1.322,
+        "pf_std": 0.311,
+        "wr": 0.518,
+        "pf_by_year": {
+          "2024": 1.133,
+          "2025": 1.498,
+          "2026": 1.461
+        },
+        "short_trades_per_day": 1.56,
+        "short_pf": 1.004,
+        "short_wr": 0.463
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.22,
+        "net_pf": 1.546,
+        "pf_std": 0.488,
+        "wr": 0.518,
+        "pf_by_year": {
+          "2024": 1.295,
+          "2025": 1.777,
+          "2026": 1.666
+        },
+        "short_trades_per_day": 1.56,
+        "short_pf": 1.004,
+        "short_wr": 0.463
+      }
+    },
+    "ALL5": {
+      "NOMETA": {
+        "trades_per_day": 8.97,
+        "net_pf": 1.379,
+        "pf_std": 0.377,
+        "wr": 0.514,
+        "pf_by_year": {
+          "2024": 1.201,
+          "2025": 1.761,
+          "2026": 1.195
+        },
+        "short_trades_per_day": 5.1,
+        "short_pf": 1.151,
+        "short_wr": 0.457
+      },
+      "META": {
+        "trades_per_day": 9.07,
+        "net_pf": 1.361,
+        "pf_std": 0.413,
+        "wr": 0.518,
+        "pf_by_year": {
+          "2024": 1.154,
+          "2025": 1.781,
+          "2026": 1.194
+        },
+        "short_trades_per_day": 4.67,
+        "short_pf": 1.008,
+        "short_wr": 0.436
+      },
+      "META_SIZED": {
+        "trades_per_day": 9.07,
+        "net_pf": 1.55,
+        "pf_std": 0.554,
+        "wr": 0.518,
+        "pf_by_year": {
+          "2024": 1.279,
+          "2025": 2.063,
+          "2026": 1.39
+        },
+        "short_trades_per_day": 4.67,
+        "short_pf": 1.008,
+        "short_wr": 0.436
+      }
+    }
+  }
+}
