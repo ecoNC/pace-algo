@@ -267,8 +267,8 @@ if posDir == 0 and barstate.isconfirmed
             tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
         if showPrices
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_left, color = color.new(color.red, 100),   textcolor = color.red,   size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_left, color = color.new(color.green, 100), textcolor = color.green, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.green, 10), textcolor = color.white, size = size.small)
     else if sellSig
         structD  = pbHigh - close
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
@@ -284,8 +284,8 @@ if posDir == 0 and barstate.isconfirmed
             tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
         if showPrices
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_left, color = color.new(color.red, 100),   textcolor = color.red,   size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_left, color = color.new(color.green, 100), textcolor = color.green, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.green, 10), textcolor = color.white, size = size.small)
 
 // --- while in trade: extend zone boxes -------------------------------------
 if posDir != 0 and showZones
