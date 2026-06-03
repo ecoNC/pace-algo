@@ -30,6 +30,22 @@ und (b) Entry-Gate (nur traden wenn ER effizienten Trend bestätigt).
 - **Both:** überall dominiert (US500 2.55/3t, NAS100 0.61).
 - **Kein Schwellen-Tuning** versucht (verboten). EIN prinzipieller Prior getestet, er trägt nicht.
 
+## PRÄZISIERUNG der Lehre (Nico 2026-06-03) — „global-uniform trägt nicht" ≠ „ER trägt nicht"
+
+Das Aggregat-Verdikt oben („Gate nicht bestanden") ist korrekt, aber die LEHRE ist feiner. Schau
+auf die STRUKTUR statt aufs Aggregat:
+- **Runner-routing zeigt das Regime-Signal sauber:** hilft auf sauberem Trend (US500 D +0.10,
+  GOLD D +0.35, EURUSD 5m +0.03), schadet auf Chop/Hochvol (NAS100 4h −0.07, BTC −0.14). Das ist
+  KEIN Rauschen — es ist exakt die Regime-Story, und ER trennt sie auf Daily korrekt. Es scheitert,
+  weil EINE globale Schwelle (thr0.30) über alle TFs/Klassen gelegt wird — nicht weil das Maß keine
+  Information trägt.
+- **Die Daily-Entry-Gate-Zellen sind statistisch LEER, nicht negativ:** US500 18→4, GOLD 12→2
+  Trades; „inf auf 2 Trades" ist ein Frequenz-Artefakt, kein Ergebnis. Daraus lässt sich weder pro
+  noch contra ableiten (≠ Regression).
+- **Folge:** ER ist NICHT tot — **ER global-uniform ist tot.** ER ist damit der **erste gemessene
+  Input des ANN-024-Routers**, Vorgabe: **pro Klasse/TF kalibriert, nicht global.** Die zwei
+  Negative haben den Router nicht nur motiviert, sie haben ihn **teil-spezifiziert.**
+
 ## Strategische Erkenntnis (wichtiger als das Einzelergebnis)
 
 **Zweites sauberes Negativ-Ergebnis in Folge** (H-EXIT, jetzt H-REGIME-ER). Beide universellen
@@ -39,9 +55,12 @@ nicht breit — was Klasse A hilft, schadet Klasse/TF B (ER-Routing: GOLD +0.35 
 ER-Gate: NAS100 4h + vs. FX −). Auch der Runner-Giveback (H-EXIT) ist mit einem Entry-Maß nicht
 fixbar, weil der Trend WÄHREND der Runner-Phase zerfällt.
 
-→ **Empfehlung: Teil 1 (universelle Verstärker) ist ausgereizt; Pivot auf Teil 2 — den
-architektonischen Hebel (Klassen-/Regime-Router, ANN-024).** Die ehrliche Antwort auf „das
-richtige Verhalten ist regime-verschieden" ist Routing, nicht ein weiterer globaler Knopf.
+→ **ENTSCHEIDUNG (Nico 2026-06-03): Nächster Zyklus = ANN-024-Router. KEIN separater globaler
+H-CONFLUENCE-Lauf.** Begründung: Confluence-Paare sind von Natur klassen-gebunden (DXY→FX/Metalle,
+Alt↔BTC→Crypto), NICHT global — eine global angewandte Confluence-Regel liefe in dieselbe
+Heterogenitäts-Wand = wahrscheinlich Negativ #3 zum Preis eines Zyklus. Confluence wird daher NICHT
+übersprungen, sondern **als klassen-skalierter Router-Input getestet** (erst nach ER). Router wird
+**inkrementell** gebaut: ein validierter Input nach dem anderen, kein Big Bang.
 
 ## Konsequenzen
 

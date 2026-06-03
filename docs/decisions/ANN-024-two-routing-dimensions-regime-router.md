@@ -50,3 +50,31 @@ Modul-Routing): **Exit-Routing.**
 Die Runner-Modi (`runnerMode`) sind deshalb bewusst KEIN User-Live-Toggle (Footgun), sondern
 der Mechanismus, den der Router schaltet. Capped bleibt Live-Default bis der Router validiert ist.
 Promotion auch hier nur klassen-/regime-weit OOS, nie per-Asset.
+
+## ROUTER-CONTRACT v1 (Nico-locked 2026-06-03, nach H-EXIT + H-REGIME-ER)
+
+Zwei saubere Negative haben den Router teil-spezifiziert. Lehre: **global-uniform trägt nicht,
+pro Klasse/TF kalibriert kann tragen.** Der Router wird INKREMENTELL gebaut — ein validierter
+Input nach dem anderen, kein Big Bang.
+
+**Contract:**
+- **Was der Router wählt:** Modul-/Verhaltenswahl pro Klasse (Trend-Core / MR / WAIT) UND
+  per-Klasse/Regime-Parameter (z.B. Runner-Cap-Modus).
+- **Input-Set v1:** `{ ER (per-Klasse/TF-Schwelle), cross-sektionale Confluence (klassen-gepaart:
+  DXY→FX/Metalle, Alt↔BTC→Crypto) }`. Weitere Inputs nur, wenn sie scoped das Gate bestehen.
+- **Promotion (unverändert):** per-Klasse OOS, „keine Klasse regrediert". Besteht ein Input das
+  Gate scoped → promotet; sonst → raus, nächster Input.
+- **Curve-Fit-Guard:** per-Klasse-Schwelle aus einer PRINZIPIELLEN Regel (z.B. fixes ER-Quantil
+  über die Klassen-/Instrument-Historie), NIE per-Asset handgetunt. Validierung OOS ≥4 Assets/Klasse.
+
+**Erster Validierungs-Zyklus (konkret):** ER-Runner-routing **klassen-skaliert** auf die Klassen
+testen, wo es Signal zeigte = **Index-Daily + Metall-Daily** (Struktur aus dem H-REGIME-Sweep),
+mit per-Klasse-Schwelle aus fixem ER-Quantil (gleiche Regel überall, self-calibrating pro
+Instrument → kein Hand-Tuning). Besteht es scoped OOS → ER als Router-Input #1 promotet. Dann
+Confluence als Input #2, gleiche Mechanik, nur in ihrer natürlichen Klasse.
+
+**Produkt-Strang parallel (Nico):** Zwei Negative = Tier-A-Regel-Core sitzt an seiner ehrlichen
+PF-Decke. Der Router ist ein **Coverage-Erweiterungs-Track** (holt Assets über Zeit von
+WAIT/Tool-Only → Edge-Validiert) und läuft als EIGENER Strang. Parallel: Tier-A-Tool + ehrliche
+Coverage-Labels auf dem bereits Laufenden Richtung verkaufbar polieren — kein Warten auf den
+fertigen Router fürs Shipping.
