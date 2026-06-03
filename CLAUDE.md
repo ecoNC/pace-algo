@@ -37,6 +37,14 @@ git pull origin main
 # Dann HANDOFF.md lesen — Section 0, 16, 19, 20
 ```
 
+## Workflow-Regel: Pine-Editor-Injektion (Token-Sparen, 2026-06-02)
+
+**Claude injiziert NIE die Pine-Quelle via `pine_set_source` (verbrennt unnötig Tokens).**
+Claude bearbeitet ausschließlich die lokale Datei `deploy_pine/pace_algo_v1.pine` (+ committet).
+**Nico fügt den Code selbst in den TradingView-Editor ein** und sagt Bescheid, sobald es drin
+ist. Erst DANN nutzt Claude die TV-MCP-Tools zum Compile-Check / Lesen der Panels / Sweeps.
+Gilt für beide Workstations.
+
 ## Wichtigste Locked Rules
 
 - Quality before speed — kein Timeline-Druck
