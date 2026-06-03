@@ -31,6 +31,7 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 // =============================================================================
 profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
 sens      = input.int(0, "Sensitivity (+ mehr / − weniger Signale)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Feinregler auf der Selektivität, ZUSÄTZLICH zum Profil. + = lockerere Gates (ADX-Schwelle runter, engere Trend-Bänder, schnellerer Pullback) = MEHR, aber verrauschtere Signale. − = strenger = weniger, sauberer. 0 = reines Profil (Standard). WICHTIG: mehr Signale = NICHT mehr Profit — reine Frequenz-Präferenz, kein Edge. Frequenz/Qualität-Tradeoff.")
+moduleSel = input.string("Trend-Core", "Module", options = ["Trend-Core", "Mean-Reversion", "Both"], group = "Strategy", tooltip = "Trend-Core (Standard, = bisheriges Verhalten): Pullback-Trades nur im Trend. Mean-Reversion: Band-Fade nur in Range-Regimes (ADX<18, wo der Trend-Core schweigt) → Ziel Range-Mitte, Stop jenseits des Bands. Both: beide additiv. MR ist EXPERIMENTELL bis per Klasse OOS validiert (ANN-025) — bis dahin kein Edge-Claim.")
 style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
@@ -171,13 +172,25 @@ crossDn   = ta.crossunder(close, fastEma)    // resumption after a pop
 longOK  = dir == 1  and trending and (not useHTF or htfBull) and (not useVolGate or volOK)
 shortOK = dir == -1 and trending and (not useHTF or htfBear) and (not useVolGate or volOK)
 
-buySig    = longOK  and crossUp and barstate.isconfirmed
-sellSig   = shortOK and crossDn and barstate.isconfirmed
+trendOn   = moduleSel == "Trend-Core" or moduleSel == "Both"
+mrOn      = moduleSel == "Mean-Reversion" or moduleSel == "Both"
+buySig    = trendOn and longOK  and crossUp and barstate.isconfirmed
+sellSig   = trendOn and shortOK and crossDn and barstate.isconfirmed
+
+// --- Mean-Reversion module (ANN-025): Bollinger band-fade, RANGE regimes only ---
+bbBasis   = ta.sma(close, 20)
+bbDev     = 2.0 * ta.stdev(close, 20)
+bbUpper   = bbBasis + bbDev
+bbLower   = bbBasis - bbDev
+rangeOK   = (not trending) and adxVal < 18.0           // trend-core silent + confirmed range
+mrLong    = mrOn and rangeOK and ta.crossover(close, bbLower)  and barstate.isconfirmed
+mrShort   = mrOn and rangeOK and ta.crossunder(close, bbUpper) and barstate.isconfirmed
 
 // =============================================================================
 // TRADE STATE + LEVELS  (one position at a time; multi-TP exit model)
 // =============================================================================
 var int    posDir   = 0
+var int    posKind  = 0        // 0 = Trend-Core trade, 1 = Mean-Reversion trade (ANN-025)
 var float  entryP   = na
 var float  slP      = na
 var float  tp1P     = na
@@ -218,48 +231,65 @@ bool openedShort = false
 float closedR = na
 string outcome = na
 if posDir != 0 and barstate.isconfirmed
-    if posDir == 1
-        if not tp1Hit
+    if posKind == 1
+        // --- Mean-Reversion close: single TP at band middle, SL beyond band (ANN-025) ---
+        if posDir == 1
             if low <= slP
                 closedR := -1.0
                 outcome := "LOSS"
-            else if mtpOn and high >= tp1P
-                tp1Hit  := true
-                runStop := tp1ToBE ? entryP : slP
-            else if not mtpOn and high >= tp2P
-                closedR := rrRatio
+            else if high >= tp2P
+                closedR := (tp2P - entryP) / slDistV
                 outcome := "TP2"
         else
-            if low <= runStop
-                runnerR = (runStop - entryP) / slDistV
-                closedR := 0.5 * 1.0 + 0.5 * runnerR
-                outcome := runnerR > 0.001 ? "TRAIL" : "BE"
-            else if not na(tp2P) and high >= tp2P
-                closedR := 0.5 * (1.0 + capRv)
-                outcome := "TP2"
-            else
-                runStop := math.max(runStop, trail)   // ratchet AFTER exit checks
-    else
-        if not tp1Hit
             if high >= slP
                 closedR := -1.0
                 outcome := "LOSS"
-            else if mtpOn and low <= tp1P
-                tp1Hit  := true
-                runStop := tp1ToBE ? entryP : slP
-            else if not mtpOn and low <= tp2P
-                closedR := rrRatio
+            else if low <= tp2P
+                closedR := (entryP - tp2P) / slDistV
                 outcome := "TP2"
-        else
-            if high >= runStop
-                runnerR = (entryP - runStop) / slDistV
-                closedR := 0.5 * 1.0 + 0.5 * runnerR
-                outcome := runnerR > 0.001 ? "TRAIL" : "BE"
-            else if not na(tp2P) and low <= tp2P
-                closedR := 0.5 * (1.0 + capRv)
-                outcome := "TP2"
+    else
+        if posDir == 1
+            if not tp1Hit
+                if low <= slP
+                    closedR := -1.0
+                    outcome := "LOSS"
+                else if mtpOn and high >= tp1P
+                    tp1Hit  := true
+                    runStop := tp1ToBE ? entryP : slP
+                else if not mtpOn and high >= tp2P
+                    closedR := rrRatio
+                    outcome := "TP2"
             else
-                runStop := math.min(runStop, trail)   // ratchet AFTER exit checks
+                if low <= runStop
+                    runnerR = (runStop - entryP) / slDistV
+                    closedR := 0.5 * 1.0 + 0.5 * runnerR
+                    outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+                else if not na(tp2P) and high >= tp2P
+                    closedR := 0.5 * (1.0 + capRv)
+                    outcome := "TP2"
+                else
+                    runStop := math.max(runStop, trail)   // ratchet AFTER exit checks
+        else
+            if not tp1Hit
+                if high >= slP
+                    closedR := -1.0
+                    outcome := "LOSS"
+                else if mtpOn and low <= tp1P
+                    tp1Hit  := true
+                    runStop := tp1ToBE ? entryP : slP
+                else if not mtpOn and low <= tp2P
+                    closedR := rrRatio
+                    outcome := "TP2"
+            else
+                if high >= runStop
+                    runnerR = (entryP - runStop) / slDistV
+                    closedR := 0.5 * 1.0 + 0.5 * runnerR
+                    outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+                else if not na(tp2P) and low <= tp2P
+                    closedR := 0.5 * (1.0 + capRv)
+                    outcome := "TP2"
+                else
+                    runStop := math.min(runStop, trail)   // ratchet AFTER exit checks
     if not na(closedR)
         // OOS-Split: only trades closing on/after statsFrom enter the scorecard.
         // Trade state (posDir reset, box freeze) runs regardless — see below.
@@ -308,6 +338,7 @@ if posDir != 0 and barstate.isconfirmed
         tpLbl  := na
         tp1Lbl := na
         posDir := 0
+        posKind := 0
         tp1Hit := false
 
 // --- open logic on confirmed bars (only when flat) -------------------------
@@ -317,6 +348,7 @@ if posDir == 0 and barstate.isconfirmed
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
         openedLong := true
         posDir   := 1
+        posKind  := 0
         entryP   := close
         slDistV  := slDist
         slP      := entryP - slDist
@@ -339,6 +371,7 @@ if posDir == 0 and barstate.isconfirmed
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
         openedShort := true
         posDir   := -1
+        posKind  := 0
         entryP   := close
         slDistV  := slDist
         slP      := entryP + slDist
@@ -356,6 +389,40 @@ if posDir == 0 and barstate.isconfirmed
                 tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.green, 10), textcolor = color.white, size = size.small)
         if showTP1 and mtpOn
             tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_up, color = color.new(color.green, 45), textcolor = color.white, size = size.small)
+    else if mrLong
+        openedLong := true
+        posDir   := 1
+        posKind  := 1
+        entryP   := close
+        slP      := bbLower - 0.5 * atr
+        slDistV  := entryP - slP
+        tp2P     := bbBasis
+        tp1P     := na
+        capRv    := na
+        entryBar := bar_index
+        if showZones
+            slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
+            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.blue, 80))
+        if showPrices
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(color.red, 10),  textcolor = color.white, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.blue, 10), textcolor = color.white, size = size.small)
+    else if mrShort
+        openedShort := true
+        posDir   := -1
+        posKind  := 1
+        entryP   := close
+        slP      := bbUpper + 0.5 * atr
+        slDistV  := slP - entryP
+        tp2P     := bbBasis
+        tp1P     := na
+        capRv    := na
+        entryBar := bar_index
+        if showZones
+            slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
+            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.blue, 80))
+        if showPrices
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(color.red, 10),  textcolor = color.white, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.blue, 10), textcolor = color.white, size = size.small)
 
 // --- while in trade: extend zone boxes -------------------------------------
 if posDir != 0 and showZones
