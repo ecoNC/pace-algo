@@ -414,6 +414,7 @@ if showRec and barstate.islast
 // =============================================================================
 // LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
 // =============================================================================
+t1   = f_tfTrend("1")
 t5   = f_tfTrend("5")
 t15  = f_tfTrend("15")
 t30  = f_tfTrend("30")
@@ -422,21 +423,22 @@ t240 = f_tfTrend("240")
 tD   = f_tfTrend("D")
 tW   = f_tfTrend("W")
 tM   = f_tfTrend("M")
-mtfCons = t5 + t15 + t30 + t60 + t240 + tD + tW + tM
+mtfCons = t1 + t5 + t15 + t30 + t60 + t240 + tD + tW + tM
 
-var table mt = table.new(f_pos(mtfPosIn), 2, 10, border_width = 1)
+var table mt = table.new(f_pos(mtfPosIn), 2, 11, border_width = 1)
 if showMTF and barstate.islast
     table.cell(mt, 0, 0, "MTF Trend", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
     table.cell(mt, 1, 0, "PaceAlgo",  text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
-    f_mtfCell(mt, 1, "5m",  t5)
-    f_mtfCell(mt, 2, "15m", t15)
-    f_mtfCell(mt, 3, "30m", t30)
-    f_mtfCell(mt, 4, "1H",  t60)
-    f_mtfCell(mt, 5, "4H",  t240)
-    f_mtfCell(mt, 6, "1D",  tD)
-    f_mtfCell(mt, 7, "1W",  tW)
-    f_mtfCell(mt, 8, "1M",  tM)
-    f_mtfCell(mt, 9, "Consensus", mtfCons > 0 ? 1 : mtfCons < 0 ? -1 : 0)
+    f_mtfCell(mt, 1,  "1m",  t1)
+    f_mtfCell(mt, 2,  "5m",  t5)
+    f_mtfCell(mt, 3,  "15m", t15)
+    f_mtfCell(mt, 4,  "30m", t30)
+    f_mtfCell(mt, 5,  "1H",  t60)
+    f_mtfCell(mt, 6,  "4H",  t240)
+    f_mtfCell(mt, 7,  "1D",  tD)
+    f_mtfCell(mt, 8,  "1W",  tW)
+    f_mtfCell(mt, 9,  "1M",  tM)
+    f_mtfCell(mt, 10, "Consensus", mtfCons > 0 ? 1 : mtfCons < 0 ? -1 : 0)
 
 // =============================================================================
 // LAYER 3 — LIVE BACKTEST PANEL (PF is the headline; outcomes split honestly)
