@@ -21,8 +21,10 @@ Lies zuerst `HANDOFF.md` vollständig — das ist die Single Source of Truth.
 TradingView **muss mit CDP gestartet werden** damit du Chart-Zugriff hast:
 
 ```powershell
+# Pfad ist VERSIONSABHÄNGIG (ändert sich bei TV-Updates, zuletzt 3.2.0). Dynamisch finden:
 Stop-Process -Name "TradingView" -ErrorAction SilentlyContinue
-Start-Process "C:\Program Files\WindowsApps\TradingView.Desktop_3.1.0.7818_x64__n534cwy3pjxzj\TradingView.exe" -ArgumentList "--remote-debugging-port=9222"
+$tv = (Get-AppxPackage -Name "*TradingView*").InstallLocation
+Start-Process "$tv\TradingView.exe" -ArgumentList "--remote-debugging-port=9222"
 ```
 
 Oder: Desktop-Verknüpfung **"TradingView (CDP)"** doppelklicken.
