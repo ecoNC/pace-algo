@@ -56,6 +56,10 @@ Thumbs.db
 *.swp
 *.swo
 
+# Pine local/debug builds — canonical deploy is pace_algo_v1.pine (tracked).
+# Debug builds are local & regenerable, kept out of the deploy path.
+*_debug.pine
+
 # Logs
 *.log
 logs/

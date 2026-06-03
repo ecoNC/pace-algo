@@ -38,3 +38,15 @@ WAIT, keine 100%-Coverage erzwingen.
 - Der Coverage-Sprung (MR-Modul + Regime-Router) ist ein größeres Vorhaben → eigener
   Zyklus, NACH den universellen Verstärkern (H-EXIT, H-REGIME, H-CONFLUENCE).
 - ML-Overlay (V1.5) bleibt die letzte Sprosse, rankt Signale beider Module.
+
+## Nachtrag 2026-06-03 — Regime-Detektor routet AUCH die Exit-Geometrie (H-EXIT-Befund)
+
+H-EXIT (Sweep 6 Märkte) hat gezeigt: der optimale Runner-Cap ist **regime-abhängig** — glatter
+Trend will laufen (US500 D PF 1.38→3.13 ohne Cap), Chop will cappen (NAS100 4h 1.38→0.55 ohne
+Cap). Damit hat der Regime-Detektor aus H-REGIME eine DRITTE Funktion (zusätzlich zu Gate +
+Modul-Routing): **Exit-Routing.**
+- Trend-Regime (ER hoch) → Runner darf laufen (Extended/Free).
+- Range/Chop-Regime (ER niedrig) → Runner cappt (Capped @ RR).
+Die Runner-Modi (`runnerMode`) sind deshalb bewusst KEIN User-Live-Toggle (Footgun), sondern
+der Mechanismus, den der Router schaltet. Capped bleibt Live-Default bis der Router validiert ist.
+Promotion auch hier nur klassen-/regime-weit OOS, nie per-Asset.

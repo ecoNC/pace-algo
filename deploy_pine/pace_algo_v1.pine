@@ -14,9 +14,10 @@
 //  EXIT MODEL (Multi-TP, CEO-locked 2026-06-02):
 //   TP1 fixed at 1R (NEVER tighter — sub-1R token targets are win-rate inflation
 //   and are rejected, HANDOFF §15). At TP1: bank half, stop to break-even, runner
-//   trails (SuperTrend ratchet). Runner cap is mode-selectable (H-EXIT test):
-//   Capped @ RR (default) / Extended 3R / Free trail (no cap, rides the trail).
-//   Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
+//   trails (SuperTrend ratchet) to TP2 = RR x SL. Runner cap is regime-routed
+//   (ANN-024): Capped is the only live behaviour; Extended/Free branches stay in
+//   code for the H-REGIME router (H-EXIT 2026-06-03 proved the cap is regime-dependent,
+//   NOT a safe user toggle). Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
 //   PF / expectancy is the headline metric, win rate is derived. Multi-TP improves
 //   the payoff DISTRIBUTION — it does not create edge and is not marketed as such.
 //   SL = pullback structure, clamped to a style-dependent ATR band.
@@ -32,7 +33,14 @@ style     = input.string("Intraday", "Trading Style (trade horizon)", options = 
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
 useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = "Risk", tooltip = "Banks half the position at exactly 1R, moves the stop to break-even and lets the runner trail toward TP2. Improves the payoff distribution; profit factor is the headline metric. TP1 is fixed at 1R by design - tighter token targets would inflate the win rate and are rejected.")
-runnerMode= input.string("Capped @ RR", "Runner cap (Multi-TP)", options = ["Capped @ RR", "Extended 3R", "Free trail"], group = "Risk", tooltip = "How far the runner (the second half) may travel after TP1. Capped @ RR = exit at the RR target (current behaviour). Extended 3R = cap at 3R, captures more of the trend tail. Free trail = no fixed target, the runner rides the SuperTrend trail until stopped (maximum trend capture, higher give-back). H-EXIT test - default stays Capped until OOS-proven.")
+// Runner cap is REGIME-ROUTED (ANN-024), NOT a user toggle. H-EXIT (2026-06-03) proved the
+// best runner cap is regime-dependent: smooth trend wants to run (US500 D PF 1.38->3.13),
+// chop wants to cap (NAS100 4h 1.38->0.55). A naked "bigger gains" switch is a footgun that
+// turns a profitable system into a losing one in the wrong regime — the exact opposite of the
+// brand. The Extended 3R / Free trail branches below STAY in code, to be flipped by the
+// H-REGIME router (Trend -> Extended/Free, Chop/Range -> Capped). Until that ships, Capped is
+// the only live behaviour. See ANN-024, roadmap §7, results/.../2026-06-03_H-EXIT_sweep_verdict.md
+runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Extended 3R" | "Free trail"
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
