@@ -14,7 +14,9 @@
 //  EXIT MODEL (Multi-TP, CEO-locked 2026-06-02):
 //   TP1 fixed at 1R (NEVER tighter — sub-1R token targets are win-rate inflation
 //   and are rejected, HANDOFF §15). At TP1: bank half, stop to break-even, runner
-//   trails toward TP2 = RR x SL. Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
+//   trails (SuperTrend ratchet). Runner cap is mode-selectable (H-EXIT test):
+//   Capped @ RR (default) / Extended 3R / Free trail (no cap, rides the trail).
+//   Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
 //   PF / expectancy is the headline metric, win rate is derived. Multi-TP improves
 //   the payoff DISTRIBUTION — it does not create edge and is not marketed as such.
 //   SL = pullback structure, clamped to a style-dependent ATR band.
@@ -30,6 +32,7 @@ style     = input.string("Intraday", "Trading Style (trade horizon)", options = 
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
 useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = "Risk", tooltip = "Banks half the position at exactly 1R, moves the stop to break-even and lets the runner trail toward TP2. Improves the payoff distribution; profit factor is the headline metric. TP1 is fixed at 1R by design - tighter token targets would inflate the win rate and are rejected.")
+runnerMode= input.string("Capped @ RR", "Runner cap (Multi-TP)", options = ["Capped @ RR", "Extended 3R", "Free trail"], group = "Risk", tooltip = "How far the runner (the second half) may travel after TP1. Capped @ RR = exit at the RR target (current behaviour). Extended 3R = cap at 3R, captures more of the trend tail. Free trail = no fixed target, the runner rides the SuperTrend trail until stopped (maximum trend capture, higher give-back). H-EXIT test - default stays Capped until OOS-proven.")
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
@@ -151,6 +154,7 @@ var float  slP      = na
 var float  tp1P     = na
 var float  tp2P     = na
 var float  runStop  = na       // runner stop after TP1 (break-even, then trails)
+var float  capRv    = na       // runner TP2 cap in R at entry (mode-dependent); na = free trail
 var bool   tp1Hit   = false
 var float  slDistV  = na
 var int    entryBar = na
@@ -200,8 +204,8 @@ if posDir != 0 and barstate.isconfirmed
                 runnerR = (runStop - entryP) / slDistV
                 closedR := 0.5 * 1.0 + 0.5 * runnerR
                 outcome := runnerR > 0.001 ? "TRAIL" : "BE"
-            else if high >= tp2P
-                closedR := 0.5 * (1.0 + rrRatio)
+            else if not na(tp2P) and high >= tp2P
+                closedR := 0.5 * (1.0 + capRv)
                 outcome := "TP2"
             else
                 runStop := math.max(runStop, trail)   // ratchet AFTER exit checks
@@ -221,8 +225,8 @@ if posDir != 0 and barstate.isconfirmed
                 runnerR = (entryP - runStop) / slDistV
                 closedR := 0.5 * 1.0 + 0.5 * runnerR
                 outcome := runnerR > 0.001 ? "TRAIL" : "BE"
-            else if low <= tp2P
-                closedR := 0.5 * (1.0 + rrRatio)
+            else if not na(tp2P) and low <= tp2P
+                closedR := 0.5 * (1.0 + capRv)
                 outcome := "TP2"
             else
                 runStop := math.min(runStop, trail)   // ratchet AFTER exit checks
@@ -265,14 +269,17 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP - slDist
         tp1P     := entryP + 1.0 * slDist
-        tp2P     := entryP + rrRatio * slDist
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
+        tp2P     := na(capRv) ? na : entryP + capRv * slDist
         entryBar := bar_index
         if showZones
-            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
+            if not na(tp2P)
+                tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
         if showPrices
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.green, 10), textcolor = color.white, size = size.small)
+            if not na(tp2P)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.green, 10), textcolor = color.white, size = size.small)
     else if sellSig
         structD  = pbHigh - close
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
@@ -282,14 +289,17 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP + slDist
         tp1P     := entryP - 1.0 * slDist
-        tp2P     := entryP - rrRatio * slDist
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
+        tp2P     := na(capRv) ? na : entryP - capRv * slDist
         entryBar := bar_index
         if showZones
-            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
+            if not na(tp2P)
+                tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
         if showPrices
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.green, 10), textcolor = color.white, size = size.small)
+            if not na(tp2P)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.green, 10), textcolor = color.white, size = size.small)
 
 // --- while in trade: extend zone boxes -------------------------------------
 if posDir != 0 and showZones
