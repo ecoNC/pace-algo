@@ -41,13 +41,12 @@ useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = 
 // H-REGIME router (Trend -> Extended/Free, Chop/Range -> Capped). Until that ships, Capped is
 // the only live behaviour. See ANN-024, roadmap §7, results/.../2026-06-03_H-EXIT_sweep_verdict.md
 runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Extended 3R" | "Free trail"
-// H-REGIME (Kaufman Efficiency Ratio) tested 2026-06-03 — failed as a GLOBAL-uniform lever, but
-// the structure carries the regime signal. ANN-024 router v1: ER routes the runner cap PER CLASS.
-// --- ANN-024 Router — RESEARCH inputs (manual class label for validation; auto class-detection
-//     [syminfo.type, fragile on CFD feeds] is a separate ANN-009 step, solved only if this passes).
-classSel  = input.string("Off", "Class router (TEST)", options = ["Off", "Index", "Metal", "FX", "Crypto"], group = "Router (test)", tooltip = "Manual class label for the ANN-024 validation sweep. Off = baseline (Capped everywhere). Index/Metal enable ER runner-routing (the classes where ER showed signal). FX/Crypto = labelled but not routed in v1 (stay Capped). To be replaced by automatic class detection (ANN-009) once the lever is validated.")
-erQWin    = input.int(200, "ER percentile window", minval = 20, maxval = 1000, group = "Router (test)", tooltip = "Lookback for ER's self-calibrating percentile — same rule on every instrument, no per-asset tuning.")
-erQRoute  = input.float(0.50, "ER percentile to run the runner", minval = 0.10, maxval = 0.95, step = 0.05, group = "Router (test)", tooltip = "When ER is above this percentile of its own recent history (efficient trend), the runner runs free; else it caps. Principled quantile, global rule.")
+// Exit/regime-knob track CLOSED 2026-06-03 after 3 negatives (H-EXIT, H-REGIME-ER, ANN-024
+// router input #1 = ER-runner-routing). ER routing fails the gate even scoped per class (index +
+// metal class-medians both regress at the principled quantile); daily samples too thin to validate
+// exit-routing, intraday routing hurts. Trend-Core sits at its honest PF ceiling. ER + classSel
+// scaffolding preserved in git commit 5ec23ae for the Confluence/MR router input. See
+// results/benchmark_runs/2026-06-03_ANN024-router-ER_input1_verdict.md.
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
@@ -149,16 +148,6 @@ htfBear   = close < htfEma and htfEma < htfEma[slopeLen] and htfDir < 0
 trendRaw  = adxVal > adxMin
 trending  = trendRaw and trendRaw[1] and trendRaw[2]
 volOK     = atrPctl > 0.20 and atrPctl < 0.90
-
-// --- ANN-024 Router v1: ER (Kaufman Efficiency Ratio) routes the runner cap PER CLASS.
-//     ER = |net change| / sum(|bar changes|) over 10, bounded [0,1]; routed via its own
-//     self-calibrating percentile (erQRoute) so the threshold is one global rule, not per-asset.
-erChangeR = math.abs(close - close[10])
-erVolR    = math.sum(math.abs(close - close[1]), 10)
-erR       = erVolR > 0 ? erChangeR / erVolR : 0.0
-erPctlR   = ta.percentrank(erR, erQWin) / 100.0
-classRts  = classSel == "Index" or classSel == "Metal"          // classes ER-routing is enabled for (v1)
-effRunner = classRts and erPctlR >= erQRoute ? "Free trail" : runnerMode
 
 // --- pullback continuation entries -----------------------------------------
 crossUp   = ta.crossover(close, fastEma)     // resumption after a dip
@@ -294,7 +283,7 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP - slDist
         tp1P     := entryP + 1.0 * slDist
-        capRv    := not mtpOn ? rrRatio : (effRunner == "Free trail" ? na : effRunner == "Extended 3R" ? 3.0 : rrRatio)
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP + capRv * slDist
         entryBar := bar_index
         if showZones
@@ -314,7 +303,7 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP + slDist
         tp1P     := entryP - 1.0 * slDist
-        capRv    := not mtpOn ? rrRatio : (effRunner == "Free trail" ? na : effRunner == "Extended 3R" ? 3.0 : rrRatio)
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP - capRv * slDist
         entryBar := bar_index
         if showZones
