@@ -40,7 +40,7 @@ showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
 showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
 showRec   = input.bool(true,  "Show recommended settings",   group = "Display")
 
-statsFrom = input.time(timestamp(2024, 1, 1, 0, 0), "Backtest stats from (OOS split)", group = "Panels", tooltip = "Backtest panel counts only trades that CLOSE on/after this date. Set to your out-of-sample start (e.g. 2026-01-01) to read the OOS block. Visual/metric only - does not change which signals fire.")
+statsFrom = input.time(timestamp("2024-01-01T00:00:00"), "Backtest stats from (OOS split)", group = "Panels", tooltip = "Backtest panel counts only trades that CLOSE on/after this date. Set to your out-of-sample start (e.g. 2026-01-01) to read the OOS block. Visual/metric only - does not change which signals fire.")
 recPosIn  = input.string("Bottom Left",  "Recommended panel position", options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
 mtfPosIn  = input.string("Top Right",    "MTF dashboard position",     options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
 btPosIn   = input.string("Bottom Right", "Backtest panel position",    options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
