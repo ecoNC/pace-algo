@@ -30,6 +30,7 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 // INPUTS  (whitelist: profile / style / display / bounded risk only)
 // =============================================================================
 profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
+sens      = input.int(0, "Sensitivity (+ mehr / − weniger Signale)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Feinregler auf der Selektivität, ZUSÄTZLICH zum Profil. + = lockerere Gates (ADX-Schwelle runter, engere Trend-Bänder, schnellerer Pullback) = MEHR, aber verrauschtere Signale. − = strenger = weniger, sauberer. 0 = reines Profil (Standard). WICHTIG: mehr Signale = NICHT mehr Profit — reine Frequenz-Präferenz, kein Edge. Frequenz/Qualität-Tradeoff.")
 style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
@@ -91,6 +92,12 @@ adxMin    = profile == "Aggressive" ? 18.0 : profile == "Balanced" ? 22.0 : 28.0
 useHTF    = profile != "Aggressive"
 useVolGate= profile == "Conservative"
 
+// Sensitivity fine-tune (user frequency axis on top of the profile; 0 = pure profile = baseline).
+// Higher = looser gates = more (noisier) signals. NOT a profit lever — a frequency preference.
+adxMinEff  = math.max(10.0, math.min(40.0, adxMin  - sens * 2.0))
+baseMultE  = math.max(1.5,  math.min(3.5,  baseMult - sens * 0.2))
+fastLenEff = int(math.max(5, math.min(15, fastLen - sens)))
+
 // multi-TP active only when TP2 is meaningfully beyond TP1 (1R)
 mtpOn     = useMTP and rrRatio > 1.05
 
@@ -129,12 +136,12 @@ f_rrRec(_adx) =>
 // =============================================================================
 atr       = ta.atr(atrLen)
 baseline  = ta.ema(close, baseLen)
-fastEma   = ta.ema(close, fastLen)
+fastEma   = ta.ema(close, fastLenEff)
 atrPctl   = ta.percentrank(atr, volLook) / 100.0
 [diP, diM, adxVal] = ta.dmi(adxLen, adxLen)
 
 // --- directional regime via adaptive SuperTrend trailing -------------------
-adaptiveMult = baseMult * (1.0 + volSens * (atrPctl - 0.5))
+adaptiveMult = baseMultE * (1.0 + volSens * (atrPctl - 0.5))
 upperBasic = baseline + adaptiveMult * atr
 lowerBasic = baseline - adaptiveMult * atr
 var float upper = na
@@ -153,7 +160,7 @@ htfEma    = ta.ema(close, baseLen * 4)
 htfBull   = close > htfEma and htfEma > htfEma[slopeLen] and htfDir > 0
 htfBear   = close < htfEma and htfEma < htfEma[slopeLen] and htfDir < 0
 // ADX persistence: threshold must hold 3 consecutive bars (suppresses blips)
-trendRaw  = adxVal > adxMin
+trendRaw  = adxVal > adxMinEff
 trending  = trendRaw and trendRaw[1] and trendRaw[2]
 volOK     = atrPctl > 0.20 and atrPctl < 0.90
 
@@ -450,7 +457,7 @@ if showBT and barstate.islast
     wr    = total > 0 ? 100.0 * wins / total : 0.0
     avgR  = total > 0 ? equityR / total : 0.0
     table.cell(bt, 0, 0, "Backtest", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
-    table.cell(bt, 1, 0, profile + " / " + style, text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
+    table.cell(bt, 1, 0, profile + " / " + style + (sens != 0 ? " / S" + str.tostring(sens) : ""), text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
     f_btCell(bt, 1, "Net PF",     pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
     f_btCell(bt, 2, "Avg R",      str.tostring(avgR, "#.00"))
     f_btCell(bt, 3, "Trades",     str.tostring(total))
