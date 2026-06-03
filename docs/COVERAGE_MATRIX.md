@@ -30,6 +30,22 @@ Forschung) sind voll OOS-validiert (Walk-Forward bzw. echtes Zeit-Holdout).
 | METAL-TREND_L | Gold/Silber | Daily | **Edge-Validated (Experimental)** | 27/27 Grid, Zeit-Hälften 1.70/1.27 (phase13b) |
 | Crypto direktional | Crypto | alle | **geschlossen** | phase11a–c (beste Daten, echte Fees) → Tool-Only/WAAIT |
 
+## Regime-Dimension (ANN-024 — welches Modul ist pro (Asset,TF) zuständig)
+
+Coverage hat zwei Achsen: **Klasse** (Mikrostruktur) × **Regime** (Trend/Range). Pro
+(Asset, TF) hält diese Spalte fest, welches Modul zuständig ist + dessen OOS-Status.
+Module: `Trend-Core` (live) · `MR` (Mean-Reversion, geplant ANN-024) · `WAIT`.
+
+| Asset | TF | Trend-Regime → Modul | Range-Regime → Modul | Status |
+|---|---|---|---|---|
+| GOLD | Daily | Trend-Core (Edge-Validated prelim) | MR *(noch nicht gebaut)* | Trend ok, Range = WAIT bis MR validiert |
+| US500 | Daily | Trend-Core (Edge-Validated prelim) | MR *(geplant)* | Trend ok, Range = WAIT |
+| BTCUSDT | 1h | Trend-Core (Tool-Only) | MR *(geplant)* | beide noch ohne validierten Edge |
+| EURUSD | 5m | Trend-Core (WAIT — Chop) | **MR-Kandidat** (5m-FX viel Range) | WAIT bis MR die Range-Phasen abdeckt |
+
+→ Sobald das MR-Modul + Regime-Router validiert ist (H-MR), wandern Range-Phasen von
+WAIT zu MR. Bis dahin: Range = WAIT (kein erzwungener Trend-Trade).
+
 ## Pflege-Regeln
 
 - Jede Benchmark-Suite-Runde aktualisiert diese Tabelle (Datum + Scorecard-Link).

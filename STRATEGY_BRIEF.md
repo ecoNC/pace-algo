@@ -60,6 +60,11 @@ Dieser Brief = stabile Haltung + Modell. HANDOFF/roadmap = aktueller Stand. Imme
 - OPTIMIERT WIRD AUF KLASSEN-EBENE (FX-Majors, Indizes, Metalle, Crypto), NICHT pro
   Einzel-Asset. Ein "Modul" = validierter Parametersatz (später ML-Modell) pro Klasse,
   nur promotet wenn OOS über MEHRERE Assets der Klasse besteht. Einzel-Asset-Fit = Overfit.
+- ZWEI ROUTING-DIMENSIONEN (ANN-024): (a) KLASSEN-Router (ANN-009) nach Asset-Klasse
+  (Mikrostruktur Session/RTH/Weekend); (b) REGIME-Router (neu) nach Markt-Regime im Asset:
+  Trend → Trend-Core, Range → Mean-Reversion-Modul (geplant, nur in Ranges aktiv),
+  unklar → WAIT. Coverage = VEREINIGUNG regime-passender Edges (WAIT schrumpft ehrlich,
+  wird nicht erzwungen). MR-Modul nur klassen-/regime-weit validiert, NIE per-Asset.
 - Router (ANN-009) wählt Modul nach Klasse. ML-Confidence-Overlay (V1.5) = letzte Sprosse,
   Wahrscheinlichkeits-Filter auf Regel-Signale, nur auf validierten Klassen (FX zuerst).
 
