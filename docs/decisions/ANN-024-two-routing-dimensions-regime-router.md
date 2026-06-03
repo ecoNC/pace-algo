@@ -78,3 +78,18 @@ PF-Decke. Der Router ist ein **Coverage-Erweiterungs-Track** (holt Assets über 
 WAIT/Tool-Only → Edge-Validiert) und läuft als EIGENER Strang. Parallel: Tier-A-Tool + ehrliche
 Coverage-Labels auf dem bereits Laufenden Richtung verkaufbar polieren — kein Warten auf den
 fertigen Router fürs Shipping.
+
+## MR-Modul-Spec (Nico-locked 2026-06-03 — fürs Decision-Record, falls wir dorthin gehen)
+
+Der Exit/Regime-Knopf-Pfad ist nach 3 Negativen geschlossen (H-EXIT, H-REGIME-ER, Router-ER); das
+MR-Modul ist der verbliebene echte PF/Coverage-Hebel, weil es eine NEUE Edge-Quelle ist (additive
+Trades), nicht eine feinere Justierung des erschöpften Trend-Cores. Verbindliche Vorgaben:
+- **Stop IMMER jenseits der Range-Grenze** = strukturelle Invalidierung → gedeckelter Breakout-
+  Verlust (wenn die Range bricht, ist man früh und klein draußen).
+- **MR feuert NUR wo der Trend-Core schweigt** (Range-Regime) → additive Trades, **KEIN Regress auf
+  Trend-Signale**. Die beiden Module überschneiden sich nicht.
+- **Validiert pro Klasse OOS** wie gehabt (Promotion-Gate, ≥4 Assets/Klasse, keine Klasse regrediert,
+  nie per-Asset). Vorteil ggü. Exit-Routing: Ranges sind häufig → **n-reich → überhaupt validierbar**
+  (die Mess-Grenze, die Exit-Routing killte, gilt hier nicht).
+- Mechanik: Fade an Band-Extremen (Bollinger/Keltner oder RSI-Extrem im bestätigten Range-Kontext)
+  → Ziel Range-Mitte. Skaleninvariant (ATR/Band-basiert).
