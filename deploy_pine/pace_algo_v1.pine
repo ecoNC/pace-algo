@@ -41,12 +41,10 @@ useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = 
 // H-REGIME router (Trend -> Extended/Free, Chop/Range -> Capped). Until that ships, Capped is
 // the only live behaviour. See ANN-024, roadmap §7, results/.../2026-06-03_H-EXIT_sweep_verdict.md
 runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Extended 3R" | "Free trail"
-
-// --- H-REGIME (Kaufman Efficiency Ratio) — RESEARCH inputs (to be de-exposed after the
-//     OOS sweep, like runnerMode). erMode lets the sweep attribute each use separately.
-erMode    = input.string("Off", "ER regime use (TEST)", options = ["Off", "Runner-routing", "Entry-gate", "Both"], group = "Regime (test)", tooltip = "H-REGIME sweep switch. Off = current behaviour (bit-identical). Runner-routing = let the runner run free only when ER says efficient trend, else cap. Entry-gate = trade only when ER confirms an efficient trend. Both = apply both. Research-only; the winning config gets locked internal.")
-erLen     = input.int(10, "ER length", minval = 2, maxval = 100, group = "Regime (test)")
-erTrend   = input.float(0.30, "ER trend threshold", minval = 0.05, maxval = 0.95, step = 0.05, group = "Regime (test)", tooltip = "ER above this = efficient trend (let runner run / allow entry). Kaufman convention ~0.3. Global, never per-asset.")
+// H-REGIME (Kaufman Efficiency Ratio) tested 2026-06-03 — failed the promotion gate as a
+// universal lever (regime/TF-heterogeneous). Implementation lives in git commit d0b13c7,
+// reusable as the regime measure for the ANN-024 router (per class/regime, not a global knob).
+// See results/benchmark_runs/2026-06-03_H-REGIME-ER_sweep_verdict.md.
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
@@ -149,22 +147,12 @@ trendRaw  = adxVal > adxMin
 trending  = trendRaw and trendRaw[1] and trendRaw[2]
 volOK     = atrPctl > 0.20 and atrPctl < 0.90
 
-// --- H-REGIME: Kaufman Efficiency Ratio = |net change| / sum(|bar changes|), bounded [0,1].
-//     High ER = efficient (trending), low ER = choppy. One measure, two uses (see erMode).
-erChange  = math.abs(close - close[erLen])
-erVol     = math.sum(math.abs(close - close[1]), erLen)
-er        = erVol > 0 ? erChange / erVol : 0.0
-erGateOn  = erMode == "Entry-gate"     or erMode == "Both"
-erRouteOn = erMode == "Runner-routing" or erMode == "Both"
-erEff     = er >= erTrend                          // efficient trend on this bar
-effRunner = erRouteOn and erEff ? "Free trail" : runnerMode   // ER routes the runner cap
-
 // --- pullback continuation entries -----------------------------------------
 crossUp   = ta.crossover(close, fastEma)     // resumption after a dip
 crossDn   = ta.crossunder(close, fastEma)    // resumption after a pop
 
-longOK  = dir == 1  and trending and (not useHTF or htfBull) and (not useVolGate or volOK) and (not erGateOn or erEff)
-shortOK = dir == -1 and trending and (not useHTF or htfBear) and (not useVolGate or volOK) and (not erGateOn or erEff)
+longOK  = dir == 1  and trending and (not useHTF or htfBull) and (not useVolGate or volOK)
+shortOK = dir == -1 and trending and (not useHTF or htfBear) and (not useVolGate or volOK)
 
 buySig    = longOK  and crossUp and barstate.isconfirmed
 sellSig   = shortOK and crossDn and barstate.isconfirmed
@@ -293,7 +281,7 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP - slDist
         tp1P     := entryP + 1.0 * slDist
-        capRv    := not mtpOn ? rrRatio : (effRunner == "Free trail" ? na : effRunner == "Extended 3R" ? 3.0 : rrRatio)
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP + capRv * slDist
         entryBar := bar_index
         if showZones
@@ -313,7 +301,7 @@ if posDir == 0 and barstate.isconfirmed
         slDistV  := slDist
         slP      := entryP + slDist
         tp1P     := entryP - 1.0 * slDist
-        capRv    := not mtpOn ? rrRatio : (effRunner == "Free trail" ? na : effRunner == "Extended 3R" ? 3.0 : rrRatio)
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP - capRv * slDist
         entryBar := bar_index
         if showZones
