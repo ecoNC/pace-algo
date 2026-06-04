@@ -189,8 +189,11 @@ bbLower   = bbBasis - bbDev
 htfFlat   = not htfBull and not htfBear                 // no dominant higher-TF trend to fade into
 basisFlat = math.abs(bbBasis - bbBasis[20]) < 0.5 * atr // range center not drifting (no creeping trend)
 rangeOK   = (not trending) and adxVal < 18.0 and htfFlat and basisFlat
-mrLong    = mrOn and rangeOK and ta.crossover(close, bbLower)  and barstate.isconfirmed
-mrShort   = mrOn and rangeOK and ta.crossunder(close, bbUpper) and barstate.isconfirmed
+// close must be on the correct side of the middle so the target (basis) lies in the PROFIT
+// direction — guards against impulse bars that gap from beyond the band to past the middle
+// (those produced mislabeled instant-loss "TP2" exits in v1/v2).
+mrLong    = mrOn and rangeOK and ta.crossover(close, bbLower)  and close < bbBasis and barstate.isconfirmed
+mrShort   = mrOn and rangeOK and ta.crossunder(close, bbUpper) and close > bbBasis and barstate.isconfirmed
 
 // =============================================================================
 // TRADE STATE + LEVELS  (one position at a time; multi-TP exit model)
