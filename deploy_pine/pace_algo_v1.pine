@@ -31,12 +31,10 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 // =============================================================================
 profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
 sens      = input.int(0, "Sensitivity (+ mehr / − weniger Signale)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Feinregler auf der Selektivität, ZUSÄTZLICH zum Profil. + = lockerere Gates (ADX-Schwelle runter, engere Trend-Bänder, schnellerer Pullback) = MEHR, aber verrauschtere Signale. − = strenger = weniger, sauberer. 0 = reines Profil (Standard). WICHTIG: mehr Signale = NICHT mehr Profit — reine Frequenz-Präferenz, kein Edge. Frequenz/Qualität-Tradeoff.")
-// Module selector DE-EXPOSED 2026-06-03: MR v1 failed the validation gate (range-gate ADX<18 too
-// crude — fades trend-pullback dips on trending assets: BTC 1h PF 0.32/-20.8R, EURUSD 1h 0.54).
-// A naked "Mean-Reversion" toggle is a footgun on trending assets (same principle as runnerMode).
-// MR logic is KEPT (conceptually validated: GBPUSD 1h ranged -> PF 1.31), to be re-exposed for the
-// MR v2 sweep once a real range-detector replaces ADX<18. See ANN-025, results/.../MR-module-v1_validation.md.
-moduleSel = "Trend-Core"   // router/sweep-driven later; values: "Trend-Core" | "Mean-Reversion" | "Both"
+// Module selector (re-exposed for the MR v2 sweep). MR v1 failed because ADX<18 alone fades
+// trend-pullback dips on trending assets; v2 adds a genuine-range confirmation (htfFlat + basisFlat).
+// EXPERIMENTAL until validated per class OOS (ANN-025); de-expose / router-gate after the verdict.
+moduleSel = input.string("Trend-Core", "Module (TEST)", options = ["Trend-Core", "Mean-Reversion", "Both"], group = "Strategy", tooltip = "Trend-Core (Standard = Baseline). Mean-Reversion: Band-Fade NUR in bestätigter Range (Trend-Gate aus, ADX<18, kein dominanter Higher-TF-Trend, flache Range-Mitte). Both: additiv. EXPERIMENTELL — kein Edge-Claim bis OOS-validiert.")
 style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
@@ -187,7 +185,10 @@ bbBasis   = ta.sma(close, 20)
 bbDev     = 2.0 * ta.stdev(close, 20)
 bbUpper   = bbBasis + bbDev
 bbLower   = bbBasis - bbDev
-rangeOK   = (not trending) and adxVal < 18.0           // trend-core silent + confirmed range
+// MR v2 genuine-range confirmation (fixes v1: ADX<18 alone faded trend-pullback dips)
+htfFlat   = not htfBull and not htfBear                 // no dominant higher-TF trend to fade into
+basisFlat = math.abs(bbBasis - bbBasis[20]) < 0.5 * atr // range center not drifting (no creeping trend)
+rangeOK   = (not trending) and adxVal < 18.0 and htfFlat and basisFlat
 mrLong    = mrOn and rangeOK and ta.crossover(close, bbLower)  and barstate.isconfirmed
 mrShort   = mrOn and rangeOK and ta.crossunder(close, bbUpper) and barstate.isconfirmed
 
