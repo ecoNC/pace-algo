@@ -59,6 +59,7 @@ runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Ex
 // results/benchmark_runs/2026-06-03_ANN024-router-ER_input1_verdict.md.
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
+quietOnWait = input.bool(false, "Quiet on WAIT (Signale ausblenden wo Verdict=WAIT)", group = "Display", tooltip = "An: auf einem Chart mit WAIT-Verdict (ADX<18 ranging ODER Backtest-PF<1 bei ≥10 Trades) werden KEINE neuen Signale/Level/Zonen mehr gezeichnet — der Indikator bleibt still statt verlustreiche Setups zu zeigen (die Marke spürbar). Der Backtest + das Verdict-Panel rechnen unverändert weiter (ehrlich). Rein visuell.")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
 showZones = input.bool(true,  "Show TP/SL zones (boxes)",    group = "Display")
 showPrices = input.bool(true, "Show SL/TP price tags",       group = "Display", tooltip = "Prints the exact SL and TP2 price next to each trade's zone. Visual only - does not affect signals or backtest.")
@@ -237,6 +238,13 @@ pbHigh = ta.highest(high, styleLb)
 bool openedLong  = false
 bool openedShort = false
 
+// --- Quiet-on-WAIT: hide signal VISUALS where the chart is in WAIT territory (uses prior-bar
+//     accumulators; the backtest math below is UNCHANGED — panel/verdict stay honest) ---
+runTot    = wins + losses
+runPF     = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+chartWait = adxVal < 18.0 or (runTot >= 10 and runPF < 1.0)
+vizOK     = not (quietOnWait and chartWait)
+
 // --- close logic (confirmed bars). Conservative ordering: SL before TP; on the
 // --- bar TP1 triggers, no second event; runner exits use the PRIOR stop level.
 float closedR = na
@@ -342,7 +350,7 @@ if posDir != 0 and barstate.isconfirmed
                 label.delete(tpLbl)
         if not na(tp1Lbl)
             label.delete(tp1Lbl)
-        if showSig
+        if showSig and vizOK
             label.new(bar_index, close, oTxt, style = posDir == 1 ? label.style_label_up : label.style_label_down, color = color.new(oCol, 15), textcolor = color.white, size = size.small)
         tpBox  := na
         slBox  := na
@@ -368,15 +376,15 @@ if posDir == 0 and barstate.isconfirmed
         capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP + capRv * slDist
         entryBar := bar_index
-        if showZones
+        if showZones and vizOK
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
             if not na(tp2P)
                 tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.green, 80))
-        if showPrices
+        if showPrices and vizOK
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
             if not na(tp2P)
                 tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.green, 10), textcolor = color.white, size = size.small)
-        if showTP1 and mtpOn
+        if showTP1 and mtpOn and vizOK
             tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_down, color = color.new(color.green, 45), textcolor = color.white, size = size.small)
     else if sellSig
         structD  = pbHigh - close
@@ -391,15 +399,15 @@ if posDir == 0 and barstate.isconfirmed
         capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
         tp2P     := na(capRv) ? na : entryP - capRv * slDist
         entryBar := bar_index
-        if showZones
+        if showZones and vizOK
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
             if not na(tp2P)
                 tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.green, 80))
-        if showPrices
+        if showPrices and vizOK
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
             if not na(tp2P)
                 tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.green, 10), textcolor = color.white, size = size.small)
-        if showTP1 and mtpOn
+        if showTP1 and mtpOn and vizOK
             tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_up, color = color.new(color.green, 45), textcolor = color.white, size = size.small)
     else if mrLong
         openedLong := true
@@ -412,10 +420,10 @@ if posDir == 0 and barstate.isconfirmed
         tp1P     := na
         capRv    := na
         entryBar := bar_index
-        if showZones
+        if showZones and vizOK
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = na, bgcolor = color.new(color.red, 80))
             tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = na, bgcolor = color.new(color.blue, 80))
-        if showPrices
+        if showPrices and vizOK
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(color.red, 10),  textcolor = color.white, size = size.small)
             tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(color.blue, 10), textcolor = color.white, size = size.small)
     else if mrShort
@@ -429,10 +437,10 @@ if posDir == 0 and barstate.isconfirmed
         tp1P     := na
         capRv    := na
         entryBar := bar_index
-        if showZones
+        if showZones and vizOK
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = na, bgcolor = color.new(color.red, 80))
             tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = na, bgcolor = color.new(color.blue, 80))
-        if showPrices
+        if showPrices and vizOK
             slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(color.red, 10),  textcolor = color.white, size = size.small)
             tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(color.blue, 10), textcolor = color.white, size = size.small)
 
@@ -460,13 +468,13 @@ if posDir != 0 and not na(tp1Lbl)
 // =============================================================================
 // PLOTTING
 // =============================================================================
-plotshape(showSig and openedLong,  title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(color.teal, 0), text = "BUY",  textcolor = color.white, size = size.small)
-plotshape(showSig and openedShort, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(color.red, 0),  text = "SELL", textcolor = color.white, size = size.small)
+plotshape(showSig and openedLong  and vizOK, title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(color.teal, 0), text = "BUY",  textcolor = color.white, size = size.small)
+plotshape(showSig and openedShort and vizOK, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(color.red, 0),  text = "SELL", textcolor = color.white, size = size.small)
 
-plot(showLvls and posDir != 0 ? entryP : na, "Entry", color = color.new(color.blue, 0),  style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(color.red, 0), style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(color.green, 50), style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 ? tp2P   : na, "TP2",   color = color.new(color.green, 0), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 and vizOK ? entryP : na, "Entry", color = color.new(color.blue, 0),  style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 and vizOK ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(color.red, 0), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 and vizOK and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(color.green, 50), style = plot.style_linebr, linewidth = 1)
+plot(showLvls and posDir != 0 and vizOK ? tp2P   : na, "TP2",   color = color.new(color.green, 0), style = plot.style_linebr, linewidth = 1)
 plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(color.teal, 50) : color.new(color.red, 50), linewidth = 2)
 
 // =============================================================================
