@@ -27,6 +27,36 @@ BB(20,2.0)-Fade, Range-Gate `not trending AND ADX<18`, Ziel Band-Mitte, Stop jen
   beim Trend-Core-WAIT. **Range-Detektion ist die gemeinsame, blockierende Abhängigkeit für jede
   Coverage-Erweiterung.**
 
+## NACHTRAG 2026-06-03 — MR v2 (Range-Filter) + Bugfix, korrigierter Sweep
+
+⚠️ Die v1-Zahlen oben waren durch einen Zähler-Bug verfälscht (Impuls-Bar-Entry ÜBER der Band-
+Mitte → sofortiger als „TP2" gelabelter Verlust; nTP2 > wins). **Fix `15eb99d`:** MR-Entry nur wenn
+`close < bbBasis` (long) / `close > bbBasis` (short). **v2 `c4a25de`:** Range-Bestätigung
+`htfFlat` (kein dominanter HTF-Trend) + `basisFlat` (Mitte driftet nicht) zusätzlich zu ADX<18.
+
+| Asset | TF | PF | n | Total R | DD | vs. v1 |
+|---|---|---|---|---|---|---|
+| GBPUSD | 1h | **2.61** | 6 | 3.2 | 1.0 | 1.31 → 2.61 |
+| NAS100 | 1h | **2.56** | 4 | 1.6 | 1.0 | 0.85 → 2.56 (gedreht +) |
+| BTC | 1h | 0.35 | 7 | −3.3 | 3.3 | −20.8R → −3.3R (Blutung −80%) |
+| EURUSD | 1h | 0.03 | 6 | −4.9 | 5.0 | verliert weiter |
+
+**Befunde:** (1) Bugfix verifiziert — nTP2==wins jetzt konsistent. (2) htfFlat-Filter ist
+RICHTUNGSWEISEND korrekt: NAS100 dreht positiv, BTC/EURUSD-Trade-Zahlen eingedampft (55→7, 50→6),
+Blutung −80%. (3) ABER: **alle n=4–7 → weit unter Signifikanz (n≥30) → nichts promotbar.** (4)
+BTC/EURUSD lecken weiter Verlust-Trades (PF<1) — der Filter hält die hart trendenden 2026-Assets
+nicht ganz draußen.
+
+## MR-v2-Verdikt: richtungsweisend validiert, NICHT promotbar (zu streng / zu dünn)
+
+Der Range-Filter funktioniert (Trend-Fades raus, echte Ranges rein → GBPUSD/NAS100 jetzt 2.6),
+aber er ist SO streng, dass kein Asset einen signifikanten Sample hat, und auf hart trendenden
+Assets sickern noch ein paar Verlust-Fades durch. → Default bleibt Trend-Core, kein Live-Status.
+
+**Optionen (Nico-Gabel):** (a) Filter LOCKERN (z.B. nur `htfFlat`, `basisFlat` raus → mehr Trades
+bei erhaltenem Anti-Trend-Schutz) und auf range-DOMINANTEN Assets mit n≥30 testen; (b) MR parken,
+auf Produkt/Ship + FX-Overlay-Entparken pivotieren (Coverage-Matrix: verkaufbarer Edge = Tier B).
+
 ## Konsequenz / nächster Schritt
 
 - MR-Modul-Code bleibt (Commit `d0a5150`, Default Trend-Core, EXPERIMENTAL-Label in ANN-025) —
