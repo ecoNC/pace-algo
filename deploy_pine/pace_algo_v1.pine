@@ -31,10 +31,12 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 // =============================================================================
 profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Aggressive = looser trend filter, more signals. Balanced = stricter + HTF agreement. Conservative = strictest trend + volatility gate.")
 sens      = input.int(0, "Sensitivity (+ mehr / − weniger Signale)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Feinregler auf der Selektivität, ZUSÄTZLICH zum Profil. + = lockerere Gates (ADX-Schwelle runter, engere Trend-Bänder, schnellerer Pullback) = MEHR, aber verrauschtere Signale. − = strenger = weniger, sauberer. 0 = reines Profil (Standard). WICHTIG: mehr Signale = NICHT mehr Profit — reine Frequenz-Präferenz, kein Edge. Frequenz/Qualität-Tradeoff.")
-// Module selector (re-exposed for the MR v2 sweep). MR v1 failed because ADX<18 alone fades
-// trend-pullback dips on trending assets; v2 adds a genuine-range confirmation (htfFlat + basisFlat).
-// EXPERIMENTAL until validated per class OOS (ANN-025); de-expose / router-gate after the verdict.
-moduleSel = input.string("Trend-Core", "Module (TEST)", options = ["Trend-Core", "Mean-Reversion", "Both"], group = "Strategy", tooltip = "Trend-Core (Standard = Baseline). Mean-Reversion: Band-Fade NUR in bestätigter Range (Trend-Gate aus, ADX<18, kein dominanter Higher-TF-Trend, flache Range-Mitte). Both: additiv. EXPERIMENTELL — kein Edge-Claim bis OOS-validiert.")
+// Module DE-EXPOSED again 2026-06-03 after the MR v2 sweep: directionally validated (htfFlat filter
+// works — GBPUSD/NAS100 1h flipped to PF ~2.6, bug fixed) BUT not promotable (all n=4-7 « 30; BTC/
+// EURUSD still leak losers on hard-trend assets). Mean-Reversion on a trending asset is a footgun
+// (BTC 1h PF 0.35), so it's not a live toggle. MR logic KEPT for v2-iteration (loosen filter +
+// range-dominant assets). See ANN-025, results/.../2026-06-03_MR-module-v1_validation.md.
+moduleSel = "Trend-Core"   // research/router-driven; values: "Trend-Core" | "Mean-Reversion" | "Both"
 style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
 rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
 slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
