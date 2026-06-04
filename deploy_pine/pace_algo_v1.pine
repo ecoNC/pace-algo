@@ -64,7 +64,7 @@ showTrend = input.bool(true,  "Show trend baseline",         group = "Display")
 showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
 showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
 showRec   = input.bool(true,  "Show recommended settings",   group = "Display")
-showHist  = input.bool(false, "Verlauf voll anzeigen (Zonen + Preise)", group = "Display", tooltip = "Aus (Standard): vergangene Trades zeigen NUR ein Ergebnis-Label (BUY TP / SELL SL / BE), keinen Preis, keine Box — sauber, v.a. mobil. An: alte Darstellung mit eingefrorenen Zonen + Preis-Tags pro Trade.")
+showHist  = input.bool(false, "Verlauf: auch Preis-Tags behalten", group = "Display", tooltip = "Vergangene Trades zeigen IMMER die TP/SL-Zonen-Boxen + ein Ergebnis-Label (BUY TP / SELL SL / BE). Aus (Standard): ohne Preis-Tags (sauber, v.a. mobil). An: zusätzlich die SL/TP-Preis-Tags pro Trade einfrieren.")
 txtSize   = input.string("Small", "Panel-Textgröße", options = ["Tiny", "Small", "Normal"], group = "Display", tooltip = "Tiny für kleine Screens / Handy.")
 
 statsFrom = input.time(timestamp("2024-01-01T00:00:00"), "Backtest stats from (OOS split)", group = "Panels", tooltip = "Backtest panel counts only trades that CLOSE on/after this date. Set to your out-of-sample start (e.g. 2026-01-01) to read the OOS block. Visual/metric only - does not change which signals fire.")
@@ -326,10 +326,11 @@ if posDir != 0 and barstate.isconfirmed
             if not na(tpLbl)
                 label.set_x(tpLbl, bar_index)
         else
+            // keep the TP/SL zone boxes (freeze them), drop only the price tags + keep the outcome label
             if not na(tpBox)
-                box.delete(tpBox)
+                box.set_right(tpBox, bar_index)
             if not na(slBox)
-                box.delete(slBox)
+                box.set_right(slBox, bar_index)
             if not na(slLbl)
                 label.delete(slLbl)
             if not na(tpLbl)
