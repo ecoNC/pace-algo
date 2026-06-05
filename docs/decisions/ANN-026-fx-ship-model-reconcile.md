@@ -47,3 +47,25 @@ während die **Bit-exact-Compile-Validierung den Heim-PC (TV) braucht**. = cross
 
 **Env-Status (Heim-PC):** lightgbm 4.6.0 + numpy + pytest auf py3.14 vorhanden; `pine_codegen` Tests 7/7 grün.
 Codegen-Kette funktioniert — es fehlen die korrekten 50t-Modelle + Trainings-/Validierungsdaten.
+
+## NACHTRAG 2026-06-03 — BLOCKER AUFGEHOBEN: Daten sind lokal da, Pipeline + bit-exact verifiziert
+
+Der „data_cache fehlt"-Blocker war ein FEHLALARM: die FX-Daten liegen in **`data/processed_v2/`**
+(gitignored, aber lokal vorhanden — nicht `data_cache/`, das ich zuerst prüfte). Alle 7 FX-Symbole,
+5m/1h/4h, 2022-01→2026-05 (GBPUSD 5m = 329.620 Zeilen). **Das FX-Projekt ist VOLL am Heim-PC fahrbar.**
+
+Verifiziert (2026-06-03):
+- `build_pool()` (phase3_density) läuft lokal → POOL 1.624.145 Zeilen, 5 FX-Symbole, FEATURES_9 +
+  Labels (_lab_long/_short) + Gates (_in_ny/_tradeable) gebaut. = komplette Daten/Feature/Label-Pipeline ok.
+- **bit-exact HARD GATE auf echtem Modell BESTANDEN:** Production-Primary-Long (9-Feat, 50t, seed 42,
+  train<2025-07) → `lgbm_to_pine_cascade` (21 KB) → `bit_exact_check` auf 5000 Holdout-Samples:
+  **max_abs_diff 0.0, rmse 0.0.** Die Pine-Cascade == der LightGBM-Booster. (Script:
+  `scripts/fx_primary_export_smoke.py`.) → der riskanteste Teil des Exports ist geknackt.
+
+**Revidierte Rest-Schritte (alle lokal, Heim-PC):**
+2'. Alle 4 Cascades produktiv trainieren (Primary L/S 9-Feat + Meta L/S 73-Feat, 50t, seed, Cutoff)
+   + Thresholds snapshotten (generous gen, POOLED top10, Sizing-Tiers).
+3'. Volles System ins Skelett replizieren: Feature-Engine (9 Feats inkl. NY-Gate + vol_tradeable +
+   htf_4h), 4 Cascades, gen→meta→POOLED-Selektion, Sizing — bit-exact über die GESAMTE Kette.
+4'. OOS-Revalidierung der tatsächlich geshippten 50t-Modelle (alle Jahre + cross-symbol Holdout).
+5'. TV-Compile + Ship-Form → COVERAGE_MATRIX FX-Majors auf Edge-Validated.

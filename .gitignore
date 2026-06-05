@@ -60,6 +60,10 @@ Thumbs.db
 # Debug builds are local & regenerable, kept out of the deploy path.
 *_debug.pine
 
+# FX export smoke artifacts (regenerable via scripts/fx_primary_export_smoke.py)
+artifacts/models/fx_primary_long_50t*
+*.pine.txt
+
 # Logs
 *.log
 logs/
