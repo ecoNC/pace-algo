@@ -57,6 +57,30 @@ Assets sickern noch ein paar Verlust-Fades durch. → Default bleibt Trend-Core,
 bei erhaltenem Anti-Trend-Schutz) und auf range-DOMINANTEN Assets mit n≥30 testen; (b) MR parken,
 auf Produkt/Ship + FX-Overlay-Entparken pivotieren (Coverage-Matrix: verkaufbarer Edge = Tier B).
 
+## NACHTRAG 2 — MR v3 (Gate gelockert: nur htfFlat, basisFlat raus), OOS-Sweep
+
+Hypothese: v2 zu streng (n=4–7) → basisFlat raus = mehr Trades bei erhaltenem htfFlat-Anti-Trend-Schutz.
+
+| Asset 1h | v2 (htfFlat+basisFlat) | v3 (htfFlat only) |
+|---|---|---|
+| GBPUSD | 2.61 / 6t | **4.33 / 15t** ✅ |
+| BTC | 0.35 / 7t / −3.3R | **0.33 / 20t / −10.0R** ✗ (mehr Blutung) |
+| EURUSD | 0.03 / 6t | 0.78 / 20t / −2.4R (besser, weiter <1) |
+| NAS100 | 2.56 / 4t | **0.90 / 12t** ✗ (schlechter) |
+
+**Verdikt v3: Wash-zu-negativ.** Lockern hilft GBPUSD massiv (echte Range → 4.33), degradiert aber
+BTC/NAS100 (mehr Trend-Fades). basisFlat tat doch nützliche Arbeit. Kein globaler Gate-Setpoint
+(ADX<18 / +htfFlat / +basisFlat) trennt Range/Trend sauber über alle Assets.
+
+## MR-FORSCHUNG ABGESCHLOSSEN (v1/v2/v3) — geparkt
+
+Drei Iterationen, ein konsistentes Ergebnis: **MR ist zuverlässig gut NUR auf genuin rangenden
+Assets** (GBPUSD 1h: 1.31→2.61→4.33 über die Versionen) und **kein globales Range-Gate hält es aus
+Trend-Fades** auf trendenden Assets. **Der Engpass ist die Range-DETEKTION — dasselbe ungelöste
+H-REGIME-Problem — nicht das Filter-Tuning.** Modul de-exposed (Footgun), Logik bleibt. Re-aktivieren
+nur mit (a) echtem Range-Detektor ODER (b) per-validierter-Klassen-Routing (Metall <4 Symbole, Crypto
+geschlossen blockieren das aktuell). Weiteres Filter-Tweaken = negative Erkenntnis-Erwartung → gestoppt.
+
 ## Konsequenz / nächster Schritt
 
 - MR-Modul-Code bleibt (Commit `d0a5150`, Default Trend-Core, EXPERIMENTAL-Label in ANN-025) —
