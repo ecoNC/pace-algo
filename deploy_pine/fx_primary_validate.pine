@@ -73,13 +73,17 @@ _prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
 // Matches Python detect_fvg(lookback=20, nearest selection) in market_structure.py.
 // Bug fix: old single-slot version was overwritten by newer FVGs, losing the relevant
 // FVG above price → systematic proba underestimate (~0.07 shift vs Python).
-var float _fvg_bull_lo_a = na, _fvg_bull_hi_a = na
+var float _fvg_bull_lo_a = na
+var float _fvg_bull_hi_a = na
 var int   _fvg_bull_bar_a = 0
-var float _fvg_bull_lo_b = na, _fvg_bull_hi_b = na
+var float _fvg_bull_lo_b = na
+var float _fvg_bull_hi_b = na
 var int   _fvg_bull_bar_b = 0
-var float _fvg_bear_lo_a = na, _fvg_bear_hi_a = na
+var float _fvg_bear_lo_a = na
+var float _fvg_bear_hi_a = na
 var int   _fvg_bear_bar_a = 0
-var float _fvg_bear_lo_b = na, _fvg_bear_hi_b = na
+var float _fvg_bear_lo_b = na
+var float _fvg_bear_hi_b = na
 var int   _fvg_bear_bar_b = 0
 // Expiry (20 bars — matches Python lookback=20)
 if not na(_fvg_bull_lo_a) and bar_index - _fvg_bull_bar_a > 20
@@ -127,8 +131,10 @@ _fvg_bull_mid_a = na(_fvg_bull_lo_a) ? na : (_fvg_bull_lo_a + _fvg_bull_hi_a) / 
 _fvg_bull_mid_b = na(_fvg_bull_lo_b) ? na : (_fvg_bull_lo_b + _fvg_bull_hi_b) / 2.0
 _fvg_bear_mid_a = na(_fvg_bear_lo_a) ? na : (_fvg_bear_lo_a + _fvg_bear_hi_a) / 2.0
 _fvg_bear_mid_b = na(_fvg_bear_lo_b) ? na : (_fvg_bear_lo_b + _fvg_bear_hi_b) / 2.0
-var float _fvg_bull_mid = na, _fvg_bull_sz = na
-var float _fvg_bear_mid = na, _fvg_bear_sz = na
+var float _fvg_bull_mid = na
+var float _fvg_bull_sz = na
+var float _fvg_bear_mid = na
+var float _fvg_bear_sz = na
 _fvg_bull_mid := na
 _fvg_bull_sz  := na
 if not na(_fvg_bull_mid_a) and not na(_fvg_bull_mid_b)
