@@ -1,0 +1,31 @@
+{
+  "created": "2026-06-05T21:13:07.152186+00:00",
+  "trees": 50,
+  "seed": 42,
+  "cutoff": "2025-07-01 00:00:00+00:00",
+  "features_9": [
+    "hour_cos",
+    "hour_sin",
+    "rvol_20",
+    "ema_20_dist_atr",
+    "atr_pct",
+    "htf_4h_rsi_14",
+    "is_fx_market_open",
+    "in_ny",
+    "htf_4h_atr_percentile_100"
+  ],
+  "features_full_n": 73,
+  "gen_long": 0.4994305791425983,
+  "gen_short": 0.49642830094169427,
+  "pooled_thr": 0.4928711702972614,
+  "size_q1": 0.5075322504261723,
+  "size_q2": 0.6179818940379307,
+  "topn": 10,
+  "gen_mult": 3.0,
+  "models": {
+    "mL": "fx_ship_mL_50t_2026-06-03.txt",
+    "mS": "fx_ship_mS_50t_2026-06-03.txt",
+    "meL": "fx_ship_meL_50t_2026-06-03.txt",
+    "meS": "fx_ship_meS_50t_2026-06-03.txt"
+  }
+}
