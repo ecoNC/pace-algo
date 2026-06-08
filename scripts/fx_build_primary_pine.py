@@ -18,7 +18,10 @@ from core.export.pine_features import render_feature_engine
 
 MODELS = REPO / "artifacts" / "models"
 snap = json.loads((MODELS / "fx_ship_snapshot.json").read_text())
-mL = lgb.Booster(model_file=str(MODELS / snap["models"]["mL"]))
+# Load via model_str with LF-normalized newlines — git may check the .txt out with
+# CRLF, which breaks LightGBM's tree_sizes byte-offset parser (see wr_gap_analysis.py).
+_mL_str = (MODELS / snap["models"]["mL"]).read_text(encoding="utf-8").replace("\r\n", "\n")
+mL = lgb.Booster(model_str=_mL_str)
 
 eng = render_feature_engine(FEATURES_9)
 cascade = lgbm_to_pine_cascade(mL, FEATURES_9)   # defines f_pace_algo_v1_probability(...)

@@ -5,7 +5,9 @@ NB15c picks the subset that the production booster actually references
 of Build 2: minimal, data-driven, no dead-feature surface area.
 
 Anti-Look-Ahead Discipline (ANN-018):
-- All HTF (1h/4h) reads use barmerge.lookahead_off + [1] shift
+- All HTF (1h/4h) reads use barmerge.lookahead_on + [1] shift (canonical non-repaint
+  idiom = last CLOSED HTF bar, bit-exact to training's htf.shift(1)+ffill; lookahead_off
+  + [1] would lag one EXTRA HTF bar on historical bars — the Block-1(b) fix 2026-06-08)
 - Macro (daily VIX/DXY/TNX) use [1] shift → last completed trading day
 - Confirmed swings use ta.pivothigh/pivotlow (rightbars=5 delay, no future)
 - FVG stateful detection uses var + fill logic on closed bars
@@ -232,9 +234,12 @@ _pf_htf_ema_align() =>
     _e200 = ta.ema(close, 200)
     _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
 
-_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_off)
+// Non-repaint idiom: expr[1] + lookahead_ON = value of the LAST CLOSED HTF bar,
+// available from that bar's close — bit-exact to training's htf.shift(1)+ffill on
+// native HTF bars. (expr[1] + lookahead_OFF would lag ONE EXTRA HTF bar on history.)
+_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_on)
 
 _htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
 _htf_1h_atr_pct_safe = nz(_htf_1h_atr_pct_raw, 0.5)
@@ -253,9 +258,10 @@ _pf_htf4h_ema_align() =>
     _e200 = ta.ema(close, 200)
     _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
 
-_htf_4h_rsi14_raw     = request.security(syminfo.tickerid, "240", _pf_htf4h_rsi()[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_4h_atr_pct_raw   = request.security(syminfo.tickerid, "240", _pf_htf4h_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_off)
-_htf_4h_ema_align_raw = request.security(syminfo.tickerid, "240", _pf_htf4h_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_off)
+// Non-repaint idiom: expr[1] + lookahead_ON = LAST CLOSED 4h bar (see 1h note above).
+_htf_4h_rsi14_raw     = request.security(syminfo.tickerid, "240", _pf_htf4h_rsi()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_4h_atr_pct_raw   = request.security(syminfo.tickerid, "240", _pf_htf4h_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_4h_ema_align_raw = request.security(syminfo.tickerid, "240", _pf_htf4h_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_on)
 
 _htf_4h_rsi14        = nz(_htf_4h_rsi14_raw, 50.0)
 _htf_4h_atr_pct_safe = nz(_htf_4h_atr_pct_raw, 0.5)
