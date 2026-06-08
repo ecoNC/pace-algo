@@ -23,6 +23,8 @@ ENV/
 # Data cache — too large for git
 data_cache/raw/
 data_cache/processed/
+# TV-captured OHLCV snapshots (throwaway, feed-specific; for whole-chain bit-exact checks)
+data/tv_capture/
 *.parquet
 *.csv
 *.feather
