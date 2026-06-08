@@ -78,11 +78,20 @@ plot(_signal ? 1.0 : 0.0,            "signal",       display=display.data_window
 plot(_signal ? _sig_dir : 0,         "direction",    display=display.data_window)
 plot(_pooled,                        "pooled_proba", display=display.data_window)
 plot(_signal ? _size : 0.0,          "size",         display=display.data_window)
+
+// === Step-4 MENGEN instrumentation: running count + per-signal label (time|dir|size) ===
+// Label text encodes the bar timestamp so data_get_pine_labels yields the full signal SET.
+var int _sig_count = 0
+if _signal
+    _sig_count += 1
+    label.new(bar_index, high, str.tostring(time) + "|" + str.tostring(_sig_dir) + "|" + str.tostring(_size),
+              color=color.new(color.blue, 100), textcolor=color.blue, size=size.tiny, style=label.style_none)
+plot(_sig_count, "sig_count", display=display.data_window)
 """
     pine = f"""//@version=6
 // FX selection-chain validation (Block-2 step 3) — AUTO-GENERATED, DO NOT EDIT.
 // Full chain: gate -> gen -> meta-rank -> POOLED(dedupe) -> signal>=pooled_thr -> sizing.
-indicator("FX Chain Validate", overlay=false, max_lines_count=20)
+indicator("FX Chain Validate", overlay=false, max_lines_count=20, max_labels_count=500)
 
 {eng['helpers'].rstrip()}
 
