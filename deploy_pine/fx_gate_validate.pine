@@ -1,0 +1,201 @@
+//@version=6
+// FX-module GATE validation (Block-2 step 1) — AUTO-GENERATED, DO NOT EDIT.
+// Bit-exact target: core.state.market_state.classify_market_state['tradeable'].
+indicator("FX Gate Validate", overlay=false)
+
+// === Pine-v6 helper functions (tanh is not native in Pine v6) ===
+// Numerically stable tanh via exp identity, clipped to avoid float overflow.
+_pf_tanh(_x) =>
+    _xc = math.max(-20.0, math.min(20.0, _x))
+    _e  = math.exp(2.0 * _xc)
+    (_e - 1.0) / (_e + 1.0)
+
+// Percentile rank matching the TRAINING definition exactly:
+//   pandas: atr.rolling(100, min_periods=100).rank(pct=True)  (method='average')
+// Window INCLUDES the current bar (99 prior + self), needs 100 non-na obs,
+// average-rank tie handling, divided by 100. This differs from Pine's native
+// ta.percentrank (prior bars only, exclusive of self, <= count) — that mismatch
+// was a >1e-5 bit-exact risk on htf_*_atr_percentile_100. Returns na during warmup.
+_pf_pctrank100(_src) =>
+    float _res = na
+    float _less = 0.0
+    float _eq = 0.0
+    int _n = 0
+    for _i = 0 to 99
+        float _v = _src[_i]
+        if not na(_v)
+            _n += 1
+            if _v < _src
+                _less += 1.0
+            else if _v == _src
+                _eq += 1.0
+    if _n == 100 and not na(_src)
+        _res := (_less + (_eq + 1.0) / 2.0) / 100.0
+    _res
+
+// === Pre-computed indicators (V1 feature engine) ===
+_atr14         = ta.atr(14)
+_safe_atr      = _atr14 > 0.0 ? _atr14 : na
+_ema20         = ta.ema(close, 20)
+_ema50         = ta.ema(close, 50)
+_ema200        = ta.ema(close, 200)
+_rsi14         = ta.rsi(close, 14)
+// Pine v6: ta.adx() reported "not found" in some environments — use ta.dmi() instead
+[_diPlus_local, _diMinus_local, _adx14] = ta.dmi(14, 14)
+_swing_hi_20   = ta.highest(high, 20)
+_swing_lo_20   = ta.lowest(low, 20)
+_vol_sma20     = ta.sma(volume, 20)
+_vol_std50     = ta.stdev(volume, 50)
+_log_ret       = nz(math.log(close / close[1]), 0.0)
+_ema_alignment = _ema20 > _ema50 and _ema50 > _ema200 ? 1.0 :
+                 _ema20 < _ema50 and _ema50 < _ema200 ? -1.0 : 0.0
+_macd_fast     = ta.ema(close, 12)
+_macd_slow     = ta.ema(close, 26)
+_macd_line     = _macd_fast - _macd_slow
+_macd_signal   = ta.ema(_macd_line, 9)
+_macd_hist     = _macd_line - _macd_signal
+_macd_hist_atr = _macd_hist / _safe_atr
+_roc_10        = close[10] != 0.0 ? (close - close[10]) / close[10] : 0.0
+_atr_pct_rank  = _pf_pctrank100(_atr14)
+// --- Session/time + Vol-Expansion helpers ---
+_hour_utc      = hour(time, "UTC")
+_min_utc       = minute(time, "UTC")
+_frac_hour     = _hour_utc + _min_utc / 60.0
+_dow_utc       = dayofweek(time, "UTC")
+_atr_avg_50    = ta.sma(_atr14, 50)
+_vol_ratio     = _atr_avg_50 > 0.0 ? _atr14 / _atr_avg_50 : 1.0
+
+// --- BB Width + StochRSI pre-computations ---
+// bb_width_pct = (4 * std) / mid — matches engineer.py bb_width(mult=2): (2*std*2)/mid
+_bb_std20      = ta.stdev(close, 20)
+_bb_mid20      = ta.sma(close, 20)
+_bb_width_pct  = _bb_mid20 > 0.0 ? (4.0 * _bb_std20) / _bb_mid20 : 0.0
+_bb_width_avg  = ta.sma(_bb_width_pct, 20)
+// StochRSI-K: (rsi - lowest_rsi_14) / (highest_rsi_14 - lowest_rsi_14) * 100
+_stoch_lo14    = ta.lowest(_rsi14, 14)
+_stoch_hi14    = ta.highest(_rsi14, 14)
+_stoch_rsi_dif = _stoch_hi14 - _stoch_lo14
+
+// --- Confirmed pivot swings (anti-lookahead: ta.pivothigh confirms after rightbars=5) ---
+// ta.pivothigh(src, leftbars, rightbars) returns the pivot value at bar[rightbars] when
+// confirmed (strict: no bar in ±5 window is >= pivot). na otherwise.
+// Forward-fill last confirmed value so every bar has a reference level.
+var float _conf_sh = na
+var float _conf_sl = na
+_ph_raw = ta.pivothigh(high, 5, 5)
+_pl_raw = ta.pivotlow(low,  5, 5)
+if not na(_ph_raw)
+    _conf_sh := _ph_raw
+if not na(_pl_raw)
+    _conf_sl := _pl_raw
+// Previous confirmed swing (for equal-highs detection)
+_prev_conf_sh = ta.valuewhen(not na(_ph_raw), _conf_sh, 1)
+_prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
+
+// --- FVG detection: tracks last 2 per type, 20-bar expiry, nearest-to-close ---
+// Matches Python detect_fvg(lookback=20, nearest selection) in market_structure.py.
+// Bug fix: old single-slot version was overwritten by newer FVGs, losing the relevant
+// FVG above price → systematic proba underestimate (~0.07 shift vs Python).
+var float _fvg_bull_lo_a = na
+var float _fvg_bull_hi_a = na
+var int   _fvg_bull_bar_a = 0
+var float _fvg_bull_lo_b = na
+var float _fvg_bull_hi_b = na
+var int   _fvg_bull_bar_b = 0
+var float _fvg_bear_lo_a = na
+var float _fvg_bear_hi_a = na
+var int   _fvg_bear_bar_a = 0
+var float _fvg_bear_lo_b = na
+var float _fvg_bear_hi_b = na
+var int   _fvg_bear_bar_b = 0
+// Expiry (20 bars — matches Python lookback=20)
+if not na(_fvg_bull_lo_a) and bar_index - _fvg_bull_bar_a > 20
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and bar_index - _fvg_bull_bar_b > 20
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and bar_index - _fvg_bear_bar_a > 20
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and bar_index - _fvg_bear_bar_b > 20
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// Fill conditions
+if not na(_fvg_bull_lo_a) and low <= _fvg_bull_lo_a
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and low <= _fvg_bull_lo_b
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and high >= _fvg_bear_hi_a
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and high >= _fvg_bear_hi_b
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// New FVG detection — shift old into slot b, new into slot a
+if low - high[2] > 0.1 * _atr14
+    _fvg_bull_lo_b := _fvg_bull_lo_a
+    _fvg_bull_hi_b := _fvg_bull_hi_a
+    _fvg_bull_bar_b := _fvg_bull_bar_a
+    _fvg_bull_lo_a := high[2]
+    _fvg_bull_hi_a := low
+    _fvg_bull_bar_a := bar_index
+if low[2] - high > 0.1 * _atr14
+    _fvg_bear_lo_b := _fvg_bear_lo_a
+    _fvg_bear_hi_b := _fvg_bear_hi_a
+    _fvg_bear_bar_b := _fvg_bear_bar_a
+    _fvg_bear_lo_a := high
+    _fvg_bear_hi_a := low[2]
+    _fvg_bear_bar_a := bar_index
+// Nearest-to-close selection
+_fvg_bull_mid_a = na(_fvg_bull_lo_a) ? na : (_fvg_bull_lo_a + _fvg_bull_hi_a) / 2.0
+_fvg_bull_mid_b = na(_fvg_bull_lo_b) ? na : (_fvg_bull_lo_b + _fvg_bull_hi_b) / 2.0
+_fvg_bear_mid_a = na(_fvg_bear_lo_a) ? na : (_fvg_bear_lo_a + _fvg_bear_hi_a) / 2.0
+_fvg_bear_mid_b = na(_fvg_bear_lo_b) ? na : (_fvg_bear_lo_b + _fvg_bear_hi_b) / 2.0
+var float _fvg_bull_mid = na
+var float _fvg_bull_sz = na
+var float _fvg_bear_mid = na
+var float _fvg_bear_sz = na
+_fvg_bull_mid := na
+_fvg_bull_sz  := na
+if not na(_fvg_bull_mid_a) and not na(_fvg_bull_mid_b)
+    if math.abs(close - _fvg_bull_mid_a) <= math.abs(close - _fvg_bull_mid_b)
+        _fvg_bull_mid := _fvg_bull_mid_a
+        _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+    else
+        _fvg_bull_mid := _fvg_bull_mid_b
+        _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+else if not na(_fvg_bull_mid_a)
+    _fvg_bull_mid := _fvg_bull_mid_a
+    _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+else if not na(_fvg_bull_mid_b)
+    _fvg_bull_mid := _fvg_bull_mid_b
+    _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+_fvg_bear_mid := na
+_fvg_bear_sz  := na
+if not na(_fvg_bear_mid_a) and not na(_fvg_bear_mid_b)
+    if math.abs(close - _fvg_bear_mid_a) <= math.abs(close - _fvg_bear_mid_b)
+        _fvg_bear_mid := _fvg_bear_mid_a
+        _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+    else
+        _fvg_bear_mid := _fvg_bear_mid_b
+        _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
+else if not na(_fvg_bear_mid_a)
+    _fvg_bear_mid := _fvg_bear_mid_a
+    _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+else if not na(_fvg_bear_mid_b)
+    _fvg_bear_mid := _fvg_bear_mid_b
+    _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
+
+// === FX-module tradeable gate (classify_market_state) ===
+// vol veto: QUIET (pctile < 0.33) or SHOCK (pctile >= 0.97) => not tradeable; warmup => not tradeable.
+_ms_atr_pctile = _pf_pctrank100(_atr14)
+_ms_warm       = na(_adx14) or na(_atr14) or na(_ms_atr_pctile)
+_ms_tradeable  = (not _ms_warm) and _ms_atr_pctile >= 0.33 and _ms_atr_pctile < 0.97 ? 1.0 : 0.0
+
+plot(_ms_tradeable,  "tradeable",  display=display.data_window)
+plot(_ms_atr_pctile, "atr_pctile", display=display.data_window)
+plot(_adx14,         "adx14",      display=display.data_window)
+plot(_atr14,         "atr14",      display=display.data_window)
