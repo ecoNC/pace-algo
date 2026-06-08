@@ -84,7 +84,12 @@ plot(_signal ? _size : 0.0,          "size",         display=display.data_window
 var int _sig_count = 0
 if _signal
     _sig_count += 1
-    label.new(bar_index, high, str.tostring(time) + "|" + str.tostring(_sig_dir) + "|" + str.tostring(_size),
+    // text = time|dir|size|pooled|bars_since_sweep_down|ema_200_dist_atr  (Step-4 fallback: feed
+    // Pine's full-history ema200 into Python ref; check Class-C bss as its own diff column)
+    label.new(bar_index, high,
+              str.tostring(time) + "|" + str.tostring(_sig_dir) + "|" + str.tostring(_size) + "|" +
+              str.tostring(_pooled, "#.######") + "|" + str.tostring(f_bars_since_sweep_down) + "|" +
+              str.tostring(f_ema_200_dist_atr, "#.######"),
               color=color.new(color.blue, 100), textcolor=color.blue, size=size.tiny, style=label.style_none)
 plot(_sig_count, "sig_count", display=display.data_window)
 """
