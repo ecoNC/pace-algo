@@ -68,6 +68,17 @@ geflaggt (Metall-Klasse hat ohnehin nur 2 Symbole → ≥4-Regel nicht erfüllba
 | METAL-TREND_L | Gold/Silber | Daily | **Edge-Validated (Experimental)** | 27/27 Grid, Zeit-Hälften 1.70/1.27 — ⚠️ nur 2 Symbole, n dünn (phase13b) |
 | Crypto direktional | Crypto | alle | **geschlossen** | phase11a–c (beste Daten, echte Fees) → Tool-Only/WAIT |
 
+### Pine-Export-Status (Tier B → Produkt, Stand 2026-06-08)
+
+Die Tier-B-Module sind in der RESEARCH **Edge-Validated**, aber erst im PRODUKT wirksam, wenn sie
+bit-exact nach Pine exportiert + live verifiziert sind. Bis dahin KEIN „live"-Edge-Badge im Chart.
+
+| Modul | Research | Pine-Export | Live im Produkt |
+|---|---|---|---|
+| **FX-NY (ML)** | ✅ Edge-Validated | 🟡 **in Arbeit** — Cascade-Math 0.0 diff, Codegen kompiliert; Features **8/9 bit-exact** (Block-1(a) percentrank ✅ 2026-06-08; Block-1(b) htf_4h_rsi_14-Alignment offen → TV-Verif); Block 2 (Short+Meta+Selektion) ausstehend | ❌ noch nicht → bei whole-chain bit-exact + OOS-Revalidierung → „Edge-Validated (live)" |
+| **INDEX-DIPBUY** | ✅ Edge-Validated | ⚪ ausstehend (deterministisch, trivial Pine-bar) | ❌ noch nicht |
+| **METAL-TREND_L** | 🟢 Experimental | ⚪ ausstehend | ❌ noch nicht |
+
 ## Regime-Dimension (ANN-024 — welches Modul ist pro (Asset,TF) zuständig)
 
 Module: `Trend-Core` (live, Tool-Only) · `MR` (Mean-Reversion, geplant) · `WAIT`.

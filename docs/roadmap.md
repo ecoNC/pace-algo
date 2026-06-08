@@ -1,3 +1,10 @@
+> ⚠️ **VERALTET (Stand 2026-05-29, Phase D).** Diese Datei beschreibt die alte „ML-im-Pine"-
+> Phasenplanung VOR dem Two-Tier-Pivot. **Die LIVE-Roadmap ist [`roadmap_2026-06-01.md`](roadmap_2026-06-01.md)
+> §8 (aktuelle Prioritäten 2026-06-08).** Aktueller Stand in Kürze: V1 = regelbasierter Tier-A-Trend-
+> Core (TOOL, kein Edge by design) + validierte Tier-B-Edge-Module (FX-NY-ML, INDEX-DIPBUY, METAL-
+> TREND_L) via Coverage-Matrix. ML ist NICHT mehr Signalgenerator, sondern FX-Confidence-Overlay
+> (V1.5, in Pine-Export). Inhalt unten nur als historischer Kontext lesen.
+
 # Roadmap — 4-Layer Decision-Assistance-System (FX Blueprint → Multi-Asset)
 
 **Architektur-Lock 2026-05-28 (FUNDAMENTAL):** [ANN-018 Decision-Assisted Architecture + Multi-Timeframe Market Dashboard](decisions/ANN-018-decision-assisted-architecture-multi-timeframe-dashboard.md). PaceAlgo wird ein **4-Layer-System**: Core Signal Engine + Market Regime Dashboard + Interaction Layer + Backtest Transparency Layer. **Kein blindes Entry-System** — User entscheidet anhand Signal + Context + Backtest-Verhalten.

@@ -46,6 +46,12 @@ Dieser Brief = stabile Haltung + Modell. HANDOFF/roadmap = aktueller Stand. Imme
 - EHRLICHKEITS-BODEN: wo trotz allem PF ~1.0 bleibt -> WAIT/Tool-Only, keinen Edge faken.
 - Hebel != TP/SL: Stop gehört an die strukturelle Invalidierung (Markt/Vola), Hebel ist
   reine Positionsgrößen-Entscheidung. Indikator koppelt TP/SL NIE an Hebel.
+- **"BESSER" = MODULE SHIPPEN + COVERAGE WACHSEN, NICHT DEN CORE FORCIEREN** (Nico-locked
+  2026-06-08). Der Tier-A-Trend-Core sitzt an seiner ehrlichen PF-Decke — H-EXIT, H-REGIME
+  und MR sind sauber getestet + abgelehnt. Der Core wird NICHT wieder aufgemacht. Produkt-
+  Fortschritt entsteht ausschließlich durch (1) validierte Tier-B-Module bit-exact nach Pine
+  shippen und (2) die Modul-Discovery-Maschine neue Klassen/Regimes validieren lassen. WAIT-
+  Zonen schrumpfen legitim durch MEHR Module, nie durch Core-Tuning.
 
 ## 4. ARCHITEKTUR (CTO) — Zwei Tiers
 - TIER A — Universal Tool (immer an, jedes Asset): regelbasierter selektiver Trend-Core
@@ -104,9 +110,13 @@ PF breit, sonst verwerfen.
 ## 7. AKTUELLER STAND
 -> Lies HANDOFF.md (Session-Log + TL;DR) und roadmap.md für den Live-Stand.
 -> Lies COVERAGE_MATRIX.md für validierte/schwache Assets.
-Letzter bekannter Stand (kann veraltet sein): Regel-Core mit echtem HTF-Gate + Multi-TP;
-GOLD/US500 Daily über 50% WR; BTC 1h ist Multi-TP-Ausreißer (BE schadet auf Hochvol-Crypto);
-EURUSD 5m = WAIT. Nächste Iteration: Trailing-Runner (Stufe 1 abschließen), dann MTF-Konfluenz.
+Letzter bekannter Stand (2026-06-08): Two-Tier gelockt. Tier-A-Core fertig + an der Decke
+(Core-Hebel getestet+abgelehnt → nicht wieder aufmachen). **Aktive Arbeit = FX-NY-ML-Overlay
+bit-exact nach Pine exportieren (V1.5, Priorität 1):** Cascade-Math 0.0 diff ✅, 8/9 Features
+bit-exact (percentrank-Risiko 2026-06-08 geschlossen; htf_4h_rsi_14-Alignment offen → TV-Verif),
+dann Block 2 (Short+Meta+Selektions-Kette) + Live-Signal-Verifikation. Danach: Module fahren die
+sichtbaren Signale wo aktiv (Prio 2), Modul-Discovery-Maschine läuft (Prio 3). Details:
+`roadmap_2026-06-01.md` §8.
 
 ## 8. WORAN MAN GUTE BERATUNG ERKENNT
 PF vor WR. Ehrlichkeit vor Hype. Eine Hypothese, breit validiert. Wo kein Edge: WAIT.

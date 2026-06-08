@@ -29,6 +29,29 @@ _pf_tanh(_x) =>
     _e  = math.exp(2.0 * _xc)
     (_e - 1.0) / (_e + 1.0)
 
+// Percentile rank matching the TRAINING definition exactly:
+//   pandas: atr.rolling(100, min_periods=100).rank(pct=True)  (method='average')
+// Window INCLUDES the current bar (99 prior + self), needs 100 non-na obs,
+// average-rank tie handling, divided by 100. This differs from Pine's native
+// ta.percentrank (prior bars only, exclusive of self, <= count) — that mismatch
+// was a >1e-5 bit-exact risk on htf_*_atr_percentile_100. Returns na during warmup.
+_pf_pctrank100(_src) =>
+    float _res = na
+    float _less = 0.0
+    float _eq = 0.0
+    int _n = 0
+    for _i = 0 to 99
+        float _v = _src[_i]
+        if not na(_v)
+            _n += 1
+            if _v < _src
+                _less += 1.0
+            else if _v == _src
+                _eq += 1.0
+    if _n == 100 and not na(_src)
+        _res := (_less + (_eq + 1.0) / 2.0) / 100.0
+    _res
+
 // === Pre-computed indicators (V1 feature engine) ===
 _atr14         = ta.atr(14)
 _safe_atr      = _atr14 > 0.0 ? _atr14 : na
@@ -52,7 +75,7 @@ _macd_signal   = ta.ema(_macd_line, 9)
 _macd_hist     = _macd_line - _macd_signal
 _macd_hist_atr = _macd_hist / _safe_atr
 _roc_10        = close[10] != 0.0 ? (close - close[10]) / close[10] : 0.0
-_atr_pct_rank  = ta.percentrank(_atr14, 100) / 100.0
+_atr_pct_rank  = _pf_pctrank100(_atr14)
 // --- Session/time + Vol-Expansion helpers ---
 _hour_utc      = hour(time, "UTC")
 _min_utc       = minute(time, "UTC")
@@ -201,7 +224,7 @@ _pf_htf_rsi() =>
     ta.rsi(close, 14)
 
 _pf_htf_atr_pct() =>
-    ta.percentrank(ta.atr(14), 100) / 100.0
+    _pf_pctrank100(ta.atr(14))
 
 _pf_htf_ema_align() =>
     _e20 = ta.ema(close, 20)
@@ -222,7 +245,7 @@ _pf_htf4h_rsi() =>
     ta.rsi(close, 14)
 
 _pf_htf4h_atr_pct() =>
-    ta.percentrank(ta.atr(14), 100) / 100.0
+    _pf_pctrank100(ta.atr(14))
 
 _pf_htf4h_ema_align() =>
     _e20 = ta.ema(close, 20)
