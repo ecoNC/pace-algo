@@ -75,7 +75,7 @@ bit-exact nach Pine exportiert + live verifiziert sind. Bis dahin KEIN „live"-
 
 | Modul | Research | Pine-Export | Live im Produkt |
 |---|---|---|---|
-| **FX-NY (ML)** | ✅ Edge-Validated | 🟡 **in Arbeit** — Cascade-Math 0.0 diff, Codegen kompiliert; **Block 1 KOMPLETT, Features 9/9 aligned** (Block-1(a) percentrank bit-exact 0.0 ✅; Block-1(b) htf-Alignment lookahead_on+[1] live in TV verifiziert ✅ 2026-06-08); **Block 2** (Short+Meta+Selektion + Whole-Chain bit-exact) ausstehend | ❌ noch nicht → bei whole-chain bit-exact + OOS-Revalidierung → „Edge-Validated (live)" |
+| **FX-NY (ML)** | ✅ Edge-Validated | 🟡 **in Arbeit** — Cascade-Math 0.0 diff, Codegen kompiliert; **Block 1 KOMPLETT, Features 9/9 aligned** (Block-1(a) percentrank bit-exact 0.0 ✅; Block-1(b) htf-Alignment lookahead_on+[1] live in TV verifiziert ✅ 2026-06-08); **Block 2** (Short+Meta+Selektion + Whole-Chain bit-exact) ausstehend | ❌ noch nicht → **3 Gates für „Edge-Validated (live)":** (1) whole-chain bit-exact + OOS-Revalidierung, (2) **Non-Repaint-Replay auf `lookahead_on+[1]`** (Lookahead-Flag → Repaint beim Vorwärts-Steppen empirisch ausschließen), (3) exakter RSI/ta.*-Pin 1e-5 mit voller Historie |
 | **INDEX-DIPBUY** | ✅ Edge-Validated | ⚪ ausstehend (deterministisch, trivial Pine-bar) | ❌ noch nicht |
 | **METAL-TREND_L** | 🟢 Experimental | ⚪ ausstehend | ❌ noch nicht |
 
