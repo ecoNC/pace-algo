@@ -96,3 +96,21 @@ GENAU das; die Python-Whole-Chain-Referenz nutzt dieselben fixen Snapshot-Werte.
 - **Tier-A-Tool:** ADX-Regime-Gate (für WAIT-Optik) — `pace_algo_v1.pine`.
 - **FX-Modul (Edge):** `classify_market_state` ATR-Perzentil-`tradeable`-Gate (für Edge-Selektion).
 Unterschiedlicher Zweck, unterschiedliche Logik. Im Code klar getrennt benannt halten.
+
+### Block-2 Build-Sequenz (Nico-locked 2026-06-08 — Risiko-zuerst = Debugging-Hygiene)
+Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
+1. **`classify_market_state`-`tradeable`-Port nach Pine + bit-exact ZUERST.** Das Gate definiert
+   die Trade-Population → zuerst pinnen isoliert die Fehlerquelle: ab dann ist die Trade-Menge
+   garantiert korrekt, jeder spätere Diff liegt eindeutig an Cascade/Sizing, nicht am Gate.
+2. **4 Cascades** (Primary L/S 9-Feat + Meta L/S 73-Feat) ins Skelett.
+3. **Selektions-Kette** (gen→meta→POOLED→Sizing, fixe Snapshot-Thresholds).
+4. **Whole-Chain bit-exact** (siehe Regel unten).
+5. **FX-Display-Modus** (Modus-Toggle im `pace_algo_v1.pine`, KEIN Routing-Layer) — erst NACHDEM
+   die Signal-Kette grün ist. Display auf unverifizierter Selektion = gefährlichste Variante
+   (sieht fertig aus, ist es nicht).
+
+### Whole-Chain-Check: MENGEN-Identität VOR Wert-Identität (Nico-locked)
+Beim whole-chain-Lauf ZUERST prüfen: feuern Pine und Python auf **exakt denselben Entry-Bars**
+(Trade-Menge identisch)? DANN erst die Werte (Proba/Sizing pro Trade). Ein reiner Wert-Vergleich
+kann grün sein, während Pine in Wahrheit eine andere (zufällig zahlengleiche) Selektion fährt.
+Erst Mengen-Identität, dann Wert-Identität.
