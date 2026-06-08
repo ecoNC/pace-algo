@@ -55,3 +55,44 @@ variance. Sizing is an optional capital mode, not the robustness base.
 - Thin edge (PF 1.3 core), **ECN-dependent**. Not a money-printer.
 - FX-majors + NY-session specific (does not generalize — see phase5/6).
 - Pine cost: primary+meta = 4 cascades @50t ≈ 88% of ops budget (fits).
+
+---
+
+## Pine-Export — KANONISCHE Selektions-Ketten-Spec (Block 2, encoded 2026-06-08)
+
+Abgeleitet 1:1 aus `scripts/fx_production_train.py` (+ `phase3_v1_config.build_cands`,
+`phase3_selection_compare.calib_thr`, `phase4_ensemble_sizing.tier_size`). Block 2 baut
+GENAU das; die Python-Whole-Chain-Referenz nutzt dieselben fixen Snapshot-Werte.
+
+### Ketten-Reihenfolge (pro Bar, beide Richtungen)
+1. **Hard-Gate zuerst:** `in_ny AND tradeable` — sonst kein Kandidat.
+2. **gen-Gate VOR meta (Prefilter):** Long-Kandidat wenn `primary_long ≥ gen_long`;
+   Short-Kandidat (NUR USDCHF) wenn `primary_short ≥ gen_short`.
+3. **meta = Ranking-Score:** für gen-Passer ist der Score die Meta-Proba (meL/meS, 73-Feat);
+   Nicht-Passer effektiv ausgeschlossen (−1e9).
+4. **POOLED über Richtungen+Paare:** Long (alle Paare) + USDCHF-Short in EINE Liste,
+   nach Meta-Proba absteigend, pro Bar-Row dedupliziert (höhere Meta-Proba gewinnt die Richtung).
+5. **Signal feuert wenn** gepoolte Meta-Proba `≥ pooled_thr`.
+6. **Sizing** auf finaler Meta-Proba: `< size_q1 → 0.5R · < size_q2 → 1.0R · sonst → 1.5R`.
+
+### Thresholds — ALLE fix aus `artifacts/models/fx_ship_snapshot.json` (keine Laufzeit-Rekalibrierung)
+`gen_long=0.49943 · gen_short=0.49643 · pooled_thr=0.49287 · size_q1=0.50753 · size_q2=0.61798`
+(trees=50, seed=42, topn=10, gen_mult=3.0). `calib_thr` läuft NUR im Training → eingefroren.
+
+### 🔒 Drei Verdrahtungs-Locks (bit-exact-grün-aber-falsch-Fallen — Nico-locked 2026-06-08)
+1. **Sizing-Quantile sind FIX, nicht live.** `tier_size()` rechnet im Eval `np.quantile(sel.proba,…)`
+   live über die Selektion — das ist **Look-at-all-trades / Look-ahead** und in Pine strukturell
+   unmöglich. **Die fixen `size_q1/size_q2` aus dem Snapshot sind die KANONISCHE WAHRHEIT**, nicht
+   das Live-`tier_size`. Pine UND die Python-Whole-Chain-Referenz nutzen die fixen Werte. ⚠️ NICHT
+   später „zurückfixen" auf das Live-Quantil — das wäre eine Regression zu einer Look-ahead-Definition.
+2. **`tradeable`-Gate bit-exact portieren, NICHT approximieren.** Quelle: `core/state/market_state.py`
+   `classify_market_state` (ATR-Perzentil; state ∈ {QUIET,SHOCK} = nicht tradeable). Es ist Teil des
+   Hard-Gates, das die Trainings-Trade-Population definiert hat (PF 1.51). Ein anderes Gate (z.B. ADX)
+   → andere Trade-Menge → stiller Validitäts-Bruch, nicht nur bit-exact-Wackeln. Eigener bit-exact-Punkt.
+3. **USDCHF-Short-Asymmetrie.** Short-Pfad NUR auf USDCHF (`syminfo`-Check), sonst long-only. Nicht-
+   offensichtliche Asymmetrie — sichtbar dokumentiert, damit ein späterer Reviewer nicht „vereinheitlicht".
+
+### Zwei getrennte Gates — NICHT verschmelzen
+- **Tier-A-Tool:** ADX-Regime-Gate (für WAIT-Optik) — `pace_algo_v1.pine`.
+- **FX-Modul (Edge):** `classify_market_state` ATR-Perzentil-`tradeable`-Gate (für Edge-Selektion).
+Unterschiedlicher Zweck, unterschiedliche Logik. Im Code klar getrennt benannt halten.
