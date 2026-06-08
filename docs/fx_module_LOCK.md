@@ -109,7 +109,14 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
    ⚓ **Nach Schritt 2 STOPPEN: jede der 4 Cascades EINZELN gegen die Python-Referenz auf ein paar
    Bars bestätigen** (Primary L/S + Meta L/S liefern plausible Proba). Eine falsch verdrahtete Cascade
    muss sichtbar werden, BEVOR die Ketten-Logik (Schritt 3) den Fehler verschleiert.
-3. **Selektions-Kette** (gen→meta→POOLED→Sizing, fixe Snapshot-Thresholds).
+3. **Selektions-Kette** (gen→meta→POOLED→Sizing, fixe Snapshot-Thresholds). **1:1 aus
+   `fx_production_train.py` encoden, NICHT aus dem Gedächtnis.** Die Schwellen sind unstrittig —
+   die FALLE ist die Operator-REIHENFOLGE an drei Stellen: (a) gen-Gate VOR meta (primary ≥ gen,
+   DANN meta-Ranking), (b) POOLED-dedupe pro Bar nimmt die HÖHERE Meta-Proba bei Long+USDCHF-Short-
+   Kollision (deterministisch via sort-desc+drop_duplicates, kein erstes/letztes), (c) Sizing-Tiers
+   auf der META-Proba (nicht Primary). Verdreht = bit-exact-grün gegen sich selbst, aber andere
+   Trade-Menge als Training. ⚓ **Nach Schritt 3 STOPPEN: auf ein paar Bars die erwarteten
+   Signale/Sizes bestätigen, bevor der Whole-Chain (Schritt 4) draufkommt.**
 4. **Whole-Chain bit-exact** (siehe Regel unten).
 5. **FX-Display-Modus** (Modus-Toggle im `pace_algo_v1.pine`, KEIN Routing-Layer) — erst NACHDEM
    die Signal-Kette grün ist. Display auf unverifizierter Selektion = gefährlichste Variante
@@ -123,6 +130,16 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
   `ta.*` = RMA/SMA-Seed vs Python `ewm(adjust=False)` = First-Value-Seed → konvergieren geometrisch,
   nach ~250 Bar ~1e-6 (display-präzise identisch). **Atol für Klasse-B-Features = 1e-4** (großzügig
   über dem Warmup-Floor), NICHT 0.0.
+- **Klasse C — DISKRETE Features (eigene Risiko-Kategorie, NICHT Toleranz):** integer-/flag-wertige
+  Features deren Pine-Quelle eine Tie-/Boundary-Semantik hat, die von der Python-Definition abweichen
+  KANN. Bekannter Kandidat: **`bars_since_sweep_down`** (0–3/99) — Pine `_conf_sl` via `ta.pivotlow`
+  vs Python `confirmed_swing_lows` (`l[j] < center`) können bei Gleichstand (Ties) verschiedene Pivots
+  bestätigen → das Feature kippt NICHT um 1e-6, sondern um einen ganzen Integer-Schritt (0→1, 3→99) →
+  spürbarer Cascade-Proba-Shift → **echter Mengen-Kipper, KEIN Warmup-Rauschen.** Wenn der Schritt-4-
+  MENGEN-Abgleich einen Diff zeigt, ist ein Klasse-C-Feature der ERSTE Verdächtige. Fix = `ta.pivotlow`-
+  Tie-Semantik exakt an die Python-Definition angleichen (legitimer bit-exact-Fix, NICHT als Toleranz
+  abtun). Klasse-C-Features im Whole-Chain-Verdikt separat ausweisen.
+
 **Konsequenz für die Cascades (engere Toleranz!):** Meta-Proba läuft durch `pooled_thr` (.49287)
 und Sizing-Quantile (.50753/.61798). Ein ~1e-6-Feature-Diff kann THEORETISCH einen Trade knapp
 über/unter eine Schwelle kippen → Mengen-Diff. Erwartung: selten — genau das fängt der MENGEN-
