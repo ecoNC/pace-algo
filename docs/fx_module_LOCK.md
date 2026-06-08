@@ -106,11 +106,28 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
    In einem Rutsch durchbauen + erst am Ende prüfen zerstört die Fehler-Isolation, für die diese
    Reihenfolge existiert.
 2. **4 Cascades** (Primary L/S 9-Feat + Meta L/S 73-Feat) ins Skelett.
+   ⚓ **Nach Schritt 2 STOPPEN: jede der 4 Cascades EINZELN gegen die Python-Referenz auf ein paar
+   Bars bestätigen** (Primary L/S + Meta L/S liefern plausible Proba). Eine falsch verdrahtete Cascade
+   muss sichtbar werden, BEVOR die Ketten-Logik (Schritt 3) den Fehler verschleiert.
 3. **Selektions-Kette** (gen→meta→POOLED→Sizing, fixe Snapshot-Thresholds).
 4. **Whole-Chain bit-exact** (siehe Regel unten).
 5. **FX-Display-Modus** (Modus-Toggle im `pace_algo_v1.pine`, KEIN Routing-Layer) — erst NACHDEM
    die Signal-Kette grün ist. Display auf unverifizierter Selektion = gefährlichste Variante
    (sieht fertig aus, ist es nicht).
+
+### 🎯 Bit-exact Toleranz-Klassen (Nico-locked 2026-06-08 — sonst Warmup-Diff = falscher Alarm)
+„bit-exact" heißt NICHT überall 0.0. Zwei Klassen, beide im Whole-Chain-Check (Schritt 4) anwenden:
+- **Klasse A — exakt 0.0:** `_pf_pctrank100` / `atr_percentile_100` (algebraisch identisch zu
+  `rolling(100).rank(pct=True)`, bewiesen). Zeit-/Session-Feats (hour_sin/cos, in_ny, …) auch exakt.
+- **Klasse B — ~1e-6 nach Warmup (NICHT 0.0):** alle Wilder-Features (atr, adx, rsi, ema). Pine
+  `ta.*` = RMA/SMA-Seed vs Python `ewm(adjust=False)` = First-Value-Seed → konvergieren geometrisch,
+  nach ~250 Bar ~1e-6 (display-präzise identisch). **Atol für Klasse-B-Features = 1e-4** (großzügig
+  über dem Warmup-Floor), NICHT 0.0.
+**Konsequenz für die Cascades (engere Toleranz!):** Meta-Proba läuft durch `pooled_thr` (.49287)
+und Sizing-Quantile (.50753/.61798). Ein ~1e-6-Feature-Diff kann THEORETISCH einen Trade knapp
+über/unter eine Schwelle kippen → Mengen-Diff. Erwartung: selten — genau das fängt der MENGEN-
+Abgleich (unten) ab. Solche Boundary-Kipper sind KEIN Cascade-Bug, sondern Warmup-Rauschen am
+Schwellen-Rand; im Whole-Chain-Verdikt als solche kennzeichnen (Capture mit mehr Warmup → verschwindet).
 
 ### Whole-Chain-Check: MENGEN-Identität VOR Wert-Identität (Nico-locked)
 Beim whole-chain-Lauf ZUERST prüfen: feuern Pine und Python auf **exakt denselben Entry-Bars**
