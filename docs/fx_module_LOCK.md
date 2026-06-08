@@ -102,6 +102,9 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
 1. **`classify_market_state`-`tradeable`-Port nach Pine + bit-exact ZUERST.** Das Gate definiert
    die Trade-Population → zuerst pinnen isoliert die Fehlerquelle: ab dann ist die Trade-Menge
    garantiert korrekt, jeder spätere Diff liegt eindeutig an Cascade/Sizing, nicht am Gate.
+   ⚓ **Nach Schritt 1 EXPLIZIT STOPPEN und bit-exact-grün bestätigen, bevor die Cascades kommen.**
+   In einem Rutsch durchbauen + erst am Ende prüfen zerstört die Fehler-Isolation, für die diese
+   Reihenfolge existiert.
 2. **4 Cascades** (Primary L/S 9-Feat + Meta L/S 73-Feat) ins Skelett.
 3. **Selektions-Kette** (gen→meta→POOLED→Sizing, fixe Snapshot-Thresholds).
 4. **Whole-Chain bit-exact** (siehe Regel unten).
@@ -114,3 +117,8 @@ Beim whole-chain-Lauf ZUERST prüfen: feuern Pine und Python auf **exakt denselb
 (Trade-Menge identisch)? DANN erst die Werte (Proba/Sizing pro Trade). Ein reiner Wert-Vergleich
 kann grün sein, während Pine in Wahrheit eine andere (zufällig zahlengleiche) Selektion fährt.
 Erst Mengen-Identität, dann Wert-Identität.
+⚓ **Mengen-Diff ≠ 0 → HART abbrechen, gar nicht erst zu den Werten weitergehen.** Solange Pine
+und Python nicht exakt dieselben Entry-Bars feuern, ist jeder Wert-Vergleich bedeutungslos.
+⚓ **Erster Lauf wird wahrscheinlich rot — EINEN Diff pro Iteration jagen, nicht mehrere
+gleichzeitig „fixen".** Eine Ursache lokalisieren → beheben → neu laufen. Mehrfach-Änderungen
+driften in Rate-Änderungen ab. Ein bit-exact-Modul ist fertig wenn es fertig ist, nicht nach Datum.
