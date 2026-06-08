@@ -112,6 +112,17 @@ if not na(_pl_raw)
 // Previous confirmed swing (for equal-highs detection)
 _prev_conf_sh = ta.valuewhen(not na(_ph_raw), _conf_sh, 1)
 _prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
+// bars_since_sweep_down — matches market_structure.detect_sweep_down (close_back_within=3,
+// swing_low = confirmed pivot low _conf_sl, forward-filled). Sweep at offset o:
+//   low[o] < _conf_sl[o+1] and close[o] > _conf_sl[o+1]  (broke prior swing low, closed back above)
+// smallest such o in 0..3, else 99.0. Guard: current _conf_sl must exist (matches isnan(sl[t]) skip).
+float _bars_since_sweep_down = 99.0
+if not na(_conf_sl)
+    for _o = 0 to 3
+        _ps_sd = _conf_sl[_o + 1]
+        if not na(_ps_sd) and low[_o] < _ps_sd and close[_o] > _ps_sd
+            _bars_since_sweep_down := _o
+            break
 
 // --- FVG detection: tracks last 2 per type, 20-bar expiry, nearest-to-close ---
 // Matches Python detect_fvg(lookback=20, nearest selection) in market_structure.py.
@@ -340,6 +351,11 @@ FEATURE_REGISTRY: dict[str, str] = {
     # size = gap height / ATR
     'fvg_bull_size_atr':     'na(_fvg_bull_sz) ? 0.0 : _fvg_bull_sz / _safe_atr',
     'fvg_bear_size_atr':     'na(_fvg_bear_sz) ? 0.0 : _fvg_bear_sz / _safe_atr',
+    # active flag = a nearest FVG slot is populated (same validated 2-slot tracking as dist/size)
+    'fvg_bull_active':       'na(_fvg_bull_mid) ? 0.0 : 1.0',
+    'fvg_bear_active':       'na(_fvg_bear_mid) ? 0.0 : 1.0',
+    # bars since last down-sweep (helper in HELPERS_HEADER mirrors detect_sweep_down)
+    'bars_since_sweep_down': '_bars_since_sweep_down',
 
     # === Volume ===
     'rvol_20':             'volume / nz(_vol_sma20, 1.0)',
