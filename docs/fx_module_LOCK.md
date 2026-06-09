@@ -130,6 +130,15 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
   `ta.*` = RMA/SMA-Seed vs Python `ewm(adjust=False)` = First-Value-Seed → konvergieren geometrisch,
   nach ~250 Bar ~1e-6 (display-präzise identisch). **Atol für Klasse-B-Features = 1e-4** (großzügig
   über dem Warmup-Floor), NICHT 0.0.
+  - **ema_200_dist_atr — Provenance (Nico-locked 2026-06-09):** auf CAPITALCOM NICHT direkt
+    voll-gewärmt messbar (ema200 braucht ~1000 Bars, `data_get_ohlcv` cap 500, Paging tooling-
+    blockiert: scroll-Bug/replay-fail/range-clamp; CAPITALCOM-Historie >500 nur in TV). Stattdessen
+    **formel-bewiesen via Kurz-EMA-Extrapolation:** `ema_20_dist_atr` (3.5e-6) + `ema_50_dist_atr`
+    (5.1e-6) matchen bit-exact am geschlossenen Bar → `ta.ema(close,length)` == `ewm(adjust=False)`
+    (Rekursion+α) + `(close-ema)/atr`-Wrapper bewiesen → ema200 (gleiche Funktion, length=200) erbt
+    es by construction. Produktion läuft ema200 im konvergierten Regime = exakt das von ema20/50
+    bewiesene. NICHT die >1000-Bar-Direktmessung suchen — die existiert tooling-bedingt nie; diese
+    Extrapolation IST die Verifikation. Beleg: `results/fx_whole_chain/ema_formula_proof_2026-06-09.md`.
 - **Klasse C — DISKRETE Features (eigene Risiko-Kategorie, NICHT Toleranz):** integer-/flag-wertige
   Features deren Pine-Quelle eine Tie-/Boundary-Semantik hat, die von der Python-Definition abweichen
   KANN. Bekannter Kandidat: **`bars_since_sweep_down`** (0–3/99) — Pine `_conf_sl` via `ta.pivotlow`
