@@ -13,9 +13,14 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 
 | Modul | Universum | TF | Long | Short | Kennzahlen | Quelle |
 |---|---|---|---|---|---|---|
-| **FX-NY** (ML) | GBPUSD, USDJPY, USDCAD, NZDUSD, USDCHF | 5m | ✅ alle 5 | ✅ nur USDCHF | PF 1.51 (sized), WR 0.51, 9.3/Tag, 80% Folds+, alle Jahre+ (net, ECN 0.5pip) | `fx_module_LOCK.md`, phase7 |
+| **FX-NY** (ML) | GBPUSD, USDJPY, USDCAD, NZDUSD, USDCHF | 5m | ✅ alle 5 | ✅ nur USDCHF | PF 1.51 (sized), WR 0.51, 9.3/Tag, 80% Folds+, alle Jahre+ (net, ECN 0.5pip) · **✅ Edge-Validated (live) 2026-06-09** (3 Live-Gates zu; OOS-Reval per-Symbol alle 5 ≥1.3: USDCAD 2.57/NZDUSD 2.25/USDJPY 1.86/USDCHF 1.63/GBPUSD 1.43) | `fx_module_LOCK.md`, phase7, `COVERAGE_MATRIX.md` |
 | **INDEX-DIPBUY** (deterministisch) | 10 Indices (SPX→HangSeng) | Daily | ✅ | ❌ (strukturell tot) | Holdout 15–21: PF 1.63/WR 74% · Formation 22–26: PF 1.32 · 36/36 Grid+ · 9/11 Jahre+ | `index_dipbuy_LOCK.md`, phase12 — **Nico-approved 2026-06-02** |
 | **METAL-TREND_L** (deterministisch, **EXPERIMENTAL-Label**) | XAUUSD, XAGUSD | Daily | ✅ | ❌ (tot, 0.84–0.86) | Grid 27/27+ (Median 1.42, Min 1.16) · Hälften 15–20: 1.70 / 21–26: 1.27 · 9/11 Jahre+ | phase13/13b — **Nico-approved 2026-06-02 als Experimental** (dünn: 2 Symbole, ~14 Trades/Jahr, kein formales Holdout) |
+
+**🏛️ Ship-Architektur (Nico-locked 2026-06-09):** Jedes Modul = **eigener Standalone-Indikator** (NICHT
+als Toggle im `pace_algo_v1`-Monolith — empirisch falsifiziert: Merge Core+FX = 102% Ops, Pine rechnet
+alles jeden Bar). `pace_algo_v1` = leichtes Tier-A-Tool; FX/INDEX/METAL je eigener fokussierter Indikator;
+„Routing" = Supported-Markets-Onboarding. Details: `fx_module_LOCK.md` §ARCHITEKTUR-UPDATE-2026-06-09.
 
 ## 🟡 DÜNNE PULSE (real, aber unter der Bar — nicht shippen, beobachten)
 
