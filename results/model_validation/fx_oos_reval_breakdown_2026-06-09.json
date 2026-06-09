@@ -1,0 +1,60 @@
+{
+  "cutoff": "2025-07-01",
+  "gate_spread_pip": 0.5,
+  "gate_bar_pf": 1.3,
+  "n_total": 3179,
+  "by_year": {
+    "2025": {
+      "n": 1870,
+      "pf": 2.164,
+      "wr": 0.574,
+      "pass": true
+    },
+    "2026": {
+      "n": 1309,
+      "pf": 1.488,
+      "wr": 0.501,
+      "pass": true
+    }
+  },
+  "by_symbol": {
+    "GBPUSD": {
+      "n": 402,
+      "pf": 1.426,
+      "wr": 0.488,
+      "coverage": "edge-validated"
+    },
+    "NZDUSD": {
+      "n": 514,
+      "pf": 2.246,
+      "wr": 0.625,
+      "coverage": "edge-validated"
+    },
+    "USDCAD": {
+      "n": 456,
+      "pf": 2.568,
+      "wr": 0.577,
+      "coverage": "edge-validated"
+    },
+    "USDCHF": {
+      "n": 1315,
+      "pf": 1.63,
+      "wr": 0.525,
+      "coverage": "edge-validated"
+    },
+    "USDJPY": {
+      "n": 492,
+      "pf": 1.86,
+      "wr": 0.526,
+      "coverage": "edge-validated"
+    }
+  },
+  "all_years_pass": true,
+  "edge_validated_symbols": [
+    "GBPUSD",
+    "NZDUSD",
+    "USDCAD",
+    "USDCHF",
+    "USDJPY"
+  ]
+}
