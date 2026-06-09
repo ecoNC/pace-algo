@@ -2,7 +2,7 @@
 
 **Zweck:** Pro Asset/TF der verbindliche Status. Router (ANN-009) UND Marketing richten sich
 NACH dieser Tabelle — nie umgekehrt. Dies ist die Launch-Glaubwürdigkeits-Grundlage (Daten, kein Bauchgefühl).
-**Version:** 2026-06-03 (finalisiert nach H-EXIT / H-REGIME / Router-Sweeps; harte Signifikanz-Regel eingeführt).
+**Version:** 2026-06-09 (FX-NY-ML → **Edge-Validated (live)**: alle 3 Live-Gates zu, per-Symbol-Roster verbucht). Vorher 2026-06-03 (H-EXIT/H-REGIME/Router-Sweeps; harte Signifikanz-Regel).
 
 ## Stati + HARTE Status-Regel (Nico-locked 2026-06-03)
 
@@ -23,6 +23,7 @@ die Marke (TOOL ≠ EDGE): Tier A ist die ehrliche universelle Utility, nicht di
 **Validierte Edge-Coverage des Produkts = die 3 Forschungs-Module (Tier B):** **3 Edge-Validated**
 (FX-NY ML · INDEX-DIPBUY · METAL-TREND_L exp.) · 1 Klasse geschlossen (Crypto direktional).
 → Der verkaufbare *Edge* liegt in Tier B, NICHT im Pine-Rule-Core.
+→ **FX-NY ML ist seit 2026-06-09 das erste LIVE-edge-validierte Modul** (alle 3 Live-Gates zu, alle 5 Symbole ≥1.3). INDEX/METAL: Research-validiert, Pine-Export ausstehend.
 
 ## Rule-Core (Tier A, Live-Pine `pace_algo_v1.pine`, Capped/Balanced/Intraday/RR 1.2)
 
@@ -63,7 +64,7 @@ geflaggt (Metall-Klasse hat ohnehin nur 2 Symbole → ≥4-Regel nicht erfüllba
 
 | Modul | Klasse | TF | Status | OOS-Beleg (n + Methode) |
 |---|---|---|---|---|
-| FX-NY (ML) | FX-Majors (5 long, USDCHF short) | 5m | **Edge-Validated** | Walk-Forward 20 Folds, net PF 1.51 sized, ~9 Trades/Tag (n hoch) (`fx_module_LOCK.md`) |
+| FX-NY (ML) | FX-Majors (5 long, USDCHF short) | 5m | **Edge-Validated (live)** ✅ 2026-06-09 | Walk-Forward 20 Folds, net PF 1.51 sized; **3 Live-Gates zu** (whole-chain bit-exact · Non-Repaint Gold · OOS-Reval per-Jahr+per-Symbol alle 5 ≥1.3) (`fx_module_LOCK.md`) |
 | INDEX-DIPBUY | Indizes (10) | Daily | **Edge-Validated** | Echtes Zeit-Holdout 2015–21: PF 1.63, WR 74% (`index_dipbuy_LOCK.md`) |
 | METAL-TREND_L | Gold/Silber | Daily | **Edge-Validated (Experimental)** | 27/27 Grid, Zeit-Hälften 1.70/1.27 — ⚠️ nur 2 Symbole, n dünn (phase13b) |
 | Crypto direktional | Crypto | alle | **geschlossen** | phase11a–c (beste Daten, echte Fees) → Tool-Only/WAIT |
@@ -75,9 +76,27 @@ bit-exact nach Pine exportiert + live verifiziert sind. Bis dahin KEIN „live"-
 
 | Modul | Research | Pine-Export | Live im Produkt |
 |---|---|---|---|
-| **FX-NY (ML)** | ✅ Edge-Validated | 🟡 **in Arbeit** — Cascade-Math 0.0 diff, Codegen kompiliert; **Block 1 KOMPLETT, Features 9/9 aligned** (Block-1(a) percentrank bit-exact 0.0 ✅; Block-1(b) htf-Alignment lookahead_on+[1] live in TV verifiziert ✅ 2026-06-08); **Block 2** (Short+Meta+Selektion + Whole-Chain bit-exact) ausstehend | ❌ noch nicht → **3 Gates für „Edge-Validated (live)":** (1) whole-chain bit-exact + OOS-Revalidierung, (2) **Non-Repaint-Replay auf `lookahead_on+[1]`** (Lookahead-Flag → Repaint beim Vorwärts-Steppen empirisch ausschließen), (3) exakter RSI/ta.*-Pin 1e-5 mit voller Historie |
+| **FX-NY (ML)** | ✅ Edge-Validated | ✅ **komplett** — Block 1+2; whole-chain bit-exact (Mengen 9/9, Cascade-Math 0.0, Klasse-C bss 0/9, ema-Familie formel-bewiesen) | ✅ **Edge-Validated (live) 2026-06-09** — alle 3 Gates ZU: (1) whole-chain bit-exact ✓ · (2) Non-Repaint Gold-Boundary-Crossing ✓ (`replay_start` tot für 5m → replay-freier Zwei-Capture-Live-Forward; 41 Signale byte-identisch nach echtem 4h-Schluss) · (3) OOS-Reval ✓ (per-Jahr 2025 2.16 / 2026 1.49; per-Symbol alle 5 ≥1.3) |
 | **INDEX-DIPBUY** | ✅ Edge-Validated | ⚪ ausstehend (deterministisch, trivial Pine-bar) | ❌ noch nicht |
 | **METAL-TREND_L** | 🟢 Experimental | ⚪ ausstehend | ❌ noch nicht |
+
+#### FX-NY (ML) — Symbol-Roster, vier Mengen (Ehrlichkeits-Artefakt, 2026-06-09)
+
+Bewiesen via `scripts/fx_roster_check.py` (build_pool, train/val/holdout-Counts je Symbol) +
+`scripts/fx_oos_reval.py` (per-Symbol OOS-PF @0.5pip). Die gefrorene Modul-Universe (`fx_module_LOCK.md`
+§Spec) IST genau diese 5 — EURUSD/AUDUSD waren im Pre-Lock-Research-Pool (NB13/14), sind im gefrorenen
+FX-Modul NICHT enthalten (curatet: USDCAD/NZDUSD rein, EURUSD/AUDUSD raus).
+
+| Menge | Symbole |
+|---|---|
+| **Trainings-Set** (train < 2025-01) | GBPUSD, NZDUSD, USDCAD, USDCHF, USDJPY (alle ~219k Bars) |
+| **OOS-getestet** (holdout ≥ 2025-07) | dieselben 5 (alle ~68k Bars) — keines OOS-only |
+| **Ship-Set (OOS-PF ≥ 1.3 → edge-validated)** | **alle 5:** USDCAD 2.57 · NZDUSD 2.25 · USDJPY 1.86 · USDCHF 1.63 · GBPUSD 1.43 (Short nur USDCHF) |
+| **Rest (tool-only/WAIT)** | ∅ innerhalb der Universe. EURUSD/AUDUSD = außerhalb des Moduls → fallen unter Tier-A-Tool wie jedes Nicht-Modul-Symbol |
+
+**Hinweis:** GBPUSD 1.43 ist der dünnste Rand (WR 48.8%, PF aus R=1.5-Payoff). 2026-PF 1.49 = Teiljahr
+(Juni, weniger Trades) → „monitor, füllt sich", kein Concern. Edge breit+stabil über alle 5, nichts
+implizit unter „breit" versteckt.
 
 ## Regime-Dimension (ANN-024 — welches Modul ist pro (Asset,TF) zuständig)
 
