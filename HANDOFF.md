@@ -1449,11 +1449,16 @@ Working-Script gesichert: `deploy_pine/backups/pace_algo_v1_2026-06-02_iter3_wor
 roadmap §8):** Core-Hebel H-EXIT + H-REGIME + MR sind alle getestet + abgelehnt → **Tier-A-Core
 sitzt an der ehrlichen Decke, wird NICHT wieder aufgemacht.** „Besser" = validierte Tier-B-Module
 bit-exact shippen + Coverage Modul für Modul wachsen. **Priorität 1 (aktiv): FX-NY-ML-Overlay
-bit-exact nach Pine exportieren** (Cascade 0.0 diff ✅, Codegen kompiliert ✅, **Block 1 KOMPLETT,
-Features 9/9 aligned** — Block-1(a) percentrank bit-exact 0.0 ✅, Block-1(b) htf-Alignment
-lookahead_on+[1] live in TV verifiziert ✅ 2026-06-08; **nächster Schritt: Block 2** Short+Meta+
-Selektion + Whole-Chain bit-exact). Prio 2: Module fahren sichtbare Signale wo aktiv.
-Prio 3: Modul-Discovery-Maschine (INDEX-DIPBUY/METAL nach Pine + neue Klassen).
+bit-exact nach Pine exportieren.** Block 1 ✅ (Features 9/9 aligned) · Block 2 ✅ (S1 Gate bit-exact,
+S2 4 Cascades cascade-math 0.0, S3 Selektions-Kette Logik bit-exact vs Training 3179/0). **GATE #1
+(Whole-Chain bit-exact) UNKONDITIONAL ZU ✅ 2026-06-09** (Mengen-Abgleich 9/9 + Klasse-C bss 0/9 +
+ta.ema-Formel-Beweis ema20/50 ~1e-6 → ema200 by construction). **3 Live-Gates für „Edge-Validated
+(live)": #1 Whole-Chain ✅ · #2 Non-Repaint-Replay (lookahead_on+[1]) OFFEN · #3 OOS-Reval OFFEN.**
+**Nächster Schritt: Gate #2 (Non-Repaint-Replay) ODER S5 FX-Display-Modus** (Toggle in pace_algo_v1.pine,
+kein Routing-Layer). Tooling: `scripts/_tv_persisted_to_capture.py` (transkriptionsfreie Captures via
+Harness-Persist), `fx_whole_chain.py`/`fx_verify_*` (Verifikation). Prio 2: Module fahren sichtbare
+Signale wo aktiv. Prio 3: Modul-Discovery-Maschine (INDEX-DIPBUY/METAL nach Pine — `_tv_persisted`-Bridge
+wiederverwenden + dieselbe S1–S4-Sequenz). Volle FX-Spec: `docs/fx_module_LOCK.md` §Pine-Export/§Block-2.
 
 **Build-Status: V1-Core = REGELBASIERT, SELEKTIV (ADX-Regime-Gate + ECHTES HTF-Gate
 [non-repaint, replay-verifiziert] + Pullback-Entry + Multi-TP-Exit-Toggle +
