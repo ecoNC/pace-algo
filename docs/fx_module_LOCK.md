@@ -118,9 +118,40 @@ Signal-Logik KOMPLETT vor Display. In dieser Reihenfolge:
    Trade-Menge als Training. ⚓ **Nach Schritt 3 STOPPEN: auf ein paar Bars die erwarteten
    Signale/Sizes bestätigen, bevor der Whole-Chain (Schritt 4) draufkommt.**
 4. **Whole-Chain bit-exact** (siehe Regel unten).
-5. **FX-Display-Modus** (Modus-Toggle im `pace_algo_v1.pine`, KEIN Routing-Layer) — erst NACHDEM
-   die Signal-Kette grün ist. Display auf unverifizierter Selektion = gefährlichste Variante
-   (sieht fertig aus, ist es nicht).
+5. **FX als eigener, polierter Indikator** (Modul-Architektur — Nico-locked 2026-06-09, ERSETZT den
+   Modus-Toggle-Plan; siehe Architektur-Update unten). Erst NACHDEM die Signal-Kette grün ist (✓ Gate #1).
+   `fx_chain_validate.pine` → Ship-Form (Instrumentierung raus; FX-Entry/SL/TP-Marker + R=1.5-Display rein).
+   Display auf unverifizierter Selektion bleibt die gefährlichste Variante — Reihenfolge unverändert.
+
+### 🏛️ ARCHITEKTUR-UPDATE 2026-06-09 — Monolith-mit-Toggle FALSIFIZIERT → Module = separate Indikatoren
+
+Die ursprüngliche §5-Annahme (FX-Display als Modus-Toggle IN `pace_algo_v1.pine`) wurde VOR der
+Ops-Realität getroffen und ist jetzt empirisch widerlegt. Ein Lock auf falsifizierter Annahme wird
+aktualisiert, nicht still verletzt.
+
+**Pine-Realität:** jede Global-Scope-Serie wird JEDEN Bar berechnet, egal wie ein Toggle steht — ein
+`if mode==FX` überspringt die Cascade-Arithmetik NICHT. Ein Modus-Toggle spart null Ops; alle
+eingebetteten Engines rechnen immer mit.
+
+**Empirischer Datenpunkt (`core.export.pine_codegen.estimate_pine_ops`, Heuristik, 2026-06-09):**
+- Core `pace_algo_v1` allein: 1867 ops = **37%** Budget ✓
+- FX `chain_validate` allein: 3244 ops = **65%** Budget ✓
+- **Merge Core+FX: 5111 ops = 102% Budget → FAIL** — und das OHNE INDEX-DIPBUY + METAL (je eigene Cascades).
+- (Heuristik; TV-Compiler ist Source-of-Truth. LOCK-Z.57-Schätzung „88% standalone" bezog sich auf die
+  reinen 4 Cascades — beide Zahlen sagen dasselbe: ein zweites Modul-Set passt nicht oben drauf.)
+
+⇒ Ein einzelnes Skript kann nicht einmal Core+FX halten, geschweige denn den vollen Modul-Satz. Wenn
+der Monolith nicht ALLE Module halten kann (kann er nicht), hält er KEINES. **Korrekte Architektur
+(Two-Tier-konsistent):**
+- `pace_algo_v1.pine` = leichtes **Tier-A-Tool** (läuft auf allem, WAIT-Optik, regelbasiert).
+- Jedes **Edge-Modul** (FX / INDEX-DIPBUY / METAL) = **eigener, fokussierter Indikator** seiner Klasse
+  (schwer, aber nur EIN Modul je Skript, nicht alle).
+- „Routing" = Supported-Markets-Anleitung im Onboarding („auf FX-Charts: PaceAlgo FX dazuladen").
+  Indikatoren-Stacking ist auf TV Standard, kein UX-Bruch. Ehrliche Coverage = die Marke.
+
+**Falls** ein einzelnes Modul wider Erwarten komfortabel in den Core passt: B (Modus-Switch) vor A
+(additiv) — keine No-Edge-Core-Signale NEBEN Edge-Modul-Signalen (verwässert die ehrliche Botschaft).
+Aber die Multi-Modul-Logik bestimmt: einheitlich separate Indikatoren, kein FX-Einzelfall im Monolith.
 
 ### 🎯 Bit-exact Toleranz-Klassen (Nico-locked 2026-06-08 — sonst Warmup-Diff = falscher Alarm)
 „bit-exact" heißt NICHT überall 0.0. Zwei Klassen, beide im Whole-Chain-Check (Schritt 4) anwenden:
