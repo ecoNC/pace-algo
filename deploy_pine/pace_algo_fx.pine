@@ -1,0 +1,597 @@
+//@version=6
+// PaceAlgo FX — validated FX-NY-ML edge module, ship form (Edge-Validated live 2026-06-09).
+// Signal chain lines below are bit-exact ported from fx_chain_validate.pine (DO NOT EDIT the chain);
+// only the indicator() header + display layer at the bottom differ. Chain: gate -> gen -> meta-rank
+// -> POOLED(dedupe) -> signal>=pooled_thr -> sizing. Universe: GBPUSD/USDJPY/USDCAD/NZDUSD/USDCHF (long),
+// USDCHF (short). R=1.5 (TP 1.5*ATR / SL 1.0*ATR). 5m only.
+indicator("PaceAlgo FX", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// === PaceAlgo FX — display inputs (display-only; chain/R/SL/TP/sizing are FIXED to the locked spec) ===
+showSig    = input.bool(true, "FX-Signalpfeile zeigen",        group="FX Display")
+showLevels = input.bool(true, "Entry / SL / TP-Linien zeigen", group="FX Display")
+levelBars  = input.int(10, "Linienlänge (Bars)", minval=3, maxval=50, group="FX Display")
+
+// === Pine-v6 helper functions (tanh is not native in Pine v6) ===
+// Numerically stable tanh via exp identity, clipped to avoid float overflow.
+_pf_tanh(_x) =>
+    _xc = math.max(-20.0, math.min(20.0, _x))
+    _e  = math.exp(2.0 * _xc)
+    (_e - 1.0) / (_e + 1.0)
+
+// Percentile rank matching the TRAINING definition exactly:
+//   pandas: atr.rolling(100, min_periods=100).rank(pct=True)  (method='average')
+// Window INCLUDES the current bar (99 prior + self), needs 100 non-na obs,
+// average-rank tie handling, divided by 100. This differs from Pine's native
+// ta.percentrank (prior bars only, exclusive of self, <= count) — that mismatch
+// was a >1e-5 bit-exact risk on htf_*_atr_percentile_100. Returns na during warmup.
+_pf_pctrank100(_src) =>
+    float _res = na
+    float _less = 0.0
+    float _eq = 0.0
+    int _n = 0
+    for _i = 0 to 99
+        float _v = _src[_i]
+        if not na(_v)
+            _n += 1
+            if _v < _src
+                _less += 1.0
+            else if _v == _src
+                _eq += 1.0
+    if _n == 100 and not na(_src)
+        _res := (_less + (_eq + 1.0) / 2.0) / 100.0
+    _res
+
+// === Pre-computed indicators (V1 feature engine) ===
+_atr14         = ta.atr(14)
+_safe_atr      = _atr14 > 0.0 ? _atr14 : na
+_ema20         = ta.ema(close, 20)
+_ema50         = ta.ema(close, 50)
+_ema200        = ta.ema(close, 200)
+_rsi14         = ta.rsi(close, 14)
+// Pine v6: ta.adx() reported "not found" in some environments — use ta.dmi() instead
+[_diPlus_local, _diMinus_local, _adx14] = ta.dmi(14, 14)
+_swing_hi_20   = ta.highest(high, 20)
+_swing_lo_20   = ta.lowest(low, 20)
+_vol_sma20     = ta.sma(volume, 20)
+_vol_std50     = ta.stdev(volume, 50)
+_log_ret       = nz(math.log(close / close[1]), 0.0)
+_ema_alignment = _ema20 > _ema50 and _ema50 > _ema200 ? 1.0 :
+                 _ema20 < _ema50 and _ema50 < _ema200 ? -1.0 : 0.0
+_macd_fast     = ta.ema(close, 12)
+_macd_slow     = ta.ema(close, 26)
+_macd_line     = _macd_fast - _macd_slow
+_macd_signal   = ta.ema(_macd_line, 9)
+_macd_hist     = _macd_line - _macd_signal
+_macd_hist_atr = _macd_hist / _safe_atr
+_roc_10        = close[10] != 0.0 ? (close - close[10]) / close[10] : 0.0
+_atr_pct_rank  = _pf_pctrank100(_atr14)
+// --- Session/time + Vol-Expansion helpers ---
+_hour_utc      = hour(time, "UTC")
+_min_utc       = minute(time, "UTC")
+_frac_hour     = _hour_utc + _min_utc / 60.0
+_dow_utc       = dayofweek(time, "UTC")
+_atr_avg_50    = ta.sma(_atr14, 50)
+_vol_ratio     = _atr_avg_50 > 0.0 ? _atr14 / _atr_avg_50 : 1.0
+
+// --- BB Width + StochRSI pre-computations ---
+// bb_width_pct = (4 * std) / mid — matches engineer.py bb_width(mult=2): (2*std*2)/mid
+_bb_std20      = ta.stdev(close, 20)
+_bb_mid20      = ta.sma(close, 20)
+_bb_width_pct  = _bb_mid20 > 0.0 ? (4.0 * _bb_std20) / _bb_mid20 : 0.0
+_bb_width_avg  = ta.sma(_bb_width_pct, 20)
+// StochRSI-K: (rsi - lowest_rsi_14) / (highest_rsi_14 - lowest_rsi_14) * 100
+_stoch_lo14    = ta.lowest(_rsi14, 14)
+_stoch_hi14    = ta.highest(_rsi14, 14)
+_stoch_rsi_dif = _stoch_hi14 - _stoch_lo14
+
+// --- Confirmed pivot swings (anti-lookahead: ta.pivothigh confirms after rightbars=5) ---
+// ta.pivothigh(src, leftbars, rightbars) returns the pivot value at bar[rightbars] when
+// confirmed (strict: no bar in ±5 window is >= pivot). na otherwise.
+// Forward-fill last confirmed value so every bar has a reference level.
+var float _conf_sh = na
+var float _conf_sl = na
+_ph_raw = ta.pivothigh(high, 5, 5)
+_pl_raw = ta.pivotlow(low,  5, 5)
+if not na(_ph_raw)
+    _conf_sh := _ph_raw
+if not na(_pl_raw)
+    _conf_sl := _pl_raw
+// Previous confirmed swing (for equal-highs detection)
+_prev_conf_sh = ta.valuewhen(not na(_ph_raw), _conf_sh, 1)
+_prev_conf_sl = ta.valuewhen(not na(_pl_raw), _conf_sl, 1)
+// bars_since_sweep_down — matches market_structure.detect_sweep_down (close_back_within=3,
+// swing_low = confirmed pivot low _conf_sl, forward-filled). Sweep at offset o:
+//   low[o] < _conf_sl[o+1] and close[o] > _conf_sl[o+1]  (broke prior swing low, closed back above)
+// smallest such o in 0..3, else 99.0. Guard: current _conf_sl must exist (matches isnan(sl[t]) skip).
+float _bars_since_sweep_down = 99.0
+if not na(_conf_sl)
+    for _o = 0 to 3
+        _ps_sd = _conf_sl[_o + 1]
+        if not na(_ps_sd) and low[_o] < _ps_sd and close[_o] > _ps_sd
+            _bars_since_sweep_down := _o
+            break
+
+// --- FVG detection: tracks last 2 per type, 20-bar expiry, nearest-to-close ---
+// Matches Python detect_fvg(lookback=20, nearest selection) in market_structure.py.
+// Bug fix: old single-slot version was overwritten by newer FVGs, losing the relevant
+// FVG above price → systematic proba underestimate (~0.07 shift vs Python).
+var float _fvg_bull_lo_a = na
+var float _fvg_bull_hi_a = na
+var int   _fvg_bull_bar_a = 0
+var float _fvg_bull_lo_b = na
+var float _fvg_bull_hi_b = na
+var int   _fvg_bull_bar_b = 0
+var float _fvg_bear_lo_a = na
+var float _fvg_bear_hi_a = na
+var int   _fvg_bear_bar_a = 0
+var float _fvg_bear_lo_b = na
+var float _fvg_bear_hi_b = na
+var int   _fvg_bear_bar_b = 0
+// Expiry (20 bars — matches Python lookback=20)
+if not na(_fvg_bull_lo_a) and bar_index - _fvg_bull_bar_a > 20
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and bar_index - _fvg_bull_bar_b > 20
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and bar_index - _fvg_bear_bar_a > 20
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and bar_index - _fvg_bear_bar_b > 20
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// Fill conditions
+if not na(_fvg_bull_lo_a) and low <= _fvg_bull_lo_a
+    _fvg_bull_lo_a := na
+    _fvg_bull_hi_a := na
+if not na(_fvg_bull_lo_b) and low <= _fvg_bull_lo_b
+    _fvg_bull_lo_b := na
+    _fvg_bull_hi_b := na
+if not na(_fvg_bear_lo_a) and high >= _fvg_bear_hi_a
+    _fvg_bear_lo_a := na
+    _fvg_bear_hi_a := na
+if not na(_fvg_bear_lo_b) and high >= _fvg_bear_hi_b
+    _fvg_bear_lo_b := na
+    _fvg_bear_hi_b := na
+// New FVG detection — shift old into slot b, new into slot a
+if low - high[2] > 0.1 * _atr14
+    _fvg_bull_lo_b := _fvg_bull_lo_a
+    _fvg_bull_hi_b := _fvg_bull_hi_a
+    _fvg_bull_bar_b := _fvg_bull_bar_a
+    _fvg_bull_lo_a := high[2]
+    _fvg_bull_hi_a := low
+    _fvg_bull_bar_a := bar_index
+if low[2] - high > 0.1 * _atr14
+    _fvg_bear_lo_b := _fvg_bear_lo_a
+    _fvg_bear_hi_b := _fvg_bear_hi_a
+    _fvg_bear_bar_b := _fvg_bear_bar_a
+    _fvg_bear_lo_a := high
+    _fvg_bear_hi_a := low[2]
+    _fvg_bear_bar_a := bar_index
+// Nearest-to-close selection
+_fvg_bull_mid_a = na(_fvg_bull_lo_a) ? na : (_fvg_bull_lo_a + _fvg_bull_hi_a) / 2.0
+_fvg_bull_mid_b = na(_fvg_bull_lo_b) ? na : (_fvg_bull_lo_b + _fvg_bull_hi_b) / 2.0
+_fvg_bear_mid_a = na(_fvg_bear_lo_a) ? na : (_fvg_bear_lo_a + _fvg_bear_hi_a) / 2.0
+_fvg_bear_mid_b = na(_fvg_bear_lo_b) ? na : (_fvg_bear_lo_b + _fvg_bear_hi_b) / 2.0
+var float _fvg_bull_mid = na
+var float _fvg_bull_sz = na
+var float _fvg_bear_mid = na
+var float _fvg_bear_sz = na
+_fvg_bull_mid := na
+_fvg_bull_sz  := na
+if not na(_fvg_bull_mid_a) and not na(_fvg_bull_mid_b)
+    if math.abs(close - _fvg_bull_mid_a) <= math.abs(close - _fvg_bull_mid_b)
+        _fvg_bull_mid := _fvg_bull_mid_a
+        _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+    else
+        _fvg_bull_mid := _fvg_bull_mid_b
+        _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+else if not na(_fvg_bull_mid_a)
+    _fvg_bull_mid := _fvg_bull_mid_a
+    _fvg_bull_sz  := _fvg_bull_hi_a - _fvg_bull_lo_a
+else if not na(_fvg_bull_mid_b)
+    _fvg_bull_mid := _fvg_bull_mid_b
+    _fvg_bull_sz  := _fvg_bull_hi_b - _fvg_bull_lo_b
+_fvg_bear_mid := na
+_fvg_bear_sz  := na
+if not na(_fvg_bear_mid_a) and not na(_fvg_bear_mid_b)
+    if math.abs(close - _fvg_bear_mid_a) <= math.abs(close - _fvg_bear_mid_b)
+        _fvg_bear_mid := _fvg_bear_mid_a
+        _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+    else
+        _fvg_bear_mid := _fvg_bear_mid_b
+        _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
+else if not na(_fvg_bear_mid_a)
+    _fvg_bear_mid := _fvg_bear_mid_a
+    _fvg_bear_sz  := _fvg_bear_hi_a - _fvg_bear_lo_a
+else if not na(_fvg_bear_mid_b)
+    _fvg_bear_mid := _fvg_bear_mid_b
+    _fvg_bear_sz  := _fvg_bear_hi_b - _fvg_bear_lo_b
+
+// === HTF (1h) context — anti-look-ahead via [1] shift ===
+// Pine v6 disallows complex inline expressions in request.security() —
+// we wrap each HTF computation in a helper function (standard pattern).
+_pf_htf_rsi() =>
+    ta.rsi(close, 14)
+
+_pf_htf_atr_pct() =>
+    _pf_pctrank100(ta.atr(14))
+
+_pf_htf_ema_align() =>
+    _e20 = ta.ema(close, 20)
+    _e50 = ta.ema(close, 50)
+    _e200 = ta.ema(close, 200)
+    _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
+
+// Non-repaint idiom: expr[1] + lookahead_ON = value of the LAST CLOSED HTF bar,
+// available from that bar's close — bit-exact to training's htf.shift(1)+ffill on
+// native HTF bars. (expr[1] + lookahead_OFF would lag ONE EXTRA HTF bar on history.)
+_htf_1h_rsi14_raw = request.security(syminfo.tickerid, "60", _pf_htf_rsi()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_1h_atr_pct_raw = request.security(syminfo.tickerid, "60", _pf_htf_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_1h_ema_align_raw = request.security(syminfo.tickerid, "60", _pf_htf_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_on)
+
+_htf_1h_rsi14        = nz(_htf_1h_rsi14_raw, 50.0)
+_htf_1h_atr_pct_safe = nz(_htf_1h_atr_pct_raw, 0.5)
+_htf_1h_ema_align    = nz(_htf_1h_ema_align_raw, 0.0)
+
+// === HTF (4h) context — same pattern as 1h, timeframe "240" ===
+_pf_htf4h_rsi() =>
+    ta.rsi(close, 14)
+
+_pf_htf4h_atr_pct() =>
+    _pf_pctrank100(ta.atr(14))
+
+_pf_htf4h_ema_align() =>
+    _e20 = ta.ema(close, 20)
+    _e50 = ta.ema(close, 50)
+    _e200 = ta.ema(close, 200)
+    _e20 > _e50 and _e50 > _e200 ? 1.0 : _e20 < _e50 and _e50 < _e200 ? -1.0 : 0.0
+
+// Non-repaint idiom: expr[1] + lookahead_ON = LAST CLOSED 4h bar (see 1h note above).
+_htf_4h_rsi14_raw     = request.security(syminfo.tickerid, "240", _pf_htf4h_rsi()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_4h_atr_pct_raw   = request.security(syminfo.tickerid, "240", _pf_htf4h_atr_pct()[1], barmerge.gaps_off, barmerge.lookahead_on)
+_htf_4h_ema_align_raw = request.security(syminfo.tickerid, "240", _pf_htf4h_ema_align()[1], barmerge.gaps_off, barmerge.lookahead_on)
+
+_htf_4h_rsi14        = nz(_htf_4h_rsi14_raw, 50.0)
+_htf_4h_atr_pct_safe = nz(_htf_4h_atr_pct_raw, 0.5)
+_htf_4h_ema_align    = nz(_htf_4h_ema_align_raw, 0.0)
+
+// === Macro context (daily VIX / DXY / TNX — anti-lookahead) ===
+// [1] shift = last completed trading day (matches engineer.py macro.shift(1)).
+// pct_change(5) after shift(1): uses close[1] vs close[6] in daily context.
+// Neutral fallbacks: VIX=20, DXY=100, TNX=4 (typical mid-cycle values).
+// One request.security per symbol, returns [d1_close, d6_close] as tuple.
+_pf_macro_daily() =>
+    [close[1], close[6]]
+
+[_macro_vix_d1_raw, _macro_vix_d6_raw] = request.security("CBOE:VIX",  "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+[_macro_dxy_d1_raw, _macro_dxy_d6_raw] = request.security("TVC:DXY",   "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+[_macro_tnx_d1_raw, _macro_tnx_d6_raw] = request.security("TVC:US10Y", "D", _pf_macro_daily(), barmerge.gaps_off, barmerge.lookahead_off)
+
+_vix_level = nz(_macro_vix_d1_raw, 20.0)
+_dxy_level = nz(_macro_dxy_d1_raw, 100.0)
+_tnx_level = nz(_macro_tnx_d1_raw, 4.0)
+_vix_d6    = nz(_macro_vix_d6_raw, 20.0)
+_dxy_d6    = nz(_macro_dxy_d6_raw, 100.0)
+_tnx_d6    = nz(_macro_tnx_d6_raw, 4.0)
+
+// === V1 Features (referenced by booster) ===
+f_hour_cos = math.cos(2.0 * math.pi * (hour(time, "UTC") + minute(time, "UTC") / 60.0) / 24.0)
+f_hour_sin = math.sin(2.0 * math.pi * (hour(time, "UTC") + minute(time, "UTC") / 60.0) / 24.0)
+f_rvol_20 = volume / nz(_vol_sma20, 1.0)
+f_ema_20_dist_atr = (close - _ema20) / _safe_atr
+f_atr_pct = _atr14 / close
+f_htf_4h_rsi_14 = _htf_4h_rsi14
+f_is_fx_market_open = (_dow_utc == dayofweek.sunday and _hour_utc >= 22) ? 1.0 : (_dow_utc >= dayofweek.monday and _dow_utc <= dayofweek.friday) ? 1.0 : 0.0
+f_in_ny = (_hour_utc >= 13 and _hour_utc < 22) ? 1.0 : 0.0
+f_htf_4h_atr_percentile_100 = _htf_4h_atr_pct_safe
+f_ema_50_dist_atr = (close - _ema50) / _safe_atr
+f_ema_200_dist_atr = (close - _ema200) / _safe_atr
+f_ema_20_slope_atr = (_ema20 - _ema20[5]) / _safe_atr
+f_adx_14 = _adx14
+f_adx_slope = _adx14 - _adx14[5]
+f_rsi_14 = _rsi14
+f_stoch_rsi_k = _stoch_rsi_dif > 0.0 ? (_rsi14 - _stoch_lo14) / _stoch_rsi_dif * 100.0 : 50.0
+f_roc_10 = _roc_10
+f_macd_hist_atr = _macd_hist_atr
+f_momentum_composite = (_rsi14 - 50.0) / 50.0 + _pf_tanh(_macd_hist_atr)
+f_bb_width_pct = _bb_width_pct
+f_vol_compression = _bb_width_avg > 0.0 ? _bb_width_pct / _bb_width_avg : 1.0
+f_realized_vol_20 = ta.stdev(_log_ret, 20) * math.sqrt(20)
+f_dist_to_swing_high_atr = (_swing_hi_20 - close) / _safe_atr
+f_dist_to_swing_low_atr = (close - _swing_lo_20) / _safe_atr
+f_volume_z_score = (volume - _vol_sma20) / nz(_vol_std50, 1.0)
+f_htf_1h_rsi_14 = _htf_1h_rsi14
+f_htf_1h_atr_percentile_100 = _htf_1h_atr_pct_safe
+f_bars_since_sweep_down = _bars_since_sweep_down
+f_dist_to_sh_atr_conf = na(_conf_sh) ? 0.0 : (_conf_sh - close) / _safe_atr
+f_dist_to_sl_atr_conf = na(_conf_sl) ? 0.0 : (close - _conf_sl) / _safe_atr
+f_dist_to_bear_fvg_atr = na(_fvg_bear_mid) ? 0.0 : (close - _fvg_bear_mid) / _safe_atr
+f_fvg_bear_size_atr = na(_fvg_bear_sz) ? 0.0 : _fvg_bear_sz / _safe_atr
+f_in_london = (_hour_utc >= 8 and _hour_utc < 17) ? 1.0 : 0.0
+f_in_london_ny_killzone = (_hour_utc >= 13 and _hour_utc < 17) ? 1.0 : 0.0
+f_vol_expansion_ratio = _vol_ratio
+f_bars_since_vol_spike = math.min(99.0, nz(ta.barssince(_vol_ratio > 1.5), 99))
+f_ltf_rsi_minus_htf_rsi = _rsi14 - _htf_1h_rsi14
+f_vol_pct_diff_htf = _atr_pct_rank - _htf_1h_atr_pct_safe
+f_both_high_vol = (_atr_pct_rank > 0.7 and _htf_1h_atr_pct_safe > 0.7) ? 1.0 : 0.0
+f_atr_percentile_100 = _atr_pct_rank
+f_htf_4h_ema_alignment = _htf_4h_ema_align
+f_fvg_bear_active = na(_fvg_bear_mid) ? 0.0 : 1.0
+f_dist_to_bull_fvg_atr = na(_fvg_bull_mid) ? 0.0 : (close - _fvg_bull_mid) / _safe_atr
+f_fvg_bull_size_atr = na(_fvg_bull_sz) ? 0.0 : _fvg_bull_sz / _safe_atr
+
+// === Generated by core/export/pine_codegen.py ===
+// DO NOT EDIT — regenerate via notebooks/15c_v1_pine_export.ipynb
+// Source booster: 50 trees, 9 referenced features (out of 9 trained)
+
+f_pL(f_hour_cos, f_hour_sin, f_rvol_20, f_ema_20_dist_atr, f_atr_pct, f_htf_4h_rsi_14, f_is_fx_market_open, f_in_ny, f_htf_4h_atr_percentile_100) =>
+    t_0 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.4904943853616715 ? -0.41637890861401483 : (f_hour_cos <= 0.6173424422740937 ? -0.4362273904224293 : -0.4571893043561349)) : (f_ema_20_dist_atr <= -0.24129600077867505 ? (f_rvol_20 <= 0.194383479654789 ? -0.379125978542432 : -0.4091586470285055) : (f_hour_sin <= -0.5280364453792571 ? -0.4263974760313123 : -0.4127353075668896)))
+    t_1 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.5093866288661958 ? 0.018581482566841282 : (f_hour_cos <= 0.6343555450439454 ? -0.002200918331530632 : -0.02232903907478832)) : (f_ema_20_dist_atr <= -0.24129600077867505 ? (f_rvol_20 <= 0.194383479654789 ? 0.05363554584375078 : 0.02559123338609995) : (f_hour_sin <= -0.5280364453792571 ? 0.00934296490264464 : 0.022229565103100715)))
+    t_2 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.4904943853616715 ? 0.017802609487215244 : (f_hour_cos <= 0.6173424422740937 ? -1.4323517863545352e-05 : -0.019153219294718832)) : (f_ema_20_dist_atr <= -0.24129600077867505 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.0648880430885286 : 0.024860707305581764) : (f_hour_sin <= -0.5280364453792571 ? 0.00885819314378192 : 0.021022817393271057)))
+    t_3 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.45201864838600164 ? 0.017260810758397156 : (f_hour_cos <= 0.6000355482101442 ? 0.0022433426225568877 : -0.01648450348059266)) : (f_rvol_20 <= 0.12024153396487237 ? (f_hour_sin <= -0.3927150517702102 ? 0.042062256498049976 : 0.020247509123481555) : (f_hour_sin <= -0.5280364453792571 ? 0.015616759099421014 : 0.021122497194330767)))
+    t_4 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.45201864838600164 ? 0.016344533314373685 : (f_hour_cos <= 0.6343555450439454 ? 0.0001695109225101591 : -0.019721718680064615)) : (f_ema_20_dist_atr <= -0.5257405936717986 ? (f_rvol_20 <= 0.2152374237775803 ? 0.05144111123779043 : 0.021994092233933296) : (f_hour_sin <= -0.5280364453792571 ? 0.009184663346592186 : 0.019000050110147704)))
+    t_5 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_sin <= -0.8919417858123778 ? 0.015913000180661805 : (f_atr_pct <= 0.00028593634488061076 ? -0.00907764533214816 : 0.010734447763276896)) : (f_ema_20_dist_atr <= -0.024827356450259682 ? (f_rvol_20 <= 0.2152374237775803 ? 0.04055959727081976 : 0.020404069975793415) : (f_hour_sin <= -0.5093866288661956 ? 0.004708681426811862 : 0.01757433117232344)))
+    t_6 = (f_in_ny <= 1.0000000180025095e-35 ? (f_rvol_20 <= 0.12024153396487237 ? (f_hour_cos <= 0.9686339497566224 ? 0.03070128395569115 : 0.009373256264397781) : (f_atr_pct <= 0.0002169948711525649 ? 0.019580241751041987 : 0.01763660899787065)) : (f_hour_cos <= 0.43245348334312445 ? 0.01578308373921786 : (f_rvol_20 <= 0.12024153396487237 ? 0.03056176830809401 : 0.0010130144639416794)))
+    t_7 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.5464349389076234 ? 0.013491079367327661 : (f_ema_20_dist_atr <= 0.2020475193858147 ? -0.0024907452943141602 : -0.021066609946122965)) : (f_ema_20_dist_atr <= -0.8861516714096068 ? (f_rvol_20 <= 0.23465447127819064 ? 0.05234773415922124 : 0.019440332488296023) : (f_hour_sin <= -0.5280364453792571 ? 0.009090635605639753 : 0.016192470226117958)))
+    t_8 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.5464349389076234 ? (f_hour_cos <= 0.41268247365951544 ? 0.013749034904933477 : 0.004977538790739809) : (f_atr_pct <= 0.0002877060178434477 ? -0.01689803080110094 : -0.0019017102091579295)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.03731153749239707 : (f_rvol_20 <= 0.12024153396487237 ? 0.025393696044794075 : 0.015666890415499797)))
+    t_9 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.5824430584907533 ? (f_hour_cos <= 0.43245348334312445 ? 0.0129591215664714 : 0.0032651878378101976) : (f_atr_pct <= 0.0002877060178434477 ? -0.020497286373544952 : -0.002972050707558796)) : (f_rvol_20 <= 0.12024153396487237 ? 0.0271695654660722 : (f_hour_sin <= -0.5280364453792571 ? 0.01091938297818594 : 0.015309592597370754)))
+    t_10 = (f_ema_20_dist_atr <= -0.5257405936717986 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6000355482101442 ? 0.014731521049527175 : 0.0070263128872729815) : (f_hour_sin <= -0.3927150517702102 ? 0.03680964733875185 : 0.016703718911410835)) : (f_hour_sin <= -0.5280364453792571 ? (f_hour_cos <= 0.47136868536472326 ? 0.011622620710078297 : -0.008427136900559986) : 0.013575843963193283))
+    t_11 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.5824430584907533 ? 0.010433835712699678 : (f_ema_20_dist_atr <= 0.0870143808424473 ? -0.0026164051336185212 : -0.023219545433182838)) : (f_ema_20_dist_atr <= -0.024827356450259682 ? (f_rvol_20 <= 0.1719223260879517 ? 0.03455802086944929 : 0.015046866317706043) : (f_hour_sin <= -0.5093866288661956 ? 0.002052009199728872 : 0.012594943751166546)))
+    t_12 = (f_ema_20_dist_atr <= -0.5257405936717986 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? 0.055627720819256446 : 0.023295994317046105) : (f_hour_cos <= 0.6993099153041841 ? 0.012920169946648208 : 0.017347084081018326)) : (f_hour_sin <= -0.5280364453792571 ? (f_hour_cos <= 0.47136868536472326 ? 0.010531855154098338 : -0.008124975804943858) : 0.012200718730581922))
+    t_13 = (f_ema_20_dist_atr <= -0.024827356450259682 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.1450840234756468 ? 0.05137634300438573 : 0.01719425244334127) : (f_hour_cos <= 0.6993099153041841 ? 0.011808733595163677 : 0.015762865423044416)) : (f_in_ny <= 1.0000000180025095e-35 ? 0.011277087902570484 : (f_hour_cos <= 0.5645733475685121 ? 0.00944355886318366 : -0.016808305504473927)))
+    t_14 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6000355482101442 ? (f_hour_cos <= 0.45201864838600164 ? 0.009720101990567394 : 0.0010051046921752819) : (f_ema_20_dist_atr <= -1.6368231773376463 ? 0.019078042529137487 : -0.01617806221468908)) : (f_ema_20_dist_atr <= -0.9037129878997802 ? (f_rvol_20 <= 0.30186145007610327 ? 0.03851985599548164 : 0.013465633765223976) : 0.010635371053019291))
+    t_15 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= -1.1450840234756468 ? 0.054511377587946434 : 0.031439850660881195) : (f_ema_20_dist_atr <= -1.998176574707031 ? 0.016430243249663027 : 0.010829685475726946)) : (f_hour_sin <= -0.4904943853616714 ? (f_hour_sin <= -0.9686339497566222 ? 0.010454492870766215 : 0.0007698487018170095) : 0.00995509851763399))
+    t_16 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6000355482101442 ? (f_hour_cos <= 0.45201864838600164 ? 0.008678273560456091 : 0.0007155049823992486) : (f_atr_pct <= 0.00026542566774878656 ? -0.023019861466955945 : -0.003117240957834353)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? 0.011495939221854667 : 0.035752150531061226) : 0.010373645905884465))
+    t_17 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6000355482101442 ? (f_hour_cos <= 0.45201864838600164 ? 0.008236717296003863 : 0.0006796400029069446) : (f_atr_pct <= 0.00026542566774878656 ? -0.02202119778747907 : -0.0029639763593093636)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.028530451960112925 : (f_rvol_20 <= 0.12024153396487237 ? 0.016628523544551056 : 0.009732361003656568)))
+    t_18 = (f_ema_20_dist_atr <= -0.7698912918567656 ? (f_rvol_20 <= 0.2152374237775803 ? (f_ema_20_dist_atr <= -1.76638388633728 ? 0.0507339365305357 : 0.02147922560328845) : (f_atr_pct <= 0.0005496125377248974 ? 0.011824387281154054 : 0.007970977653183588)) : (f_hour_sin <= -0.5280364453792571 ? (f_rvol_20 <= 0.489670678973198 ? -0.0014016649536115683 : 0.005721064224615377) : 0.00889332605126441))
+    t_19 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= -1.1450840234756468 ? 0.048022168459130266 : 0.026636312120891827) : (f_ema_20_dist_atr <= -1.998176574707031 ? 0.014026142748310872 : 0.00890321092503744)) : (f_hour_sin <= -0.4904943853616714 ? (f_hour_cos <= 0.5824430584907533 ? 0.005965168799326589 : -0.018718186783935734) : 0.007976279493399028))
+    t_20 = (f_ema_20_dist_atr <= -0.0763229727745056 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? 0.04732182238906866 : 0.015226945567034137) : (f_htf_4h_atr_percentile_100 <= 0.5749999880790712 ? 0.010176757852065225 : 0.007156669027632196)) : (f_hour_sin <= -0.4904943853616714 ? (f_rvol_20 <= 0.45435079932212835 ? -0.0058908107005844895 : 0.004355122659984503) : 0.007886173084524542))
+    t_21 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_rvol_20 <= 0.14600227773189547 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? 0.0444564117962315 : 0.012303382532440522) : (f_atr_pct <= 0.0003619747440097854 ? 0.009600757709998811 : 0.007188334912270589)) : (f_hour_sin <= -0.5093866288661956 ? (f_hour_cos <= 0.5824430584907533 ? 0.0058295674925663 : -0.020063420808291765) : 0.00730885073462048))
+    t_22 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.36403863131999975 ? (f_hour_sin <= -0.3927150517702102 ? 0.04523848581724377 : 0.019318183804433623) : 0.010543334226216155) : (f_hour_sin <= -0.5280364453792571 ? (f_ema_20_dist_atr <= 0.277571052312851 ? 0.006625541356790936 : 0.0016038559979145912) : (f_ema_20_dist_atr <= 1.5885910391807558 ? 0.007910118293679018 : 0.004898561298082929)))
+    t_23 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.30186145007610327 ? (f_hour_sin <= -0.3927150517702102 ? 0.04493738022554017 : 0.01816345831706036) : 0.010140926951914478) : (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6000355482101442 ? 0.0052571954178740705 : -0.013675081458312017) : (f_ema_20_dist_atr <= -0.024827356450259682 ? 0.008080753176082131 : 0.0060825804623438695)))
+    t_24 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6000355482101442 ? (f_hour_cos <= 0.3317298144102097 ? 0.006319337778092141 : 0.0007787100839135269) : (f_atr_pct <= 0.0002877060178434477 ? -0.019766793543622745 : -0.0018049387083930394)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.022698856346353224 : (f_rvol_20 <= 0.12024153396487237 ? 0.012256471050991794 : 0.006785912221823296)))
+    t_25 = (f_ema_20_dist_atr <= -1.0863305926322935 ? (f_rvol_20 <= 0.23465447127819064 ? (f_ema_20_dist_atr <= -2.3870574235916133 ? 0.04775154620127321 : 0.025306690666830018) : (f_hour_cos <= 0.6993099153041841 ? 0.00708704580444228 : 0.011031028811582128)) : (f_hour_cos <= 0.3927150517702103 ? 0.006352399847726228 : (f_in_ny <= 1.0000000180025095e-35 ? 0.006172498501858967 : -0.004147125427972535)))
+    t_26 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_sin <= -0.77296444773674 ? (f_rvol_20 <= 0.28660970926284796 ? -0.00590920058185276 : 0.004801894129447775) : (f_atr_pct <= 0.00026728739612735813 ? -0.02541144585530669 : 0.0024545053410210977)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? 0.006042255450946068 : 0.026880838075756527) : 0.006284001971919082))
+    t_27 = (f_ema_20_dist_atr <= -1.0863305926322935 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -2.3870574235916133 ? 0.04674486930904338 : 0.025290188136652143) : (f_atr_pct <= 0.0005839799123350532 ? 0.00841001205470064 : 0.0039468979899843085)) : (f_in_ny <= 1.0000000180025095e-35 ? 0.0056632983432337355 : (f_rvol_20 <= 0.5777384638786317 ? -0.00015996079453132241 : 0.004354338081419398)))
+    t_28 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? (f_htf_4h_rsi_14 <= 34.66822242736817 ? 0.016531988171063012 : -0.013433455795431766) : 0.025225656120702294) : (f_hour_sin <= -0.5280364453792571 ? (f_hour_cos <= 0.45201864838600164 ? 0.00546096510079007 : -0.0028868014394356546) : (f_atr_pct <= 0.0002169948711525649 ? 0.007170389829242122 : 0.005457842888809216)))
+    t_29 = (f_ema_20_dist_atr <= 0.23849961161613467 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= -1.2947590351104734 ? 0.03880115088430434 : 0.020415515778311612) : (f_ema_20_dist_atr <= -1.998176574707031 ? 0.00924797368342561 : 0.005431438431313134)) : (f_hour_cos <= 0.3927150517702103 ? 0.004983541449117846 : (f_in_ny <= 1.0000000180025095e-35 ? 0.0041608395672117875 : -0.012877761932405658)))
+    t_30 = (f_ema_20_dist_atr <= 0.277571052312851 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= -1.2947590351104734 ? 0.036531695467939086 : 0.01962556317717977) : (f_rvol_20 <= 0.12024153396487237 ? 0.014377027202771404 : 0.0053762567151244564)) : (f_hour_cos <= 0.3927150517702103 ? 0.004615702813908775 : (f_hour_sin <= -0.5093866288661956 ? -0.012655937454579486 : 0.0036995468435052446)))
+    t_31 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6343555450439454 ? (f_hour_cos <= 0.41268247365951544 ? 0.004408135277078748 : -0.0011642926215455222) : (f_atr_pct <= 0.00021134878625161949 ? -0.031119644176487406 : -0.007561391232844675)) : (f_rvol_20 <= 0.06042684800922871 ? (f_hour_sin <= -0.22706275433301923 ? 0.017145580734293456 : -0.011828853935923409) : 0.004782958186589904))
+    t_32 = (f_ema_20_dist_atr <= -1.0863305926322935 ? (f_rvol_20 <= 0.194383479654789 ? (f_hour_sin <= -0.2482524663209915 ? 0.030017645779165266 : -0.006032927725252357) : (f_atr_pct <= 0.0008396154444199057 ? 0.006491756939333704 : -0.0007970209584201009)) : (f_hour_cos <= 0.41268247365951544 ? 0.004418603188875344 : (f_hour_sin <= -0.5280364453792571 ? -0.005037539680147514 : 0.004135826813255955)))
+    t_33 = (f_hour_sin <= -0.7147353589534758 ? (f_hour_cos <= 0.6343555450439454 ? (f_hour_cos <= 0.45201864838600164 ? 0.003865850337537586 : -0.001467979506894959) : (f_atr_pct <= 0.00021134878625161949 ? -0.029798429914296223 : -0.007076717305769022)) : (f_rvol_20 <= 0.06042684800922871 ? (f_hour_sin <= -0.2693240344524383 ? 0.015909759514132902 : -0.01071385336396297) : 0.004322614712977039))
+    t_34 = (f_ema_20_dist_atr <= 0.277571052312851 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.022706300772475582 : (f_atr_pct <= 0.0003619747440097854 ? 0.005806837289044843 : 0.00356611204716502)) : (f_hour_sin <= -0.4904943853616714 ? (f_hour_sin <= -0.9686339497566222 ? 0.004769413891399525 : -0.002103357913675463) : (f_ema_20_dist_atr <= 1.5885910391807558 ? 0.004237593449883021 : 0.001687486938560618)))
+    t_35 = (f_ema_20_dist_atr <= -1.6063961982727049 ? (f_rvol_20 <= 0.25280374288558966 ? 0.029173085279017647 : (f_atr_pct <= 0.0005880837561562658 ? 0.007264687326174864 : 0.0017958552176403784)) : (f_in_ny <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= 1.5885910391807558 ? 0.004011920790280249 : 0.0017730860189985023) : (f_ema_20_dist_atr <= -0.3595388382673263 ? 0.004562014066004595 : 0.000900946529555947)))
+    t_36 = (f_ema_20_dist_atr <= -1.76638388633728 ? (f_hour_cos <= 0.3110726326704026 ? 0.004269800606089692 : (f_hour_sin <= -0.3317298144102096 ? 0.02068988139472951 : 0.007283168176216884)) : (f_hour_cos <= 0.5093866288661958 ? (f_htf_4h_atr_percentile_100 <= 0.40500000119209295 ? 0.004579640132507221 : 0.0026756011717131356) : (f_hour_sin <= -0.6674680113792418 ? -0.006165894934949072 : 0.0029556437392701017)))
+    t_37 = (f_ema_20_dist_atr <= -1.6063961982727049 ? (f_rvol_20 <= 0.36403863131999975 ? (f_hour_sin <= -0.7589421272277831 ? 0.0020962536716558123 : 0.027263607362153698) : 0.005099754708850952) : (f_hour_cos <= 0.5093866288661958 ? (f_htf_4h_atr_percentile_100 <= 0.40500000119209295 ? 0.004309031436794185 : 0.0025630661939069666) : (f_hour_sin <= -0.5280364453792571 ? -0.004238258817172097 : 0.0031725816944113226)))
+    t_38 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 63.34367942810059 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? 0.0005827434062204503 : 0.015840866016045358) : 0.03256634356449838) : (f_atr_pct <= 0.0009591290436219425 ? (f_hour_sin <= -0.5093866288661956 ? 0.0020360398987589175 : 0.0035627013649126935) : (f_hour_cos <= 0.41268247365951544 ? 0.00030039708031298363 : -0.010777641989773675)))
+    t_39 = (f_ema_20_dist_atr <= -0.9037129878997802 ? (f_hour_cos <= 0.6993099153041841 ? (f_atr_pct <= 0.0005880837561562658 ? 0.004544671403798871 : 0.0007369721880336208) : (f_hour_sin <= -0.37256073951721186 ? 0.021550033601920877 : 0.0035559747402593047)) : (f_hour_cos <= 0.47136868536472326 ? 0.0030787727735367846 : (f_hour_sin <= -0.5280364453792571 ? -0.006311636189510413 : 0.002842628469927285)))
+    t_40 = (f_ema_20_dist_atr <= 0.277571052312851 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 40.26305198669434 ? 0.004365140042972664 : 0.024726411075264215) : (f_atr_pct <= 0.0003619747440097854 ? 0.004869520493343199 : 0.00252044179203715)) : (f_hour_sin <= -0.3927150517702102 ? (f_atr_pct <= 0.0003365089214639739 ? -0.004050150822909017 : 0.0015061455606968097) : 0.0026318353774890738))
+    t_41 = (f_ema_20_dist_atr <= 0.277571052312851 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= -1.2947590351104734 ? 0.028465103683434318 : 0.014817456327820756) : (f_atr_pct <= 0.0005460318061523141 ? 0.004087351389590156 : 0.001458437501675563)) : (f_hour_cos <= 0.3927150517702103 ? 0.0030491198682296105 : (f_hour_sin <= -0.5093866288661956 ? -0.011285370669197796 : 0.001579079605967541)))
+    t_42 = (f_ema_20_dist_atr <= -0.5257405936717986 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -1.7335858345031736 ? 0.029167568681484214 : 0.009453677285623116) : (f_atr_pct <= 0.0005758144834544511 ? 0.004298553010175884 : 0.0010313668303041092)) : (f_hour_cos <= 0.35222910344600683 ? 0.0029783312921584427 : (f_in_ny <= 1.0000000180025095e-35 ? 0.0022813083732406056 : -0.00582625103099236)))
+    t_43 = (f_ema_20_dist_atr <= 0.32934379577636724 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_hour_cos <= 0.8374305069446565 ? 0.015098626494803627 : 0.03185998360978356) : (f_atr_pct <= 0.0003619747440097854 ? 0.004234757592248653 : 0.0020932000168763266)) : (f_hour_cos <= 0.3927150517702103 ? 0.002772479874994439 : (f_hour_sin <= -0.5093866288661956 ? -0.0108532835483867 : 0.0012345857699645954)))
+    t_44 = (f_ema_20_dist_atr <= -2.046046614646911 ? (f_rvol_20 <= 0.3746556788682938 ? 0.02626289485596847 : (f_htf_4h_rsi_14 <= 77.76029586791994 ? 0.004353746310663339 : 0.028247320057854016)) : (f_ema_20_dist_atr <= 0.4208929836750031 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.015481532679544843 : 0.0026072378577430416) : (f_hour_cos <= 0.43245348334312445 ? 0.0025711943102781198 : -0.0014811068808460893)))
+    t_45 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_hour_cos <= 0.0762794353067875 ? 0.0031660287912303403 : (f_hour_sin <= -0.3522291034460067 ? 0.016562714258537573 : 0.006892164856342784)) : (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.01386731370006655 : 0.002519811131964273) : (f_hour_cos <= 0.43245348334312445 ? 0.00226380891652409 : -0.0014217239559864616)))
+    t_46 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.36403863131999975 ? 0.024941153060567114 : (f_hour_cos <= 0.0762794353067875 ? 0.0029204071418066527 : 0.0074937806807022726)) : (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.013202072475651703 : 0.0023937269049215605) : (f_rvol_20 <= 0.30186145007610327 ? -0.007571356189543583 : 0.0012980936151331518)))
+    t_47 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.36403863131999975 ? 0.02386785391267178 : (f_hour_cos <= 0.0762794353067875 ? 0.0027745426002306985 : 0.00712041090065536)) : (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_atr_pct <= 0.0009591290436219425 ? 0.0024899039574366503 : -0.002041343068445912) : (f_hour_cos <= 0.43245348334312445 ? 0.0020906494673464814 : -0.0013777732848718667)))
+    t_48 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.2152374237775803 ? 0.027068135968549678 : (f_htf_4h_atr_percentile_100 <= 0.28499999642372137 ? 0.007319473812303311 : 0.0028490063064293865)) : (f_atr_pct <= 0.0009591290436219425 ? (f_ema_20_dist_atr <= 0.4346213638782502 ? 0.002365341102121826 : 0.0009740367641575038) : (f_hour_cos <= 0.3927150517702103 ? -0.00040134590564029534 : -0.011739653999990707)))
+    t_49 = (f_ema_20_dist_atr <= -1.998176574707031 ? (f_hour_cos <= 0.6835516393184663 ? 0.0032219691891526656 : (f_hour_sin <= -0.3927150517702102 ? 0.025737562368856465 : 0.005384844663595981)) : (f_hour_cos <= 0.4904943853616715 ? (f_atr_pct <= 0.00035800017940346157 ? 0.003098230888181087 : 0.0014533890714796037) : (f_hour_sin <= -0.7147353589534758 ? -0.005524166108740229 : 0.001485901643231507)))
+    raw = t_0 + t_1 + t_2 + t_3 + t_4 + t_5 + t_6 + t_7 + t_8 + t_9 + t_10 + t_11 + t_12 + t_13 + t_14 + t_15 + t_16 + t_17 + t_18 + t_19 + t_20 + t_21 + t_22 + t_23 + t_24 + t_25 + t_26 + t_27 + t_28 + t_29 + t_30 + t_31 + t_32 + t_33 + t_34 + t_35 + t_36 + t_37 + t_38 + t_39 + t_40 + t_41 + t_42 + t_43 + t_44 + t_45 + t_46 + t_47 + t_48 + t_49
+    1.0 / (1.0 + math.exp(-raw))
+// === Generated by core/export/pine_codegen.py ===
+// DO NOT EDIT — regenerate via notebooks/15c_v1_pine_export.ipynb
+// Source booster: 50 trees, 9 referenced features (out of 9 trained)
+
+f_pS(f_hour_cos, f_hour_sin, f_rvol_20, f_ema_20_dist_atr, f_atr_pct, f_htf_4h_rsi_14, f_is_fx_market_open, f_in_ny, f_htf_4h_atr_percentile_100) =>
+    t_0 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.1054341197013853 ? -0.4760570668034416 : -0.4376600918117116) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.4604170058020303 : -0.41930493210311703)) : (f_hour_cos <= 0.37256073951721197 ? -0.4166403658645194 : (f_hour_sin <= -0.5093866288661956 ? -0.39249959282361413 : -0.41663465376572417)))
+    t_1 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.1054341197013853 ? -0.034327029736455544 : 0.0024332566972465873) : (f_hour_cos <= 0.6993099153041841 ? 0.02095777600351698 : 0.015531150449785145)) : (f_hour_cos <= 0.37256073951721197 ? 0.022289174627568395 : (f_hour_sin <= -0.5093866288661956 ? 0.04488362672636366 : 0.02229456666992814)))
+    t_2 = (f_ema_20_dist_atr <= 0.024564894847571853 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.028058138974079883 : (f_hour_cos <= 0.6993099153041841 ? 0.019695041328867062 : 0.013136053240355725)) : (f_hour_cos <= 0.3927150517702103 ? (f_hour_sin <= -0.6835516393184661 ? 0.018618754096827696 : 0.022022987592752105) : (f_hour_sin <= -0.5280364453792571 ? 0.0412716737695846 : 0.020914942848306254)))
+    t_3 = (f_rvol_20 <= 0.09154586866497995 ? (f_hour_sin <= -0.2693240344524383 ? (f_hour_sin <= -0.7298206388950347 ? 0.03354925468114678 : -0.0086432915775596) : 0.03140294372395321) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 41.469196319580085 ? 0.013929092659421063 : -0.014051018124170908) : (f_atr_pct <= 0.00028214929625391966 ? 0.02159158333806119 : 0.01866920084621075)))
+    t_4 = (f_ema_20_dist_atr <= 0.32934379577636724 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.1054341197013853 ? -0.0330634250144012 : 0.002469025912144998) : (f_hour_cos <= 0.6993099153041841 ? 0.017860062468235037 : 0.013160967700967233)) : (f_hour_cos <= 0.45201864838600164 ? 0.019100408662480875 : (f_hour_sin <= -0.5093866288661956 ? 0.04349876355660717 : 0.019319165901002567)))
+    t_5 = (f_ema_20_dist_atr <= 0.13895351439714435 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? -0.03228326390575993 : 0.0016085994204297176) : (f_hour_sin <= -0.2482524663209915 ? 0.013953777119385459 : 0.01702864762494288)) : (f_atr_pct <= 0.0002914486540248618 ? (f_hour_sin <= -0.5093866288661956 ? 0.03425040513585174 : 0.019315606010042584) : 0.018109338533562377))
+    t_6 = (f_rvol_20 <= 0.12024153396487237 ? (f_hour_cos <= 0.6835516393184663 ? 0.028366240635212276 : (f_hour_cos <= 0.9686339497566224 ? -0.005786893609985829 : 0.0288286744781073)) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 59.2420883178711 ? -0.0008900443765544821 : -0.026747642108706355) : (f_atr_pct <= 0.00028214929625391966 ? 0.018368263224566972 : 0.015875370808651375)))
+    t_7 = (f_ema_20_dist_atr <= 0.1893180459737778 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -1.0863305926322935 ? -0.02437153325959196 : 0.004409681172739431) : (f_hour_cos <= 0.7147353589534761 ? 0.01508536559343002 : 0.010842987863658716)) : (f_hour_cos <= 0.45201864838600164 ? 0.01606636969803245 : (f_hour_sin <= -0.5280364453792571 ? 0.03762962191803231 : 0.016299968806573705)))
+    t_8 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 40.4032325744629 ? 0.00718034329802445 : (f_rvol_20 <= 0.03033132199198008 ? -0.03932380233536477 : -0.013950500819176058)) : (f_rvol_20 <= 0.12024153396487237 ? (f_hour_sin <= -0.7298206388950347 ? 0.031039919092858793 : -0.0003205630341984109) : (f_hour_sin <= -0.8604686260223388 ? 0.01233429747869665 : 0.01548952232626589)))
+    t_9 = (f_rvol_20 <= 0.12024153396487237 ? (f_hour_sin <= -0.7298206388950347 ? 0.029365372246605632 : (f_hour_sin <= -0.2693240344524383 ? -0.005776144645880429 : 0.021737435392177176)) : (f_hour_sin <= -0.8604686260223388 ? (f_htf_4h_rsi_14 <= 54.511764526367195 ? 0.013039307047818914 : 0.009701403177350527) : (f_hour_sin <= -0.7147353589534758 ? 0.02283161554277911 : 0.013747002333499512)))
+    t_10 = (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_ema_20_dist_atr <= 0.012626076117157938 ? -0.02682247150010152 : 0.004214928752060193) : (f_hour_cos <= 0.6993099153041841 ? 0.01297165447315456 : 0.008349951642461929)) : (f_hour_cos <= 0.43245348334312445 ? 0.013659006558621095 : (f_hour_sin <= -0.5093866288661956 ? 0.03552518775565722 : 0.01457380914590094)))
+    t_11 = (f_ema_20_dist_atr <= 0.8146192431449891 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -0.38686411082744593 ? -0.020422241035873326 : 0.011759892496035894) : (f_hour_cos <= 0.6993099153041841 ? 0.012327560382155144 : 0.009440449957100925)) : (f_hour_cos <= 0.37256073951721197 ? 0.013452884408771272 : (f_hour_sin <= -0.5093866288661956 ? 0.03410686459308802 : 0.014910626308945664)))
+    t_12 = (f_ema_20_dist_atr <= 0.4208929836750031 ? (f_rvol_20 <= 0.1719223260879517 ? (f_ema_20_dist_atr <= -1.1054341197013853 ? -0.027329450734488 : 0.0036360881351933725) : (f_hour_cos <= 0.6993099153041841 ? 0.011625971156654154 : 0.008389542385965532)) : (f_hour_cos <= 0.45201864838600164 ? 0.012272214323481412 : (f_hour_sin <= -0.5093866288661956 ? 0.0330828381128051 : 0.013057087307476307)))
+    t_13 = (f_ema_20_dist_atr <= 0.9100877940654756 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -0.38686411082744593 ? -0.01895699154631795 : 0.01089532577772051) : (f_hour_cos <= 0.6993099153041841 ? 0.011108390087281084 : 0.008605085817177234)) : (f_hour_cos <= 0.37256073951721197 ? 0.012261199511103226 : (f_in_ny <= 1.0000000180025095e-35 ? 0.01386788832441798 : 0.031297939543132106)))
+    t_14 = (f_ema_20_dist_atr <= 0.024564894847571853 ? (f_rvol_20 <= 0.194383479654789 ? (f_hour_sin <= -0.7298206388950347 ? 0.020553414841415478 : -0.013257734622987516) : (f_hour_sin <= -0.2482524663209915 ? 0.007826781415841625 : 0.010753350213363235)) : (f_hour_cos <= 0.45201864838600164 ? 0.010822531689383833 : (f_hour_sin <= -0.5280364453792571 ? 0.027443915543431747 : 0.011045705524632934)))
+    t_15 = (f_ema_20_dist_atr <= -0.03751138970255851 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.02397485651746897 : (f_hour_sin <= -0.2693240344524383 ? 0.006435171462917478 : 0.01021827594692946)) : (f_atr_pct <= 0.0002747779071796686 ? (f_hour_sin <= -0.5093866288661956 ? 0.024049855612925886 : 0.011625342110915348) : (f_ema_20_dist_atr <= 1.5885910391807558 ? 0.009679658205253176 : 0.01279405966981854)))
+    t_16 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? (f_htf_4h_rsi_14 <= 34.66822242736817 ? 0.00038905658222853734 : 0.023735625802394866) : -0.018524353483106184) : (f_atr_pct <= 0.0002951235073851422 ? (f_hour_sin <= -0.7147353589534758 ? 0.019120070769927312 : 0.009438860773306447) : (f_rvol_20 <= 0.09154586866497995 ? -0.006787760449219986 : 0.009057232473782357)))
+    t_17 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 39.69586181640626 ? (f_htf_4h_rsi_14 <= 34.66822242736817 ? 0.0003696751633225959 : 0.022463661355532016) : -0.01766945154906228) : (f_atr_pct <= 0.0002747779071796686 ? (f_hour_sin <= -0.7147353589534758 ? 0.019527141210439764 : 0.0089722736594727) : (f_rvol_20 <= 0.12024153396487237 ? -0.004226817235598637 : 0.008679613769809292)))
+    t_18 = (f_ema_20_dist_atr <= 0.9597098529338838 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.0863305926322935 ? -0.02711314550189898 : 0.00429786745342004) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.011973929763844995 : 0.008098173141135213)) : (f_rvol_20 <= 0.25280374288558966 ? 0.02560268357167428 : (f_atr_pct <= 0.00038898113416507846 ? 0.012889466641007711 : 0.009157411364835609)))
+    t_19 = (f_ema_20_dist_atr <= -0.14031689614057538 ? (f_rvol_20 <= 0.23465447127819064 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? -0.027594606512072146 : -0.0023322655280611122) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.027683314721885757 : 0.007249746521740769)) : (f_atr_pct <= 0.0002729628904489801 ? (f_hour_sin <= -0.5093866288661956 ? 0.019997767759434168 : 0.009523104568914887) : 0.008488468071385388))
+    t_20 = (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_rvol_20 <= 0.194383479654789 ? (f_ema_20_dist_atr <= -1.0863305926322935 ? -0.02135261672628704 : 0.003261212707670765) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.015851594397684184 : 0.007135683936131516)) : (f_atr_pct <= 0.0003996667364845053 ? (f_hour_sin <= -0.5093866288661956 ? 0.016452391863110018 : 0.009580054131275478) : 0.007697704383834311))
+    t_21 = (f_ema_20_dist_atr <= 1.2371462583541872 ? (f_rvol_20 <= 0.06042684800922871 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? -0.035374843672669916 : 0.0012567711547558861) : (f_hour_sin <= -0.8713760673999785 ? 0.004515736818069028 : 0.007426628065433783)) : (f_hour_cos <= 0.010907442308962378 ? 0.008405474476444151 : (f_rvol_20 <= 0.4042495638132096 ? 0.022779368646296094 : 0.011681209983115426)))
+    t_22 = (f_ema_20_dist_atr <= 0.4346213638782502 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.01617677246732938 : (f_rvol_20 <= 0.194383479654789 ? -0.0016417316998165064 : 0.006424552981629795)) : (f_rvol_20 <= 0.35283331573009497 ? (f_hour_sin <= -0.5280364453792571 ? 0.020237127752134224 : 0.010398029106764786) : (f_hour_sin <= -0.8491516411304473 ? 0.005554501337832203 : 0.008974796342918766)))
+    t_23 = (f_ema_20_dist_atr <= 0.8146192431449891 ? (f_rvol_20 <= 0.12024153396487237 ? (f_ema_20_dist_atr <= -1.76638388633728 ? -0.033707905424582366 : 0.000737939921531388) : (f_hour_sin <= -0.8713760673999785 ? 0.003813947974400794 : 0.006608746794299495)) : (f_hour_cos <= 0.5280364453792573 ? 0.007448068653087329 : (f_hour_sin <= -0.5093866288661956 ? 0.03052733215348377 : 0.007918556017750112)))
+    t_24 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_rvol_20 <= 0.03033132199198008 ? -0.025744918472797796 : (f_hour_cos <= 0.8127983212471009 ? -0.001095244360799619 : -0.015905298938256193)) : (f_hour_sin <= -0.8604686260223388 ? (f_htf_4h_atr_percentile_100 <= 0.40500000119209295 ? 0.002026766466276337 : 0.005483692435026868) : (f_hour_sin <= -0.7147353589534758 ? 0.013515825311425596 : 0.006232305430181429)))
+    t_25 = (f_ema_20_dist_atr <= -0.15281362831592557 ? (f_rvol_20 <= 0.23465447127819064 ? (f_ema_20_dist_atr <= -1.4928808212280271 ? -0.02462979111895923 : -0.0031553673174636375) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.027171961969139333 : 0.005175145951824932)) : (f_hour_cos <= 0.47136868536472326 ? 0.006103934462200039 : (f_in_ny <= 1.0000000180025095e-35 ? 0.00581203906501318 : 0.019359266226706487)))
+    t_26 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 40.26305198669434 ? (f_atr_pct <= 0.0003404075105208904 ? -0.005555063797245583 : 0.02025789892289454) : -0.015434283553524927) : (f_hour_sin <= -0.8604686260223388 ? (f_htf_4h_rsi_14 <= 54.511764526367195 ? 0.005239101864858253 : 0.0019041780517126527) : (f_hour_sin <= -0.7147353589534758 ? 0.012017791923020481 : 0.005577740007540074)))
+    t_27 = (f_ema_20_dist_atr <= -0.15281362831592557 ? (f_rvol_20 <= 0.23465447127819064 ? (f_ema_20_dist_atr <= -2.3195198774337764 ? -0.036547794218333006 : -0.0052894081898942225) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.02561400764920393 : 0.004622794053144036)) : (f_atr_pct <= 0.0002914486540248618 ? (f_in_ny <= 1.0000000180025095e-35 ? 0.00652061591812899 : 0.014215217368216453) : 0.005509358760352099))
+    t_28 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 40.26305198669434 ? (f_atr_pct <= 0.0003404075105208904 ? -0.005187139096514547 : 0.019459441801134476) : -0.014494432555265006) : (f_hour_sin <= -0.8491516411304473 ? (f_htf_4h_rsi_14 <= 54.511764526367195 ? 0.004669152629688633 : 0.0015751340182228052) : (f_hour_sin <= -0.7147353589534758 ? 0.01178357614723235 : 0.005033238137904173)))
+    t_29 = (f_ema_20_dist_atr <= -0.0505511350929737 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6173424422740937 ? 0.004324804064864143 : 0.014858807879801606) : (f_in_ny <= 1.0000000180025095e-35 ? 0.00319591837846817 : -0.012594145672251561)) : (f_hour_cos <= 0.5645733475685121 ? 0.005040865941577921 : (f_in_ny <= 1.0000000180025095e-35 ? 0.004850127969398807 : 0.02054593860369608)))
+    t_30 = (f_ema_20_dist_atr <= -0.9569692313671111 ? (f_rvol_20 <= 0.30186145007610327 ? (f_hour_cos <= 0.6993099153041841 ? 0.0037346546115450546 : -0.019058698197094028) : (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.034146877814781165 : 0.0033217441381454913)) : (f_hour_sin <= -0.8604686260223388 ? 0.0029939769430307726 : (f_hour_sin <= -0.7147353589534758 ? 0.011652060250947109 : 0.0050486260570098)))
+    t_31 = (f_hour_sin <= -0.8491516411304473 ? (f_htf_4h_rsi_14 <= 77.76029586791994 ? 0.0027400412664491426 : (f_atr_pct <= 0.0003658619680209086 ? -0.01968168850115161 : 0.0035152331928729125)) : (f_hour_sin <= -0.7147353589534758 ? (f_atr_pct <= 0.0003156015154672787 ? 0.027356981812712206 : 0.0018071198962727464) : (f_hour_sin <= -0.2482524663209915 ? 0.0017094872111942283 : 0.005001817042427935)))
+    t_32 = (f_ema_20_dist_atr <= 0.8459302783012391 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6173424422740937 ? 0.0036684833839499436 : 0.014600937542732843) : (f_hour_sin <= -0.2693240344524383 ? -0.004320436048989346 : 0.004850016632469617)) : (f_hour_cos <= 0.3927150517702103 ? 0.00462445471921492 : (f_hour_sin <= -0.5093866288661956 ? 0.01858086074591848 : 0.005618287406810633)))
+    t_33 = (f_hour_sin <= -0.8491516411304473 ? (f_htf_4h_rsi_14 <= 54.511764526367195 ? 0.003323920497423587 : (f_htf_4h_rsi_14 <= 55.09264564514161 ? -0.012913127721003354 : 0.0010512539143135609)) : (f_hour_sin <= -0.7147353589534758 ? (f_atr_pct <= 0.0003156015154672787 ? 0.025488533804924024 : 0.0014138913764249) : (f_hour_sin <= -0.2482524663209915 ? 0.0015617123086905252 : 0.004523169876883833)))
+    t_34 = (f_ema_20_dist_atr <= -0.9569692313671111 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? -0.0242196829503349 : (f_hour_sin <= -0.37256073951721186 ? -9.414361638422121e-05 : 0.0031309950678538798)) : (f_atr_pct <= 0.0007685313175898046 ? (f_hour_sin <= -0.8818687796592711 ? 0.0026843281966159064 : 0.004961778813948145) : (f_ema_20_dist_atr <= 0.6810504496097566 ? -0.001584650237823838 : 0.004385030333216302)))
+    t_35 = (f_ema_20_dist_atr <= -1.838760733604431 ? (f_rvol_20 <= 0.41325600445270544 ? -0.01784392281703654 : (f_htf_4h_rsi_14 <= 70.98654937744142 ? 0.0014311147594267904 : -0.008146805202848781)) : (f_ema_20_dist_atr <= 1.5885910391807558 ? (f_atr_pct <= 0.0007249511836562307 ? 0.003901230027336202 : 0.0008396911759744884) : (f_rvol_20 <= 0.2710078805685044 ? 0.0198469868621696 : 0.006146198019109324)))
+    t_36 = (f_ema_20_dist_atr <= -1.838760733604431 ? (f_hour_cos <= 0.0762794353067875 ? 0.0026209458659942585 : (f_hour_sin <= -0.3927150517702102 ? -0.009543513196638237 : -0.000983568779745456)) : (f_ema_20_dist_atr <= 1.2371462583541872 ? (f_htf_4h_rsi_14 <= 52.484292984008796 ? 0.0041314124891088716 : 0.0023964074935708783) : (f_hour_cos <= 0.35222910344600683 ? 0.004293524752077981 : 0.007994556795666213)))
+    t_37 = (f_ema_20_dist_atr <= -1.838760733604431 ? (f_rvol_20 <= 0.41325600445270544 ? (f_hour_sin <= -0.7298206388950347 ? 0.000644236378148117 : -0.02086212110957322) : 0.000955817458396994) : (f_ema_20_dist_atr <= 1.7065169215202334 ? (f_htf_4h_atr_percentile_100 <= 0.43500000238418585 ? 0.0025048984758695002 : 0.00400150110091883) : (f_hour_cos <= 0.010907442308962378 ? 0.004195203390685522 : 0.008222809174711975)))
+    t_38 = (f_atr_pct <= 0.0007685313175898046 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6000355482101442 ? 0.0031820552996991297 : 0.012973146524009197) : (f_hour_sin <= -0.2482524663209915 ? -0.00187641015587936 : 0.004097153129184166)) : (f_hour_cos <= 0.24825246632099154 ? 0.002097857446886997 : (f_htf_4h_rsi_14 <= 31.674803733825687 ? 0.008264307881833311 : -0.009063687047918548)))
+    t_39 = (f_ema_20_dist_atr <= -1.838760733604431 ? (f_hour_cos <= 0.0762794353067875 ? 0.0022970842236924856 : (f_hour_sin <= -0.3927150517702102 ? -0.00900216270369615 : -0.0011197382285889766)) : (f_atr_pct <= 0.00027846141892950987 ? (f_hour_sin <= -0.7147353589534758 ? 0.011362537242026877 : 0.003032909281451715) : (f_hour_sin <= -0.22706275433301923 ? 0.0016327593063509473 : 0.003640120387216549)))
+    t_40 = (f_ema_20_dist_atr <= 0.4208929836750031 ? (f_hour_sin <= -0.2693240344524383 ? (f_in_ny <= 1.0000000180025095e-35 ? -0.007295784622371667 : 0.0013038732221521848) : (f_htf_4h_atr_percentile_100 <= 0.975000023841858 ? 0.0027258120447305367 : 0.008963869713195653)) : (f_atr_pct <= 0.0004596983926603571 ? (f_hour_sin <= -0.37256073951721186 ? 0.008069149397646936 : 0.0035827225573438065) : 0.001874579331683459))
+    t_41 = (f_ema_20_dist_atr <= -0.14031689614057538 ? (f_rvol_20 <= 0.31507559120655065 ? (f_hour_cos <= 0.6993099153041841 ? 0.0038331256671335443 : -0.011062250166598571) : (f_htf_4h_atr_percentile_100 <= 0.49500000476837164 ? 0.0008832751087679884 : 0.0031853878190012622)) : (f_atr_pct <= 0.00027104628679808235 ? (f_hour_sin <= -0.5093866288661956 ? 0.011244830931598667 : 0.0034594128986587154) : 0.0025538669981023036))
+    t_42 = (f_ema_20_dist_atr <= 1.1600596308708193 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_htf_4h_rsi_14 <= 40.26305198669434 ? 0.00658595917970212 : -0.017105544389010807) : (f_hour_cos <= 0.6993099153041841 ? 0.0024845299144830146 : 0.000686578127005981)) : (f_hour_cos <= 0.5824430584907533 ? 0.003233418559699706 : (f_in_ny <= 1.0000000180025095e-35 ? 0.0038254373114165172 : 0.02615275657040754)))
+    t_43 = (f_ema_20_dist_atr <= -0.5257405936717986 ? (f_rvol_20 <= 0.31507559120655065 ? (f_hour_sin <= -0.2693240344524383 ? -0.013187372710901205 : 0.005082260227359889) : (f_htf_4h_atr_percentile_100 <= 0.3949999958276749 ? 0.00024329218949565733 : 0.002725473286492773)) : (f_atr_pct <= 0.0002951235073851422 ? (f_hour_sin <= -0.5093866288661956 ? 0.008276931988670017 : 0.0028290084798719313) : 0.002181484095161618))
+    t_44 = (f_ema_20_dist_atr <= 0.4208929836750031 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6343555450439454 ? 0.001917085800707176 : 0.011430163502391563) : (f_hour_sin <= -0.3927150517702102 ? -0.009556300398907319 : 0.0024677198565087786)) : (f_hour_cos <= 0.45201864838600164 ? 0.0021208812933629856 : (f_hour_sin <= -0.5093866288661956 ? 0.015537735455066308 : 0.0025130831298321105)))
+    t_45 = (f_ema_20_dist_atr <= 1.951497554779053 ? (f_ema_20_dist_atr <= -1.998176574707031 ? (f_hour_cos <= -0.010907442308962435 ? 0.0016163179322748384 : -0.004492421173279702) : (f_atr_pct <= 0.0002747779071796686 ? 0.0033152856072343933 : 0.0015982614435757641)) : (f_atr_pct <= 0.0010992051102221014 ? (f_hour_cos <= 0.22706275433301928 ? 0.004116103839674823 : 0.008001202140792718) : -0.0064176126275374435))
+    t_46 = (f_ema_20_dist_atr <= 1.257055163383484 ? (f_htf_4h_atr_percentile_100 <= 0.43500000238418585 ? (f_ema_20_dist_atr <= -1.2727720737457273 ? -0.0014847150930819132 : 0.001373404920027032) : (f_hour_cos <= 0.6993099153041841 ? 0.003082787774728365 : 0.0005408602293473168)) : (f_hour_cos <= 0.22706275433301928 ? 0.0026216147756969862 : (f_in_ny <= 1.0000000180025095e-35 ? 0.0037659225365470925 : 0.012263525197311314)))
+    t_47 = (f_ema_20_dist_atr <= 1.951497554779053 ? (f_ema_20_dist_atr <= -1.998176574707031 ? (f_rvol_20 <= 0.25280374288558966 ? -0.025864903928694068 : -0.0002576146730363335) : (f_hour_sin <= -0.8604686260223388 ? 0.0001879307165124303 : 0.0022763322689800243)) : (f_atr_pct <= 0.0010535980109125378 ? 0.005127199013092384 : (f_hour_sin <= -0.7589421272277831 ? -0.021075635052995274 : 0.0007566812855472791)))
+    t_48 = (f_ema_20_dist_atr <= 0.9268494844436647 ? (f_hour_cos <= 0.6993099153041841 ? (f_hour_cos <= 0.6000355482101442 ? 0.0013792524081688963 : 0.009665005275372611) : (f_hour_sin <= -0.3927150517702102 ? -0.00588357444884935 : 0.0021310431657952616)) : (f_hour_cos <= 0.010907442308962378 ? 0.0018399987816999518 : (f_hour_sin <= -0.3927150517702102 ? 0.007904135041239614 : 0.00324366999629813)))
+    t_49 = (f_ema_20_dist_atr <= 1.951497554779053 ? (f_htf_4h_atr_percentile_100 <= 0.40500000119209295 ? (f_hour_sin <= -0.8919417858123778 ? -0.0029307149630613608 : 0.0011864809726421397) : (f_htf_4h_rsi_14 <= 40.06478118896485 ? 0.003664667713549924 : 0.0017468374241869631)) : (f_atr_pct <= 0.0010992051102221014 ? 0.0046951296780395075 : (f_hour_sin <= -0.7589421272277831 ? -0.020955528676363654 : 0.00022972156650938308)))
+    raw = t_0 + t_1 + t_2 + t_3 + t_4 + t_5 + t_6 + t_7 + t_8 + t_9 + t_10 + t_11 + t_12 + t_13 + t_14 + t_15 + t_16 + t_17 + t_18 + t_19 + t_20 + t_21 + t_22 + t_23 + t_24 + t_25 + t_26 + t_27 + t_28 + t_29 + t_30 + t_31 + t_32 + t_33 + t_34 + t_35 + t_36 + t_37 + t_38 + t_39 + t_40 + t_41 + t_42 + t_43 + t_44 + t_45 + t_46 + t_47 + t_48 + t_49
+    1.0 / (1.0 + math.exp(-raw))
+// === Generated by core/export/pine_codegen.py ===
+// DO NOT EDIT — regenerate via notebooks/15c_v1_pine_export.ipynb
+// Source booster: 50 trees, 38 referenced features (out of 73 trained)
+
+f_pmL(f_ema_20_dist_atr, f_ema_50_dist_atr, f_ema_200_dist_atr, f_ema_20_slope_atr, f_adx_14, f_adx_slope, f_rsi_14, f_stoch_rsi_k, f_roc_10, f_macd_hist_atr, f_momentum_composite, f_atr_pct, f_bb_width_pct, f_vol_compression, f_realized_vol_20, f_dist_to_swing_high_atr, f_dist_to_swing_low_atr, f_rvol_20, f_volume_z_score, f_hour_sin, f_hour_cos, f_htf_1h_rsi_14, f_htf_1h_atr_percentile_100, f_htf_4h_rsi_14, f_htf_4h_atr_percentile_100, f_bars_since_sweep_down, f_dist_to_sh_atr_conf, f_dist_to_sl_atr_conf, f_dist_to_bear_fvg_atr, f_fvg_bear_size_atr, f_in_london, f_in_london_ny_killzone, f_is_fx_market_open, f_vol_expansion_ratio, f_bars_since_vol_spike, f_ltf_rsi_minus_htf_rsi, f_vol_pct_diff_htf, f_both_high_vol) =>
+    t_0 = (f_hour_cos <= 0.5093866288661958 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_ema_20_dist_atr <= -0.6459870934486388 ? -0.2502502131751349 : -0.26006169454159395) : (f_ema_20_dist_atr <= -0.5652944743633269 ? -0.26548898650017955 : -0.2453995391465691)) : (f_dist_to_sh_atr_conf <= 2.2546676397323613 ? -0.2512376532919816 : (f_dist_to_swing_low_atr <= 1.3949177861213686 ? -0.19138949934690058 : -0.22141482923107822)))
+    t_1 = (f_in_london <= 1.0000000180025095e-35 ? (f_hour_sin <= -0.8604686260223388 ? (f_htf_1h_atr_percentile_100 <= 0.7450000047683717 ? 0.023858979700861236 : -0.0003339058703690254) : (f_dist_to_swing_high_atr <= 2.640217781066895 ? 0.016022655239189217 : 0.05555002018349475)) : (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? 0.010304642182347648 : (f_ema_20_dist_atr <= -0.5652944743633269 ? -0.0020579177425213454 : 0.017598316177513947)))
+    t_2 = (f_rvol_20 <= 0.3341208398342133 ? (f_dist_to_sh_atr_conf <= 2.1872197389602666 ? (f_ema_20_slope_atr <= -0.29060214757919306 ? -0.023084839032629947 : 0.023918387036786202) : (f_stoch_rsi_k <= 66.30133438110353 ? 0.06005030943224648 : 0.01923453634623739)) : (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_in_london_ny_killzone <= 1.0000000180025095e-35 ? 0.03320597811783786 : 0.009635790579889161) : 0.0013629269845868027))
+    t_3 = (f_hour_cos <= 0.4904943853616715 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_4h_rsi_14 <= 64.80376434326173 ? 0.008477274026800334 : 0.021346353853202386) : 0.00019539674406149297) : (f_dist_to_swing_low_atr <= 1.16662472486496 ? (f_vol_compression <= 0.9337807595729829 ? 0.030693545514060262 : 0.07104704632332144) : (f_dist_to_sh_atr_conf <= 2.2546676397323613 ? 0.0066660018172429465 : 0.037525225214585754)))
+    t_4 = (f_hour_cos <= 0.5093866288661958 ? (f_vol_pct_diff_htf <= -0.31499999761581415 ? -0.005909408868009607 : (f_realized_vol_20 <= 0.006077276775613428 ? 0.00758839190040712 : -0.026005943970185692)) : (f_dist_to_swing_low_atr <= 1.6487349271774294 ? (f_momentum_composite <= -0.15262205153703687 ? 0.05935058523028963 : 0.012917482585734217) : (f_htf_4h_rsi_14 <= 59.138011932373054 ? 0.012959494162324427 : 0.04209820901826841)))
+    t_5 = (f_hour_cos <= 0.47136868536472326 ? (f_fvg_bear_size_atr <= 0.6869898140430452 ? (f_fvg_bear_size_atr <= 0.6647896468639375 ? 0.007317252340643481 : 0.03528142595664267) : 0.0016005905460219159) : (f_dist_to_swing_low_atr <= 1.6487349271774294 ? (f_momentum_composite <= -0.19606413692235944 ? 0.056039584091040144 : 0.021916250110670152) : (f_dist_to_sh_atr_conf <= 2.2546676397323613 ? 9.420509260495667e-05 : 0.029025487315383104)))
+    t_6 = (f_hour_cos <= 0.47136868536472326 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_4h_rsi_14 <= 64.80376434326173 ? 0.007231862347697931 : 0.020190057426152257) : 0.0008175290143020065) : (f_dist_to_swing_low_atr <= 1.7100921869277956 ? (f_macd_hist_atr <= -0.047435358166694634 ? 0.054617649935685644 : 0.018847220615856856) : (f_hour_sin <= -0.6510667204856871 ? -0.0014362586535359041 : 0.028206911150997563)))
+    t_7 = (f_hour_cos <= 0.47136868536472326 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_1h_atr_percentile_100 <= 0.3550000041723252 ? 0.003957089342401319 : 0.011905421808673669) : 0.0007765948958531581) : (f_dist_to_swing_high_atr <= 2.640217781066895 ? (f_hour_sin <= -0.6510667204856871 ? -0.01833518243935769 : 0.01950075643697244) : (f_dist_to_swing_low_atr <= 1.405896067619324 ? 0.05198385650588932 : 0.027940622231842502)))
+    t_8 = (f_hour_cos <= 0.47136868536472326 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? 0.0077782282877153115 : (f_vol_compression <= 0.7065925598144532 ? 0.014549967966755575 : -0.0011649436927200442)) : (f_dist_to_swing_low_atr <= 1.7100921869277956 ? (f_htf_1h_atr_percentile_100 <= 0.8949999809265138 ? 0.049001635471173165 : 0.018399291562908558) : (f_hour_cos <= 0.7589421272277833 ? -0.0020454394141647 : 0.025554452644515807)))
+    t_9 = (f_hour_cos <= 0.47136868536472326 ? (f_htf_1h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_4h_rsi_14 <= 64.80376434326173 ? 0.006060612119666658 : 0.018296082115239084) : 0.0007010524728783131) : (f_dist_to_sh_atr_conf <= 2.298330664634705 ? (f_ema_20_slope_atr <= -0.4453905373811721 ? -0.024238611239541113 : 0.016292145848421726) : (f_stoch_rsi_k <= 37.30651473999024 ? 0.04686023089096233 : 0.023846341397042056)))
+    t_10 = (f_rvol_20 <= 0.3341208398342133 ? (f_stoch_rsi_k <= 60.35667991638184 ? (f_dist_to_sh_atr_conf <= 2.7117489576339726 ? 0.01646618004700294 : 0.04663826179174051) : 0.002425333908454996) : (f_in_london <= 1.0000000180025095e-35 ? (f_dist_to_sh_atr_conf <= 4.0599403381347665 ? 0.027220099027087403 : 0.0055212625941585495) : (f_htf_4h_rsi_14 <= 58.63360595703126 ? 0.0016582932918885653 : 0.009401246763328604)))
+    t_11 = (f_hour_cos <= 0.5280364453792573 ? (f_htf_4h_rsi_14 <= 34.55282402038575 ? (f_vol_compression <= 1.1278123855590823 ? -0.013490128918801692 : 0.007181892662051547) : 0.004930658710694383) : (f_dist_to_swing_high_atr <= 2.6092245578765874 ? (f_hour_sin <= -0.6510667204856871 ? -0.0227390742531133 : 0.015538559475595244) : (f_macd_hist_atr <= -0.05426379479467868 ? 0.038847712273589595 : 0.005961199746361695)))
+    t_12 = (f_hour_cos <= 0.5280364453792573 ? (f_ema_20_dist_atr <= -0.2671004235744476 ? (f_htf_1h_atr_percentile_100 <= 0.7049999833106996 ? 0.006711425950563222 : 0.00032058572174056236) : -0.01013669902531584) : (f_dist_to_swing_low_atr <= 1.3949177861213686 ? (f_macd_hist_atr <= -0.05426379479467868 ? 0.046857623209679136 : 0.0110197810166964) : (f_hour_cos <= 0.7589421272277833 ? -0.0029072381481331025 : 0.022462739451077494)))
+    t_13 = (f_hour_cos <= 0.5280364453792573 ? (f_htf_4h_rsi_14 <= 34.55282402038575 ? -0.003988698880519977 : (f_vol_compression <= 0.6762944459915162 ? 0.015916206295567958 : 0.003357485319686584)) : (f_ema_20_dist_atr <= -0.9783666729927062 ? (f_rvol_20 <= 0.18723118305206302 ? 0.044971005728799404 : 0.02296502832658231) : (f_hour_sin <= -0.6510667204856871 ? -0.022399340318594932 : 0.019110136278799664)))
+    t_14 = (f_hour_cos <= 0.5280364453792573 ? (f_dist_to_swing_low_atr <= 1.2561600208282473 ? 0.004886820106821763 : (f_htf_4h_rsi_14 <= 49.25613975524903 ? -0.008229980220743153 : 0.0051844871273026075)) : (f_stoch_rsi_k <= 60.35667991638184 ? (f_dist_to_bear_fvg_atr <= -1.8587811589241026 ? 0.04855084923014283 : 0.022943657968480996) : (f_htf_4h_rsi_14 <= 59.789257049560554 ? -0.005929404014539654 : 0.0313396321564724)))
+    t_15 = (f_hour_cos <= 0.16288578510284427 ? (f_htf_4h_rsi_14 <= 58.63360595703126 ? (f_fvg_bear_size_atr <= 0.6869898140430452 ? 0.0037703614265250196 : -0.005269904062700385) : (f_dist_to_sl_atr_conf <= -3.675967931747436 ? -0.00983165429158121 : 0.01016838028654832)) : (f_both_high_vol <= 1.0000000180025095e-35 ? (f_dist_to_sh_atr_conf <= 2.298330664634705 ? 0.0016415328851672917 : 0.028613689515982473) : -0.018954458630777608))
+    t_16 = (f_rvol_20 <= 0.4589363634586335 ? (f_ema_20_dist_atr <= -0.9934147596359252 ? (f_rvol_20 <= 0.08761294931173326 ? 0.046188107711478125 : 0.021391988126494635) : (f_hour_sin <= -0.6343555450439452 ? -0.020303619371318415 : 0.023082604344954048)) : (f_htf_4h_rsi_14 <= 58.63360595703126 ? 0.001441827502292748 : (f_ema_200_dist_atr <= -4.411174774169921 ? -0.008895533793642156 : 0.011676716182306921)))
+    t_17 = (f_hour_cos <= 0.1413247883319855 ? (f_fvg_bear_size_atr <= 0.8271109461784364 ? (f_hour_sin <= -0.5280364453792571 ? 0.00045363471699902283 : 0.006453941057028301) : (f_vol_compression <= 0.9925093650817872 ? 0.006520051826271688 : -0.00658273393753556)) : (f_both_high_vol <= 1.0000000180025095e-35 ? (f_dist_to_sh_atr_conf <= 2.298330664634705 ? 0.0012685077250108442 : 0.026306715305997028) : -0.018975402098350268))
+    t_18 = (f_hour_cos <= 0.16288578510284427 ? (f_htf_4h_rsi_14 <= 58.63360595703126 ? (f_fvg_bear_size_atr <= 0.6869898140430452 ? 0.003275889759075239 : -0.005068212308931375) : 0.0073648683760271505) : (f_stoch_rsi_k <= 75.2848587036133 ? (f_both_high_vol <= 1.0000000180025095e-35 ? 0.024193941823068967 : -0.012691236942466788) : (f_htf_1h_rsi_14 <= 49.961023330688484 ? -0.024550530104453672 : 0.016663811294876697)))
+    t_19 = (f_hour_cos <= 0.5280364453792573 ? (f_htf_4h_rsi_14 <= 58.63360595703126 ? 0.0011120876954544543 : (f_vol_compression <= 1.0171580314636233 ? 0.016458664552098306 : 0.002359814644291178)) : (f_stoch_rsi_k <= 75.2848587036133 ? (f_dist_to_swing_low_atr <= 1.9334850907325747 ? 0.030794119941365758 : 0.008063933578054417) : (f_htf_1h_rsi_14 <= 49.961023330688484 ? -0.02524065688131548 : 0.01678876444411639)))
+    t_20 = (f_hour_cos <= 0.5093866288661958 ? (f_htf_1h_atr_percentile_100 <= 0.7150000035762788 ? (f_atr_pct <= 0.00025781913427636033 ? -0.012721308741596297 : 0.00568832361163342) : -0.0014515180299843548) : (f_dist_to_swing_low_atr <= 2.154542446136475 ? (f_htf_1h_rsi_14 <= 36.3978614807129 ? -0.0026478818144537093 : 0.03115995276477942) : (f_hour_sin <= -0.6510667204856871 ? -0.01971162873259822 : 0.013209905964795904)))
+    t_21 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? (f_dist_to_swing_low_atr <= 1.3949177861213686 ? 0.043007260260842485 : (f_bars_since_sweep_down <= 2.5000000000000004 ? -0.018364273584367524 : 0.014413243616854761)) : (f_htf_1h_atr_percentile_100 <= 0.7150000035762788 ? (f_in_london <= 1.0000000180025095e-35 ? 0.019210951478158995 : 0.0038171703439531797) : (f_fvg_bear_size_atr <= 2.3562959432601933 ? -0.0023986023982643977 : 0.023134506091262733)))
+    t_22 = (f_hour_cos <= 0.5093866288661958 ? (f_vol_pct_diff_htf <= -0.31499999761581415 ? -0.006559523863364593 : (f_ema_20_dist_atr <= -0.2881185114383697 ? 0.0037005585880950185 : -0.010230890018392964)) : (f_dist_to_swing_low_atr <= 2.154542446136475 ? (f_htf_1h_rsi_14 <= 36.3978614807129 ? -0.003063206809452792 : 0.028922994562231963) : (f_hour_sin <= -0.6510667204856871 ? -0.019226081924230025 : 0.01203314958194339)))
+    t_23 = (f_rvol_20 <= 0.3120047748088837 ? (f_roc_10 <= -0.05643287114799022 ? (f_htf_4h_atr_percentile_100 <= 0.8149999976158143 ? 0.03504009771695651 : 0.0036488853468552174) : (f_hour_sin <= -0.6343555450439452 ? -0.013623244562376478 : 0.015370011183805052)) : (f_htf_1h_atr_percentile_100 <= 0.8550000190734864 ? (f_rsi_14 <= 46.10371398925782 ? 0.005531740246277633 : -0.006203253689659282) : -0.003163488060321685))
+    t_24 = (f_hour_cos <= 0.5093866288661958 ? (f_vol_pct_diff_htf <= -0.28499999642372126 ? (f_adx_14 <= 31.90046882629395 ? -0.013927855236051404 : 0.007665012524905652) : 0.0027924346254243337) : (f_dist_to_bear_fvg_atr <= -1.7047501206398008 ? (f_ema_20_dist_atr <= -1.3868111968040464 ? 0.037740314318600116 : 0.010999075273862229) : (f_dist_to_sh_atr_conf <= 5.808863401412965 ? 0.01161658616507742 : -0.02171020874884408)))
+    t_25 = (f_rvol_20 <= 0.3341208398342133 ? (f_dist_to_sh_atr_conf <= 2.298330664634705 ? (f_volume_z_score <= -0.9729248881340026 ? -0.02402816495335662 : 0.010456766123040308) : (f_roc_10 <= -0.057243248447775834 ? 0.03202851373102967 : 0.0068179817750917)) : (f_realized_vol_20 <= 0.006077276775613428 ? (f_vol_expansion_ratio <= 1.8355593681335451 ? 0.002466375471822858 : 0.030328312092852146) : -0.021943661497944078))
+    t_26 = (f_rvol_20 <= 0.3341208398342133 ? (f_stoch_rsi_k <= 67.9091262817383 ? (f_dist_to_sh_atr_conf <= 2.733399391174317 ? 0.006017416149342905 : 0.031228132591758842) : -0.010965706296732885) : (f_ema_20_dist_atr <= -0.2881185114383697 ? (f_htf_1h_atr_percentile_100 <= 0.7150000035762788 ? 0.0051797144990879534 : -0.0006355349604949335) : (f_htf_1h_rsi_14 <= 51.44833946228028 ? -0.020621978269389524 : 0.005065057235714651)))
+    t_27 = (f_hour_cos <= 0.4904943853616715 ? (f_htf_4h_rsi_14 <= 24.286602020263675 ? -0.016001010492098715 : (f_adx_slope <= -3.2594498395919795 ? 0.007874886134873223 : 0.0012349892689423837)) : (f_stoch_rsi_k <= 60.35667991638184 ? (f_dist_to_swing_low_atr <= 1.9334850907325747 ? 0.026876579102796134 : 0.005473116869245044) : (f_hour_sin <= -0.6343555450439452 ? -0.027244833615506926 : 0.008523145180772502)))
+    t_28 = (f_rvol_20 <= 0.3341208398342133 ? (f_ema_20_dist_atr <= -1.2878137826919553 ? 0.029418580607052963 : (f_hour_sin <= -0.6343555450439452 ? -0.013223499663136469 : 0.01981456953672289)) : (f_rsi_14 <= 44.5936450958252 ? (f_ema_20_slope_atr <= -0.6221806704998015 ? 0.0008171327215130017 : 0.007212119141289149) : (f_atr_pct <= 0.00027441108250059193 ? -0.02823145803510728 : -0.00102041497370276)))
+    t_29 = (f_hour_cos <= 0.4904943853616715 ? (f_htf_4h_rsi_14 <= 24.286602020263675 ? -0.015340683914948541 : (f_adx_slope <= -3.2594498395919795 ? 0.007339399964632712 : 0.0010587782326111443)) : (f_dist_to_swing_low_atr <= 1.9334850907325747 ? (f_adx_14 <= 36.07924461364747 ? 0.026473054729584777 : -0.008838995964220537) : (f_hour_cos <= 0.8374305069446565 ? -0.005136431931768062 : 0.02611486750104643)))
+    t_30 = (f_in_london <= 1.0000000180025095e-35 ? (f_htf_1h_atr_percentile_100 <= 0.8949999809265138 ? (f_vol_expansion_ratio <= 0.8079811334609986 ? -0.012604135501738084 : 0.01579613553496617) : (f_vol_compression <= 1.4293263554573061 ? 0.0020501316334028664 : -0.02052628635809761)) : (f_bars_since_vol_spike <= 92.50000000000001 ? 0.002857065420325335 : (f_ltf_rsi_minus_htf_rsi <= -28.692034721374508 ? 0.022759858137501247 : -0.004264200021115252)))
+    t_31 = (f_rvol_20 <= 0.44071619212627416 ? (f_ema_20_dist_atr <= -0.9703324139118193 ? (f_adx_14 <= 25.47414302825928 ? 0.03357223414693821 : 0.011734994245301023) : (f_hour_sin <= -0.6510667204856871 ? -0.02498237980955016 : 0.009080570052010805)) : (f_htf_4h_atr_percentile_100 <= 0.6850000023841859 ? (f_ema_20_dist_atr <= -0.2671004235744476 ? 0.003702620932654028 : -0.012745387187810509) : -0.0037429901813454056))
+    t_32 = (f_rvol_20 <= 0.44071619212627416 ? (f_ema_20_dist_atr <= -0.9703324139118193 ? (f_adx_14 <= 25.47414302825928 ? 0.032235389592336225 : 0.011180850883211428) : (f_hour_sin <= -0.6343555450439452 ? -0.01885181826937995 : 0.011056557205215246)) : (f_htf_4h_atr_percentile_100 <= 0.6850000023841859 ? (f_htf_4h_atr_percentile_100 <= 0.16499999910593036 ? -0.0019511377041008225 : 0.005343389087849627) : -0.003556929826557375))
+    t_33 = (f_hour_cos <= 0.7445585727691652 ? (f_dist_to_sl_atr_conf <= 1.156310319900513 ? (f_htf_4h_atr_percentile_100 <= 0.584999978542328 ? 0.004716335345336737 : -0.001763800148599528) : (f_htf_4h_rsi_14 <= 48.93506622314454 ? -0.011418785083886426 : 0.002661214768875821)) : (f_dist_to_sh_atr_conf <= 6.3176400661468515 ? (f_ltf_rsi_minus_htf_rsi <= -13.23838949203491 ? 0.029822311339225374 : 0.007302608395883613) : -0.019398372530137792))
+    t_34 = (f_rvol_20 <= 0.44071619212627416 ? (f_dist_to_sh_atr_conf <= 2.1425409317016606 ? (f_realized_vol_20 <= 0.0013590066228061917 ? -0.026174990524374272 : 0.004678969173516945) : (f_ltf_rsi_minus_htf_rsi <= -18.69956302642822 ? 0.028362548816048057 : 0.00976677557672296)) : (f_realized_vol_20 <= 0.006077276775613428 ? (f_vol_expansion_ratio <= 1.6293836236000063 ? 0.0006307939857416795 : 0.017806129765142203) : -0.023728126996314516))
+    t_35 = (f_hour_cos <= 0.7298206388950349 ? (f_ema_20_dist_atr <= -3.609938740730285 ? 0.016732520492192683 : (f_htf_4h_rsi_14 <= 24.286602020263675 ? -0.01698558863338312 : 0.0005838058487717778)) : (f_stoch_rsi_k <= 60.35667991638184 ? (f_ema_20_dist_atr <= -1.1419076919555662 ? 0.025474754352517167 : 0.0076612978791458924) : (f_htf_4h_rsi_14 <= 59.789257049560554 ? -0.013967406951747889 : 0.022368747933026525)))
+    t_36 = (f_hour_cos <= 0.7298206388950349 ? (f_htf_1h_atr_percentile_100 <= 0.014999999664723875 ? 0.018461078029337972 : (f_rsi_14 <= 44.34984397888184 ? 0.001331389694951209 : -0.004853033114861649)) : (f_stoch_rsi_k <= 60.35667991638184 ? (f_ema_20_dist_atr <= -1.1419076919555662 ? 0.024426681180305748 : 0.007291025641427064) : (f_htf_4h_rsi_14 <= 59.789257049560554 ? -0.013259281184490067 : 0.021345682317000046)))
+    t_37 = (f_hour_cos <= 0.7298206388950349 ? (f_momentum_composite <= -0.9797421991825103 ? 0.015296209657743549 : (f_ema_20_slope_atr <= -1.547143518924713 ? -0.013044688318689166 : 0.0005802843367781763)) : (f_ema_20_dist_atr <= -0.9783666729927062 ? (f_ema_50_dist_atr <= -3.8755077123641963 ? -0.01491992839333637 : 0.023945797298994355) : (f_hour_sin <= -0.6343555450439452 ? -0.0190544917888863 : 0.007533716111867503)))
+    t_38 = (f_htf_1h_atr_percentile_100 <= 0.7450000047683717 ? (f_in_london_ny_killzone <= 1.0000000180025095e-35 ? (f_dist_to_swing_low_atr <= 2.154542446136475 ? 0.017096677132655124 : -0.00047484664226353653) : (f_htf_4h_atr_percentile_100 <= 0.014999999664723875 ? -0.01473668078171758 : 0.002372345980466816)) : (f_fvg_bear_size_atr <= 2.3562959432601933 ? (f_htf_4h_atr_percentile_100 <= 0.31499999761581426 ? 0.00465010046116997 : -0.006688084963126008) : 0.021362963944263753))
+    t_39 = (f_htf_1h_atr_percentile_100 <= 0.7450000047683717 ? (f_in_london <= 1.0000000180025095e-35 ? (f_realized_vol_20 <= 0.001247969805262983 ? 0.0031565123628532485 : 0.018614744787981984) : (f_htf_1h_atr_percentile_100 <= 0.3550000041723252 ? -0.0028137564837150716 : 0.0048666073139301685)) : (f_fvg_bear_size_atr <= 2.3562959432601933 ? (f_htf_4h_rsi_14 <= 34.55282402038575 ? -0.012762012086235586 : -0.0014189628520239733) : 0.02036164472708587))
+    t_40 = (f_dist_to_sl_atr_conf <= -3.91091513633728 ? (f_dist_to_sl_atr_conf <= -7.56566023826599 ? 0.01188009411296402 : (f_vol_pct_diff_htf <= 0.3949999958276749 ? -0.014255230150690024 : 0.006734635053326734)) : (f_dist_to_swing_low_atr <= 1.2047182917594912 ? (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.03797415023903761 : 0.003932740345000073) : (f_hour_cos <= 0.8374305069446565 ? -0.0023778337923169818 : 0.023033176006687126)))
+    t_41 = (f_htf_1h_atr_percentile_100 <= 0.7549999952316285 ? (f_hour_cos <= 0.1413247883319855 ? 0.0018013277777183482 : (f_roc_10 <= -0.05266118235886096 ? 0.02072349552016674 : -0.0021494018263885323)) : (f_htf_4h_atr_percentile_100 <= 0.4149999916553498 ? (f_atr_pct <= 0.0003481938183540479 ? 0.03258364936528741 : 0.0014567992191462356) : (f_dist_to_sh_atr_conf <= 8.966625690460207 ? -0.006999258231108194 : 0.013958467939555855)))
+    t_42 = (f_dist_to_sl_atr_conf <= -3.91091513633728 ? (f_adx_14 <= 54.376680374145515 ? (f_bb_width_pct <= 0.00572090712375939 ? -0.0037063205888833725 : -0.026733254257186596) : 0.02250806214588921) : (f_ema_20_dist_atr <= -0.2992476969957351 ? (f_hour_cos <= 0.7445585727691652 ? 0.002228620569532041 : 0.01240128602062891) : (f_ema_20_slope_atr <= -0.34111262857913965 ? -0.02770746668399332 : -0.0014924857914066015)))
+    t_43 = (f_htf_1h_atr_percentile_100 <= 0.7549999952316285 ? (f_hour_cos <= 0.1413247883319855 ? (f_realized_vol_20 <= 0.0030009121401235466 ? 0.002297061731808563 : -0.015726881844390233) : (f_dist_to_sh_atr_conf <= 2.165153861045838 ? -0.010631435975850364 : 0.016663237487146376)) : (f_htf_4h_atr_percentile_100 <= 0.4149999916553498 ? (f_atr_pct <= 0.0003481938183540479 ? 0.030918295566013665 : 0.0013166866603379845) : -0.004845287045003638))
+    t_44 = (f_ema_20_dist_atr <= -0.2881185114383697 ? (f_htf_1h_atr_percentile_100 <= 0.7549999952316285 ? (f_hour_cos <= 0.1413247883319855 ? 0.0023171460930009316 : 0.0124412464365167) : (f_fvg_bear_size_atr <= 2.3562959432601933 ? -0.0025367059505840388 : 0.02020823851944976)) : (f_ltf_rsi_minus_htf_rsi <= -5.089709758758544 ? 0.005632893561740956 : (f_momentum_composite <= 0.01700010430067778 ? -0.02408134440697922 : 0.0033282970887696475)))
+    t_45 = (f_ltf_rsi_minus_htf_rsi <= -17.14138793945312 ? (f_rvol_20 <= 0.3120047748088837 ? 0.019959123461407366 : (f_macd_hist_atr <= -0.38223381340503687 ? -0.003538864091238882 : 0.006961076624691244)) : (f_adx_slope <= 0.4519198685884476 ? (f_htf_4h_rsi_14 <= 27.804010391235355 ? -0.0191476434409992 : 0.0031636206825563238) : (f_htf_4h_rsi_14 <= 54.70381736755372 ? -0.00028271580763327304 : -0.011068666890053879)))
+    t_46 = (f_htf_1h_atr_percentile_100 <= 0.8650000095367433 ? (f_rsi_14 <= 44.34984397888184 ? (f_vol_expansion_ratio <= 0.8079811334609986 ? -0.011656560432631862 : 0.004613996597290642) : (f_htf_1h_rsi_14 <= 35.207756042480476 ? 0.022145923073857182 : -0.0057070111927405845)) : (f_htf_1h_rsi_14 <= 50.05106735229493 ? (f_htf_1h_atr_percentile_100 <= 0.9850000143051149 ? -0.013305222140587847 : -0.0001980568607861628) : 0.007577628196222552))
+    t_47 = (f_ltf_rsi_minus_htf_rsi <= -17.14138793945312 ? (f_rvol_20 <= 0.3120047748088837 ? 0.018964227150810094 : (f_htf_4h_atr_percentile_100 <= 0.4149999916553498 ? 0.008709431120304287 : -0.0008475618641352696)) : (f_htf_1h_atr_percentile_100 <= 0.8650000095367433 ? (f_htf_1h_rsi_14 <= 34.264612197875984 ? 0.007787213424009464 : -0.0003872787683783331) : (f_fvg_bear_size_atr <= 2.3562959432601933 ? -0.007983518164375753 : 0.018268243340135056)))
+    t_48 = (f_realized_vol_20 <= 0.006077276775613428 ? (f_ltf_rsi_minus_htf_rsi <= -17.14138793945312 ? (f_rvol_20 <= 0.18723118305206302 ? 0.023736835933904188 : 0.003883439961739548) : (f_vol_expansion_ratio <= 1.6293836236000063 ? -0.0008210175004665883 : 0.014959660396553241)) : -0.02293728737606333)
+    t_49 = (f_realized_vol_20 <= 0.006077276775613428 ? (f_ltf_rsi_minus_htf_rsi <= -17.14138793945312 ? (f_rvol_20 <= 0.18723118305206302 ? 0.022797985688650622 : 0.0036892490652395867) : (f_vol_expansion_ratio <= 1.6293836236000063 ? -0.0007799999932323464 : 0.014221224999278543)) : -0.021836788950632534)
+    raw = t_0 + t_1 + t_2 + t_3 + t_4 + t_5 + t_6 + t_7 + t_8 + t_9 + t_10 + t_11 + t_12 + t_13 + t_14 + t_15 + t_16 + t_17 + t_18 + t_19 + t_20 + t_21 + t_22 + t_23 + t_24 + t_25 + t_26 + t_27 + t_28 + t_29 + t_30 + t_31 + t_32 + t_33 + t_34 + t_35 + t_36 + t_37 + t_38 + t_39 + t_40 + t_41 + t_42 + t_43 + t_44 + t_45 + t_46 + t_47 + t_48 + t_49
+    1.0 / (1.0 + math.exp(-raw))
+// === Generated by core/export/pine_codegen.py ===
+// DO NOT EDIT — regenerate via notebooks/15c_v1_pine_export.ipynb
+// Source booster: 50 trees, 38 referenced features (out of 73 trained)
+
+f_pmS(f_ema_20_dist_atr, f_ema_50_dist_atr, f_ema_200_dist_atr, f_ema_20_slope_atr, f_adx_14, f_adx_slope, f_rsi_14, f_stoch_rsi_k, f_roc_10, f_macd_hist_atr, f_atr_pct, f_atr_percentile_100, f_bb_width_pct, f_vol_compression, f_realized_vol_20, f_dist_to_swing_high_atr, f_dist_to_swing_low_atr, f_rvol_20, f_volume_z_score, f_hour_sin, f_hour_cos, f_htf_1h_rsi_14, f_htf_1h_atr_percentile_100, f_htf_4h_ema_alignment, f_htf_4h_rsi_14, f_htf_4h_atr_percentile_100, f_bars_since_sweep_down, f_dist_to_sl_atr_conf, f_fvg_bear_active, f_dist_to_bull_fvg_atr, f_dist_to_bear_fvg_atr, f_fvg_bull_size_atr, f_is_fx_market_open, f_vol_expansion_ratio, f_bars_since_vol_spike, f_ltf_rsi_minus_htf_rsi, f_vol_pct_diff_htf, f_both_high_vol) =>
+    t_0 = (f_rvol_20 <= 0.26444213092327123 ? (f_adx_14 <= 35.96152305603028 ? (f_bars_since_vol_spike <= 15.500000000000002 ? -0.4306009561810098 : -0.391496066531837) : -0.361777493314943) : (f_atr_pct <= 0.0004762831085827202 ? (f_ema_20_dist_atr <= 0.5005677342414857 ? -0.4241433678464839 : -0.41278906013963895) : (f_htf_1h_rsi_14 <= 32.58197212219239 ? -0.44029339189569583 : -0.4218624410898328)))
+    t_1 = (f_rvol_20 <= 0.26444213092327123 ? (f_adx_14 <= 35.96152305603028 ? (f_bars_since_vol_spike <= 15.500000000000002 ? 0.010413269718179885 : 0.047100933724629396) : 0.07466453372411476) : (f_htf_1h_rsi_14 <= 63.00285911560059 ? (f_htf_4h_atr_percentile_100 <= 0.28499999642372137 ? 0.02365781714047035 : 0.015318415613675536) : (f_fvg_bull_size_atr <= 0.3328773379325867 ? 0.03305440363265779 : 0.02119097332746726)))
+    t_2 = (f_hour_cos <= 0.5093866288661958 ? (f_ema_200_dist_atr <= -2.654651522636413 ? (f_htf_4h_rsi_14 <= 50.963132858276374 ? -0.0038122260048300454 : 0.034272068542660794) : 0.019990064263471323) : (f_ema_20_dist_atr <= 0.5734736025333406 ? (f_adx_slope <= -3.908886909484863 ? 0.034696821102792264 : 0.006499868704260746) : (f_both_high_vol <= 1.0000000180025095e-35 ? 0.05175135734446926 : 0.016555243255436825)))
+    t_3 = (f_rvol_20 <= 0.26444213092327123 ? (f_adx_14 <= 35.96152305603028 ? (f_bars_since_vol_spike <= 15.500000000000002 ? 0.008626448403916381 : 0.04255393391018981) : 0.06825828954800447) : (f_htf_1h_rsi_14 <= 63.00285911560059 ? (f_htf_4h_atr_percentile_100 <= 0.28499999642372137 ? 0.021282778391790224 : 0.013483758838171003) : (f_realized_vol_20 <= 0.0013602009275928142 ? 0.031237316945047652 : 0.018365579362360943)))
+    t_4 = (f_hour_cos <= 0.5093866288661958 ? (f_ema_200_dist_atr <= -2.654651522636413 ? (f_adx_14 <= 23.59575939178467 ? -0.009690452967857595 : 0.015543042470784025) : 0.0178973232116521) : (f_bars_since_vol_spike <= 5.500000000000001 ? (f_fvg_bear_active <= 1.0000000180025095e-35 ? 0.015850853425707426 : -0.01945785081230641) : (f_dist_to_swing_high_atr <= 1.1309839487075808 ? 0.044973175051918175 : 0.02221689950050587)))
+    t_5 = (f_hour_cos <= 0.47136868536472326 ? (f_ema_50_dist_atr <= 2.5870316028594975 ? (f_htf_4h_rsi_14 <= 33.8680763244629 ? -4.197835965231243e-05 : 0.014653131040574321) : 0.01996944744870667) : (f_ema_20_dist_atr <= 0.5734736025333406 ? (f_fvg_bull_size_atr <= 0.7744722366333009 ? 0.007187372608004098 : 0.04559530009287435) : (f_bars_since_vol_spike <= 8.500000000000002 ? 0.016279221490951148 : 0.04741780432647415)))
+    t_6 = (f_hour_cos <= 0.47136868536472326 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? (f_ltf_rsi_minus_htf_rsi <= 4.52664351463318 ? 0.0308598193234446 : 0.01349226875564101) : (f_atr_pct <= 0.00047122407704591757 ? 0.017335190198178196 : 0.008602159995710998)) : (f_ema_20_dist_atr <= 0.532986342906952 ? 0.010226146587922265 : (f_bars_since_vol_spike <= 8.500000000000002 ? 0.015437734056943146 : 0.043936691280152006)))
+    t_7 = (f_hour_cos <= 0.5464349389076234 ? (f_ema_50_dist_atr <= 2.5870316028594975 ? (f_htf_4h_atr_percentile_100 <= 0.20499999821186068 ? 0.01781315478861654 : 0.009057991625943116) : 0.01816143408686674) : (f_ema_20_dist_atr <= 0.5484277904033662 ? (f_realized_vol_20 <= 0.0020347881363704805 ? 0.017978825174726303 : -0.008720345025147019) : (f_bars_since_vol_spike <= 8.500000000000002 ? 0.015988373801625332 : 0.043875043302329234)))
+    t_8 = (f_rvol_20 <= 0.26444213092327123 ? (f_adx_14 <= 36.164997100830085 ? (f_atr_percentile_100 <= 0.655000001192093 ? 0.0339958966809046 : 0.0022646634677211887) : 0.05380902962228379) : (f_atr_pct <= 0.00047122407704591757 ? (f_ema_50_dist_atr <= -0.100011870265007 ? 0.005003992318478239 : 0.019719973855576566) : (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? 0.017502231887248063 : 0.008078085524346204)))
+    t_9 = (f_hour_cos <= 0.47136868536472326 ? (f_ema_200_dist_atr <= -2.9895001649856563 ? (f_htf_4h_rsi_14 <= 50.963132858276374 ? -0.005180746610898873 : 0.027270734738235654) : 0.013485486496392736) : (f_ema_20_dist_atr <= 0.5894014537334443 ? (f_fvg_bull_size_atr <= 0.8094662129878999 ? 0.005409874462569703 : 0.0406972048615569) : (f_both_high_vol <= 1.0000000180025095e-35 ? 0.03922003057971751 : 0.012408469548427899)))
+    t_10 = (f_hour_cos <= 0.6000355482101442 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? (f_dist_to_bull_fvg_atr <= 3.2446990013122563 ? 0.016975471311488542 : -0.014209797663474825) : (f_dist_to_sl_atr_conf <= 4.475261211395265 ? 0.0064444344952257985 : 0.014819741784349328)) : (f_stoch_rsi_k <= 74.47985458374025 ? (f_atr_percentile_100 <= 0.6650000214576722 ? 0.020454125130594834 : -0.009997080223519222) : 0.03484954766535093))
+    t_11 = (f_hour_cos <= 0.6000355482101442 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? 0.015152458366209513 : (f_atr_pct <= 0.0005096515524201096 ? 0.012880464151386285 : 0.005204624393199897)) : (f_stoch_rsi_k <= 74.47985458374025 ? (f_atr_percentile_100 <= 0.6650000214576722 ? 0.019397101063347716 : -0.009512251111771348) : (f_fvg_bull_size_atr <= 0.864098221063614 ? 0.026761196307652974 : 0.05394850575769342)))
+    t_12 = (f_hour_cos <= 0.6000355482101442 ? (f_ema_20_dist_atr <= 3.0052821636199956 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? 0.014154729298683603 : 0.008185994248150738) : 0.021875395095672913) : (f_stoch_rsi_k <= 86.00508499145509 ? (f_bars_since_vol_spike <= 8.500000000000002 ? -0.01097970292000646 : 0.018969250546099003) : (f_rsi_14 <= 55.72820472717286 ? 0.022886601724823836 : 0.049189878041995046)))
+    t_13 = (f_hour_cos <= 0.6000355482101442 ? (f_rsi_14 <= 48.219331741333015 ? (f_adx_slope <= 0.6074959933757783 ? -0.021333623512993796 : 0.018042018312278432) : 0.010451977870687981) : (f_stoch_rsi_k <= 74.47985458374025 ? (f_ema_200_dist_atr <= 3.998439431190491 ? -0.00035239332311047625 : 0.027023710306467857) : (f_fvg_bull_size_atr <= 0.864098221063614 ? 0.02395881762455736 : 0.04966907283727505)))
+    t_14 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_hour_cos <= 0.2693240344524384 ? (f_realized_vol_20 <= 0.0033532890956848864 ? 0.008464678378369199 : 0.025912439072433388) : (f_both_high_vol <= 1.0000000180025095e-35 ? 0.02157988301668798 : -0.002077973586448229)) : -0.017849208050762698)
+    t_15 = (f_hour_cos <= 0.2693240344524384 ? (f_atr_pct <= 0.0009767916635610165 ? (f_atr_pct <= 0.0004995354975108058 ? 0.011345465428599493 : 0.004419847883375712) : (f_htf_4h_atr_percentile_100 <= 0.8249999880790712 ? 0.03530755755453276 : -0.007534647841672755)) : (f_bars_since_vol_spike <= 5.500000000000001 ? -0.004061648819556565 : (f_ema_20_dist_atr <= 0.7193512320518495 ? 0.010452260905102827 : 0.02888458858839217)))
+    t_16 = (f_stoch_rsi_k <= 85.7530975341797 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? (f_ltf_rsi_minus_htf_rsi <= -1.7551416158676145 ? 0.023180306377529644 : 0.007971070707801287) : (f_htf_1h_rsi_14 <= 33.07818984985352 ? -0.02385770411749174 : 0.005108132385883741)) : (f_hour_cos <= 0.47136868536472326 ? 0.01092802309434667 : (f_fvg_bull_size_atr <= 0.8735041022300721 ? 0.021210155706590177 : 0.05296322814687432)))
+    t_17 = (f_stoch_rsi_k <= 85.7530975341797 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? (f_ltf_rsi_minus_htf_rsi <= -1.7551416158676145 ? 0.02198517847964323 : 0.0075675389264247585) : 0.004230045830592939) : (f_hour_cos <= 0.47136868536472326 ? (f_htf_1h_rsi_14 <= 61.194730758667 ? 0.008021680169487585 : 0.017967314968114764) : (f_fvg_bull_size_atr <= 0.8735041022300721 ? 0.02014180897946513 : 0.0504596139492747)))
+    t_18 = (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_fvg_bear_active <= 1.0000000180025095e-35 ? (f_ema_200_dist_atr <= 0.7844236493110658 ? 0.023350505468054963 : 0.04202909025250875) : 0.011758998358690985) : (f_stoch_rsi_k <= 85.7530975341797 ? (f_ema_200_dist_atr <= -2.9895001649856563 ? -0.008183584524165595 : 0.0067036132150660585) : (f_htf_4h_atr_percentile_100 <= 0.0449999999254942 ? 0.021109137536120468 : 0.009883396194369716)))
+    t_19 = (f_hour_cos <= 0.2693240344524384 ? (f_atr_pct <= 0.0009767916635610165 ? (f_atr_pct <= 0.0004762831085827202 ? 0.009764721136220093 : 0.003144378716792552) : (f_htf_4h_atr_percentile_100 <= 0.8249999880790712 ? 0.032051733317945814 : -0.008494423130283436)) : (f_bars_since_vol_spike <= 5.500000000000001 ? -0.005667540046531399 : (f_ema_20_dist_atr <= 0.6932509839534761 ? 0.008124015420319848 : 0.02541586930493225)))
+    t_20 = (f_realized_vol_20 <= 0.0066770059056580075 ? (f_htf_1h_atr_percentile_100 <= 0.834999978542328 ? (f_htf_1h_rsi_14 <= 63.00285911560059 ? 0.008058804526267059 : 0.017090800303127533) : (f_htf_1h_atr_percentile_100 <= 0.9449999928474427 ? -0.0015965069627398697 : 0.009403993487559853)) : -0.026244123720181162)
+    t_21 = (f_htf_1h_atr_percentile_100 <= 0.834999978542328 ? (f_dist_to_sl_atr_conf <= 1.9043501019477846 ? (f_htf_4h_rsi_14 <= 35.30990600585938 ? -0.01776497225494348 : 0.01993802790180904) : 0.008551722503906655) : (f_htf_1h_atr_percentile_100 <= 0.9449999928474427 ? (f_ema_20_slope_atr <= 0.5040287971496583 ? -0.013017692165321799 : 0.005850627404046415) : (f_htf_4h_rsi_14 <= 49.07566642761231 ? 0.0011856355981545452 : 0.013747271668313847)))
+    t_22 = (f_htf_1h_atr_percentile_100 <= 0.834999978542328 ? (f_hour_sin <= -0.9686339497566222 ? -0.00014293946458780512 : (f_dist_to_swing_high_atr <= 1.140131175518036 ? 0.012453638262550469 : 0.005443537092635999)) : (f_htf_1h_atr_percentile_100 <= 0.9449999928474427 ? (f_ema_20_slope_atr <= 0.5040287971496583 ? -0.012382562603910331 : 0.005555950541819553) : (f_vol_compression <= 0.5557215809822084 ? 0.021449510511036426 : 0.004911317750097466)))
+    t_23 = (f_realized_vol_20 <= 0.0066770059056580075 ? (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_dist_to_bear_fvg_atr <= -0.06582781672477721 ? 0.004900466143436611 : 0.031803999226937156) : (f_ema_50_dist_atr <= 2.5301851034164433 ? 0.004659806449166827 : 0.010180505768685342)) : -0.02565885531228454)
+    t_24 = (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_dist_to_bear_fvg_atr <= -0.06582781672477721 ? 0.00465712017591362 : (f_roc_10 <= 0.010305108968168499 ? 0.02155290976340797 : 0.040993760283264305)) : (f_rvol_20 <= 1.205878257751465 ? (f_adx_slope <= -7.948118448257445 ? 0.02078824515634647 : 0.0046089567490369176) : (f_htf_4h_atr_percentile_100 <= 0.014999999664723875 ? -0.012368793562951714 : 0.013227600111086257)))
+    t_25 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_realized_vol_20 <= 0.0033532890956848864 ? (f_hour_cos <= 0.24825246632099154 ? 0.004111240817560167 : 0.011663734014432322) : (f_adx_14 <= 32.884012222290046 ? 0.008451651961718362 : 0.0335946429682916)) : -0.0205848200192858)
+    t_26 = (f_adx_14 <= 24.01490116119385 ? (f_vol_compression <= 1.2799971103668215 ? (f_rsi_14 <= 48.219331741333015 ? -0.025992030712473177 : 0.001978785873931725) : 0.012324040363010803) : (f_ema_20_dist_atr <= 0.4489812254905701 ? (f_ema_50_dist_atr <= -1.0560022592544553 ? 0.01567481757898302 : -0.008863964791370497) : (f_hour_cos <= 0.24825246632099154 ? 0.006986017385041336 : 0.01789934316063159)))
+    t_27 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_realized_vol_20 <= 0.0033532890956848864 ? (f_hour_cos <= 0.24825246632099154 ? 0.0036662536577790083 : 0.010639812884457658) : (f_adx_14 <= 33.22285652160645 ? 0.007922185099838998 : 0.031757841716528325)) : -0.020042824531107478)
+    t_28 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_realized_vol_20 <= 0.0033532890956848864 ? (f_hour_cos <= 0.24825246632099154 ? 0.0034821202316363585 : 0.010108838352374762) : (f_adx_14 <= 33.22285652160645 ? 0.007524440455678518 : 0.030165860957585385)) : -0.019099408998596617)
+    t_29 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_realized_vol_20 <= 0.0033532890956848864 ? (f_hour_cos <= 0.24825246632099154 ? 0.003307296223952188 : 0.00960483904948968) : (f_adx_14 <= 32.884012222290046 ? 0.006928444397698581 : 0.028367701135594843)) : -0.01820166988746254)
+    t_30 = (f_htf_1h_atr_percentile_100 <= 0.28499999642372137 ? (f_volume_z_score <= -0.5219082534313201 ? 0.01869444363392355 : (f_htf_4h_atr_percentile_100 <= 0.08500000089406969 ? -0.0041516186351731555 : 0.011283955816353783)) : (f_htf_1h_atr_percentile_100 <= 0.3350000083446503 ? (f_ema_200_dist_atr <= 4.432350635528565 ? -0.01979773795056622 : 0.00815561927374825) : (f_htf_1h_atr_percentile_100 <= 0.3849999904632569 ? 0.017678554444419365 : 0.0032316881293520863)))
+    t_31 = (f_htf_1h_atr_percentile_100 <= 0.05499999970197678 ? (f_hour_sin <= -0.77296444773674 ? -0.004042489866660227 : (f_vol_compression <= 1.2576127648353579 ? 0.011410680194039777 : 0.038190040285918644)) : (f_atr_pct <= 0.0004762831085827202 ? (f_hour_sin <= -0.9686339497566222 ? -0.002562800847355837 : 0.008057680046176895) : (f_atr_pct <= 0.0005821179947815837 ? -0.0050299732986677885 : 0.004688345568216908)))
+    t_32 = (f_htf_1h_atr_percentile_100 <= 0.28499999642372137 ? (f_htf_4h_rsi_14 <= 67.47568130493165 ? (f_htf_1h_rsi_14 <= 68.46675872802736 ? 0.009021300627119653 : 0.03430502361762743) : (f_htf_4h_rsi_14 <= 69.85722732543947 ? -0.03450455323904497 : 0.018186966327105047)) : (f_htf_1h_rsi_14 <= 32.58197212219239 ? -0.00850575633648047 : (f_htf_1h_atr_percentile_100 <= 0.3350000083446503 ? -0.01090960977408732 : 0.004297751428978368)))
+    t_33 = (f_htf_1h_atr_percentile_100 <= 0.05499999970197678 ? (f_hour_sin <= -0.77296444773674 ? (f_adx_14 <= 21.395409584045414 ? -0.021623719556486558 : 0.011889841820476461) : (f_vol_compression <= 1.2576127648353579 ? 0.010377802954073175 : 0.03589015482214535)) : (f_ema_200_dist_atr <= 8.72679901123047 ? (f_dist_to_swing_low_atr <= 8.599362373352053 ? 0.00318847622183722 : -0.023794526176719007) : 0.0110035026936826))
+    t_34 = (f_htf_1h_atr_percentile_100 <= 0.655000001192093 ? (f_rvol_20 <= 0.22383860498666766 ? 0.02824000152085246 : (f_roc_10 <= -0.04863858222961425 ? -0.018363025821538915 : 0.006172905380215428)) : (f_realized_vol_20 <= 0.005476305726915599 ? (f_bars_since_vol_spike <= 40.50000000000001 ? 0.006054582569435356 : -0.002045886056792907) : -0.02012008655813763))
+    t_35 = (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_dist_to_bear_fvg_atr <= -0.06582781672477721 ? 0.002928470449849799 : (f_adx_slope <= 0.446106642484665 ? 0.01638370582862522 : 0.03268956962763697)) : (f_rsi_14 <= 48.219331741333015 ? (f_vol_expansion_ratio <= 1.0991783738136294 ? -0.0013095326801590328 : -0.03103564188564169) : (f_htf_1h_atr_percentile_100 <= 0.06499999947845937 ? 0.012876913269270497 : 0.00282864613119739)))
+    t_36 = (f_macd_hist_atr <= 0.5356347858905793 ? (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_dist_to_bull_fvg_atr <= 0.17513237893581393 ? 0.010422210387971538 : 0.026694368808646715) : (f_rsi_14 <= 48.219331741333015 ? -0.011472002757499716 : 0.002753250122635942)) : (f_realized_vol_20 <= 0.0016450778348371389 ? 0.036978032274319075 : 0.00806748807955193))
+    t_37 = (f_bars_since_sweep_down <= 1.5000000000000002 ? (f_dist_to_bear_fvg_atr <= -0.06582781672477721 ? 0.0020052328532534597 : (f_rvol_20 <= 0.9125855565071107 ? 0.02972797519517111 : 0.012584899807346362)) : (f_rsi_14 <= 56.05657386779786 ? (f_bb_width_pct <= 0.0006024288595654071 ? 0.016861906953306076 : -0.0025321843986700694) : (f_hour_cos <= 0.4904943853616715 ? 0.0029370564396362093 : 0.014368097632567613)))
+    t_38 = (f_macd_hist_atr <= 0.5356347858905793 ? (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? (f_dist_to_swing_low_atr <= 5.738238573074342 ? 0.007732066941269618 : -0.006615702507834654) : (f_dist_to_swing_low_atr <= 4.611365318298341 ? -0.001814554971404448 : 0.006225199575930519)) : (f_dist_to_swing_low_atr <= 7.0356247425079355 ? 0.030440520747517782 : 0.002951378829045567))
+    t_39 = (f_bb_width_pct <= 0.011109737679362299 ? (f_adx_14 <= 24.346356391906742 ? (f_vol_pct_diff_htf <= 0.7749999761581422 ? 0.0013943282504091294 : -0.03438298102388995) : (f_htf_1h_atr_percentile_100 <= 0.05499999970197678 ? 0.019393163793603563 : 0.004291565316646504)) : -0.01617400724407222)
+    t_40 = (f_htf_4h_atr_percentile_100 <= 0.725000023841858 ? (f_atr_pct <= 0.0004974190669599922 ? 0.004482405483673119 : (f_htf_4h_atr_percentile_100 <= 0.12499999627470972 ? 0.007978847873405942 : -0.004887241595958613)) : (f_htf_4h_atr_percentile_100 <= 0.7849999964237214 ? (f_rvol_20 <= 0.8052511215209962 ? 0.033987439242818336 : 0.004365524960261469) : (f_htf_1h_rsi_14 <= 60.34503936767579 ? -0.0003651658868696003 : 0.012470514358908644)))
+    t_41 = (f_realized_vol_20 <= 0.005915134213864804 ? (f_rvol_20 <= 0.27707591652870184 ? (f_adx_14 <= 26.089123725891117 ? 0.0008269055129140157 : 0.026560704368652845) : (f_htf_4h_ema_alignment <= -1.0000000180025095e-35 ? 0.005982958789028746 : 0.0011172011876783054)) : -0.01970072083150189)
+    t_42 = (f_htf_4h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_1h_atr_percentile_100 <= 0.6650000214576722 ? (f_rsi_14 <= 46.61170768737794 ? -0.016522942956569205 : 0.005353058202581817) : (f_htf_1h_atr_percentile_100 <= 0.6949999928474427 ? -0.01986359694657212 : -0.0013483303322969623)) : (f_htf_1h_atr_percentile_100 <= 0.17500000447034839 ? 0.039483435307531185 : (f_bars_since_vol_spike <= 67.50000000000001 ? 0.011318209861896751 : -0.00018059448139794862)))
+    t_43 = (f_htf_4h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_1h_atr_percentile_100 <= 0.6650000214576722 ? (f_rvol_20 <= 0.27707591652870184 ? 0.027864027340249127 : 0.0034189486622732907) : (f_htf_4h_rsi_14 <= 51.378179550170906 ? 0.0019681249830248554 : -0.007053120363589792)) : (f_htf_4h_atr_percentile_100 <= 0.7849999964237214 ? (f_rvol_20 <= 0.8052511215209962 ? 0.03164358260138105 : 0.003636912013031792) : 0.003634063252204662))
+    t_44 = (f_macd_hist_atr <= 0.4834513664245606 ? (f_htf_4h_atr_percentile_100 <= 0.725000023841858 ? (f_htf_1h_atr_percentile_100 <= 0.6650000214576722 ? 0.003652379296569348 : -0.002989122167574908) : (f_htf_1h_atr_percentile_100 <= 0.17500000447034839 ? 0.03710948074979447 : 0.00498735561067665)) : (f_hour_sin <= -0.4904943853616714 ? (f_atr_pct <= 0.0005903978599235417 ? 0.0291756477859912 : 0.00878563278249902) : -0.004730677525862653))
+    t_45 = (f_atr_pct <= 0.0004995354975108058 ? (f_hour_sin <= -0.9629878401756286 ? -0.0045699413199807 : (f_htf_1h_rsi_14 <= 63.86651229858399 ? 0.003658461344199463 : 0.012297109940665902)) : (f_atr_pct <= 0.0005692418199032546 ? (f_dist_to_sl_atr_conf <= 3.583984732627869 ? 0.0006372223833682166 : -0.01425494738858277) : (f_htf_4h_atr_percentile_100 <= 0.05499999970197678 ? 0.015061239046352946 : 0.000507435750072779)))
+    t_46 = (f_rsi_14 <= 46.61170768737794 ? (f_atr_pct <= 0.0002624341286718846 ? 0.009284086249456225 : (f_htf_4h_atr_percentile_100 <= 0.27500000596046453 ? -0.036080246017464145 : -0.009085670478778111)) : (f_dist_to_swing_low_atr <= 1.9384667277336123 ? (f_realized_vol_20 <= 0.0018086662748828532 ? 0.016032835775753717 : -0.008105065408502294) : (f_dist_to_bear_fvg_atr <= -0.5584254562854766 ? -0.009706680350714529 : 0.0022622213607621754)))
+    t_47 = (f_is_fx_market_open <= 1.0000000180025095e-35 ? 0.01986404155236942 : (f_bb_width_pct <= 0.011109737679362299 ? (f_rsi_14 <= 46.61170768737794 ? -0.010518748684252377 : 0.002060326859613458) : -0.018043606166809154))
+    t_48 = (f_atr_pct <= 0.0004995354975108058 ? (f_hour_sin <= -0.9629878401756286 ? (f_htf_1h_atr_percentile_100 <= 0.7350000143051149 ? -0.011551710755033645 : 0.00602545323578772) : 0.005290865229198307) : (f_atr_pct <= 0.0005692418199032546 ? (f_dist_to_sl_atr_conf <= 3.583984732627869 ? 0.00040564064329893373 : -0.013767237838044642) : (f_ltf_rsi_minus_htf_rsi <= -12.595706462860106 ? -0.013695828559461526 : 0.002384773190916291)))
+    t_49 = (f_dist_to_bear_fvg_atr <= -0.5584254562854766 ? (f_vol_expansion_ratio <= 0.8470000624656678 ? 0.026181617453913404 : (f_ema_200_dist_atr <= -0.25857904553413386 ? 0.003241660519563243 : -0.018798100938590835)) : (f_bars_since_sweep_down <= 2.5000000000000004 ? (f_htf_1h_rsi_14 <= 42.36460113525391 ? -0.0007573356901164163 : 0.017909048643686247) : (f_htf_4h_rsi_14 <= 47.44505119323731 ? -0.0015147171892296845 : 0.003595537527448512)))
+    raw = t_0 + t_1 + t_2 + t_3 + t_4 + t_5 + t_6 + t_7 + t_8 + t_9 + t_10 + t_11 + t_12 + t_13 + t_14 + t_15 + t_16 + t_17 + t_18 + t_19 + t_20 + t_21 + t_22 + t_23 + t_24 + t_25 + t_26 + t_27 + t_28 + t_29 + t_30 + t_31 + t_32 + t_33 + t_34 + t_35 + t_36 + t_37 + t_38 + t_39 + t_40 + t_41 + t_42 + t_43 + t_44 + t_45 + t_46 + t_47 + t_48 + t_49
+    1.0 / (1.0 + math.exp(-raw))
+
+pL = f_pL(f_hour_cos, f_hour_sin, f_rvol_20, f_ema_20_dist_atr, f_atr_pct, f_htf_4h_rsi_14, f_is_fx_market_open, f_in_ny, f_htf_4h_atr_percentile_100)
+pS = f_pS(f_hour_cos, f_hour_sin, f_rvol_20, f_ema_20_dist_atr, f_atr_pct, f_htf_4h_rsi_14, f_is_fx_market_open, f_in_ny, f_htf_4h_atr_percentile_100)
+pmL = f_pmL(f_ema_20_dist_atr, f_ema_50_dist_atr, f_ema_200_dist_atr, f_ema_20_slope_atr, f_adx_14, f_adx_slope, f_rsi_14, f_stoch_rsi_k, f_roc_10, f_macd_hist_atr, f_momentum_composite, f_atr_pct, f_bb_width_pct, f_vol_compression, f_realized_vol_20, f_dist_to_swing_high_atr, f_dist_to_swing_low_atr, f_rvol_20, f_volume_z_score, f_hour_sin, f_hour_cos, f_htf_1h_rsi_14, f_htf_1h_atr_percentile_100, f_htf_4h_rsi_14, f_htf_4h_atr_percentile_100, f_bars_since_sweep_down, f_dist_to_sh_atr_conf, f_dist_to_sl_atr_conf, f_dist_to_bear_fvg_atr, f_fvg_bear_size_atr, f_in_london, f_in_london_ny_killzone, f_is_fx_market_open, f_vol_expansion_ratio, f_bars_since_vol_spike, f_ltf_rsi_minus_htf_rsi, f_vol_pct_diff_htf, f_both_high_vol)
+pmS = f_pmS(f_ema_20_dist_atr, f_ema_50_dist_atr, f_ema_200_dist_atr, f_ema_20_slope_atr, f_adx_14, f_adx_slope, f_rsi_14, f_stoch_rsi_k, f_roc_10, f_macd_hist_atr, f_atr_pct, f_atr_percentile_100, f_bb_width_pct, f_vol_compression, f_realized_vol_20, f_dist_to_swing_high_atr, f_dist_to_swing_low_atr, f_rvol_20, f_volume_z_score, f_hour_sin, f_hour_cos, f_htf_1h_rsi_14, f_htf_1h_atr_percentile_100, f_htf_4h_ema_alignment, f_htf_4h_rsi_14, f_htf_4h_atr_percentile_100, f_bars_since_sweep_down, f_dist_to_sl_atr_conf, f_fvg_bear_active, f_dist_to_bull_fvg_atr, f_dist_to_bear_fvg_atr, f_fvg_bull_size_atr, f_is_fx_market_open, f_vol_expansion_ratio, f_bars_since_vol_spike, f_ltf_rsi_minus_htf_rsi, f_vol_pct_diff_htf, f_both_high_vol)
+
+// === FX-module tradeable gate (classify_market_state, Step-1 verified) ===
+_ms_atr_pctile = _pf_pctrank100(_atr14)
+_ms_warm       = na(_adx14) or na(_atr14) or na(_ms_atr_pctile)
+_ms_tradeable  = (not _ms_warm) and _ms_atr_pctile >= 0.33 and _ms_atr_pctile < 0.97
+
+// === Selection chain (1:1 fx_production_train.py; thresholds FIX from fx_ship_snapshot.json) ===
+_gate      = (f_in_ny > 0.5) and _ms_tradeable
+_is_usdchf = str.contains(syminfo.tickerid, "USDCHF")
+_NEG       = -1e9
+// (a) gen-gate BEFORE meta: meta-proba only ranks gen-passers, else NEG
+_scoreL = (_gate and pL >= 0.4994305791425983) ? pmL : _NEG
+_scoreS = (_is_usdchf and _gate and pS >= 0.49642830094169427) ? pmS : _NEG
+// (b) POOLED dedupe per bar -> higher meta-proba wins (tie -> long)
+_pooled  = math.max(_scoreL, _scoreS)
+_sig_dir = _scoreL >= _scoreS ? 1 : -1
+_signal  = _pooled >= 0.4928711702972614
+// (c) sizing tiers on the META-proba (_pooled)
+_size    = _pooled < 0.5075322504261723 ? 0.5 : (_pooled < 0.6179818940379307 ? 1.0 : 1.5)
+
+// === PaceAlgo FX — signal display (overlay). SL=1.0*ATR, TP=1.5*ATR, R=1.5 (locked spec). ===
+// barstate.isconfirmed gates the realtime bar -> the live arrow appears only after the 5m bar
+// closes (no intra-bar flicker; HTF non-repaint already proven via lookahead_on+[1]).
+_fxLong  = _signal and _sig_dir == 1  and barstate.isconfirmed
+_fxShort = _signal and _sig_dir == -1 and barstate.isconfirmed
+
+plotshape(showSig and _fxLong,  title="FX Long",  style=shape.triangleup,   location=location.belowbar, color=color.new(#26a69a, 0), size=size.small, text="FX")
+plotshape(showSig and _fxShort, title="FX Short", style=shape.triangledown, location=location.abovebar, color=color.new(#ef5350, 0), size=size.small, text="FX")
+
+if showLevels and (_fxLong or _fxShort)
+    _e  = close                                  // entry reference (live: next-bar-open per spec)
+    _sl = _fxLong ? _e - _atr14       : _e + _atr14
+    _tp = _fxLong ? _e + 1.5 * _atr14 : _e - 1.5 * _atr14
+    _x2 = bar_index + levelBars
+    line.new(bar_index, _e,  _x2, _e,  color=color.new(color.gray, 30), style=line.style_dashed)
+    line.new(bar_index, _sl, _x2, _sl, color=color.new(#ef5350, 0))
+    line.new(bar_index, _tp, _x2, _tp, color=color.new(#26a69a, 0))
+    label.new(bar_index, _tp,
+              "FX " + (_fxLong ? "LONG" : "SHORT") + " • 1.5R • Größe " + str.tostring(_size) + "×",
+              yloc=yloc.price, style=(_fxLong ? label.style_label_down : label.style_label_up),
+              color=color.new(color.black, 100), textcolor=(_fxLong ? #26a69a : #ef5350), size=size.small)
