@@ -600,22 +600,22 @@ if eShowBT and barstate.islast
     pf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
     wr    = total > 0 ? 100.0 * wins / total : 0.0
     avgR  = total > 0 ? equityR / total : 0.0
-    // TP1-inclusive hit rate (WS4 outcome-framing): share of trades that banked at least
-    // the TP1 half (TP2 + runner-trail + break-even). Multi-TP legitimately produces many
-    // partial wins — this makes that visible. PF stays the headline.
-    hitRate = total > 0 ? 100.0 * (nTP2 + nTrail + nBE) / total : 0.0
+    // WS4 outcome-framing: full-target rate = how often the runner reaches TP2, distinct
+    // from the TP1-inclusive Win Rate below (which credits every TP1 bank, incl. break-even).
+    // Multi-TP legitimately produces many wins — the two figures together make that legible.
+    tp2Rate = total > 0 ? 100.0 * nTP2 / total : 0.0
     table.cell(bt, 0, 0, "Backtest", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
     table.cell(bt, 1, 0, profileEff + " / " + style + (sens != 0 ? " / S" + str.tostring(sens) : ""), text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
-    f_btCell(bt, 1, "Net PF",      pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
-    f_btCell(bt, 2, "Avg R",       str.tostring(avgR, "#.00"))
-    f_btCell(bt, 3, "Trades",      str.tostring(total))
-    f_btCell(bt, 4, "TP2 / Trail", str.tostring(nTP2) + " / " + str.tostring(nTrail))
-    f_btCell(bt, 5, "BE / Loss",   str.tostring(nBE) + " / " + str.tostring(nLoss))
-    f_btCell(bt, 6, "Hit Rate (TP1+)", str.tostring(hitRate, "#.0") + "%")
-    f_btCell(bt, 7, "Win Rate",    str.tostring(wr, "#.0") + "%")
-    f_btCell(bt, 8, "Total R",     str.tostring(equityR, "#.0"))
-    f_btCell(bt, 9, "Max DD (R)",  str.tostring(maxDDR, "#.0"))
-    f_btCell(bt, 10, "In Trade",   posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
+    f_btCell(bt, 1, "Net PF",        pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
+    f_btCell(bt, 2, "Avg R",         str.tostring(avgR, "#.00"))
+    f_btCell(bt, 3, "Trades",        str.tostring(total))
+    f_btCell(bt, 4, "TP2 / Trail",   str.tostring(nTP2) + " / " + str.tostring(nTrail))
+    f_btCell(bt, 5, "BE / Loss",     str.tostring(nBE) + " / " + str.tostring(nLoss))
+    f_btCell(bt, 6, "Full-Target (TP2)", str.tostring(tp2Rate, "#.0") + "%")
+    f_btCell(bt, 7, "Win Rate (TP1+)",   str.tostring(wr, "#.0") + "%")
+    f_btCell(bt, 8, "Total R",       str.tostring(equityR, "#.0"))
+    f_btCell(bt, 9, "Max DD (R)",    str.tostring(maxDDR, "#.0"))
+    f_btCell(bt, 10, "In Trade",     posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
 
 // =============================================================================
 // MOBILE — one combined compact panel (WS3): 4 MTF rows + condition + 2 backtest rows.
