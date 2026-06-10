@@ -53,7 +53,7 @@ color PANEL_FLAT_BG = color.new(BRAND_NEUTRAL, 25)
 // =============================================================================
 // INPUTS  (whitelist: profile / style / display / bounded risk only)
 // =============================================================================
-profile   = input.string("Auto", "Profile (signal selectivity)", options = ["Auto", "Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Selectivity of the signal engine. Auto picks a sensible default from the asset class — you can override it anytime. Aggressive = looser trend filter, more signals. Balanced = stricter + higher-timeframe agreement. Conservative = strictest trend + volatility gate.")
+profile   = input.string("Auto", "Profile (signal selectivity)", options = ["Auto", "Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Selectivity of the signal engine. Auto = Balanced (the standard default) — you can override it anytime. Aggressive = looser trend filter, more signals. Balanced = stricter + higher-timeframe agreement. Conservative = strictest trend + volatility gate, fewer but cleaner signals.")
 sens      = input.int(0, "Sensitivity (+ more / − fewer signals)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Fine-tunes selectivity on top of the profile. + = looser gates = more, but noisier signals. − = stricter = fewer, cleaner signals. 0 = pure profile. More signals does not mean more profit — this is a frequency preference, not edge.")
 // Module DE-EXPOSED (MR research concluded over v1/v2/v3, 2026-06-03): MR is reliably good ONLY on
 // genuinely-ranging assets (GBPUSD 1h consistently 1.31->2.61->4.33) and no global range-gate
@@ -134,11 +134,11 @@ styleLb   = style == "Scalp" ? 5   : style == "Intraday" ? 10  : 20    // pullba
 atrFloor  = style == "Scalp" ? 0.5 : style == "Intraday" ? 0.8 : 1.5   // min SL distance in ATR
 atrCap    = style == "Scalp" ? 1.5 : style == "Intraday" ? 3.0 : 5.0   // max SL distance in ATR
 
-// Auto-profile per asset class (WS4): a sensible default by syminfo.type; user override wins.
-// Class-level + principle-based, NOT a per-asset fit. Crypto is noisier / trend-fragile ->
-// Conservative; everything else -> Balanced. (Changes the default backtest on crypto only.)
-autoProfile = syminfo.type == "crypto" ? "Conservative" : "Balanced"
-profileEff  = profile == "Auto" ? autoProfile : profile
+// Auto-profile (CEO decision 2026-06-10): uniform Balanced default for ALL classes — the crypto->
+// Conservative special case is removed (pivot logic: lively + disclosure over suppression; the
+// regression showed no dominance case; the protection job belongs to the caution row + verdict,
+// not the default). User override wins; Conservative remains fully selectable.
+profileEff  = profile == "Auto" ? "Balanced" : profile
 
 baseMult  = profileEff == "Aggressive" ? 2.0  : profileEff == "Balanced" ? 2.5  : 3.0
 adxMin    = profileEff == "Aggressive" ? 18.0 : profileEff == "Balanced" ? 22.0 : 28.0
