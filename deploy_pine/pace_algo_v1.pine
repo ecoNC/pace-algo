@@ -484,7 +484,7 @@ plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(c
 // =============================================================================
 // RECOMMENDED SETTINGS PANEL — regime-based (position user-configurable)
 // =============================================================================
-var table rec = table.new(f_pos(recPosIn), 2, 9, border_width = 1)
+var table rec = table.new(f_pos(recPosIn), 2, 8, border_width = 1)
 if showRec and barstate.islast
     recProf  = f_regimeRec(adxVal)
     // Two SEPARATE axes (lock: live = descriptive, OOS/coverage = authoritative):
@@ -507,13 +507,8 @@ if showRec and barstate.islast
     f_btCell(rec, 4, "RR (regime-guide)",   f_rrRec(adxVal))
     f_btCell(rec, 5, "Sens (regime-guide)", f_sensRec(adxVal))
     f_btCell(rec, 6, "Your profile",   matchTxt)
-    // Honest edge-status (PIVOT 2026-06-10: edge modules parked; no module pointer). Live backtest is
-    // descriptive only -- never an edge-claim (honesty floor). Class-awareness is a backlog item, not here.
-    covTxt = "Live-Backtest deskriptiv - kein validierter Edge-Claim"
-    table.cell(rec, 0, 7, "Edge-Status", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
-    table.cell(rec, 1, 7, covTxt,        text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
-    table.cell(rec, 0, 8, "Regime/Backtest = deskriptiv - validierter Edge nur in Modulen", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 20), text_size = size.tiny)
-    table.cell(rec, 1, 8, "", bgcolor = color.new(color.gray, 20))
+    table.cell(rec, 0, 7, "Regime + Backtest = deskriptiv, keine Garantie", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 20), text_size = size.tiny)
+    table.cell(rec, 1, 7, "", bgcolor = color.new(color.gray, 20))
 
 // =============================================================================
 // LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
@@ -528,6 +523,21 @@ tD   = f_tfTrend("D")
 tW   = f_tfTrend("W")
 tM   = f_tfTrend("M")
 mtfCons = t1 + t5 + t15 + t30 + t60 + t240 + tD + tW + tM
+
+// =============================================================================
+// SIGNAL GRADE A/B/C (backlog a) — regime strength (ADX) + MTF confluence.
+// DESCRIPTIVE conviction tag, NOT a win-probability claim (honesty floor). Ops-cheap:
+// reuses adxVal + the t1..tM trends already computed above; no new request.security.
+// =============================================================================
+alignLong  = (t1>0?1:0)+(t5>0?1:0)+(t15>0?1:0)+(t30>0?1:0)+(t60>0?1:0)+(t240>0?1:0)+(tD>0?1:0)+(tW>0?1:0)+(tM>0?1:0)
+alignShort = (t1<0?1:0)+(t5<0?1:0)+(t15<0?1:0)+(t30<0?1:0)+(t60<0?1:0)+(t240<0?1:0)+(tD<0?1:0)+(tW<0?1:0)+(tM<0?1:0)
+aligned    = openedLong ? alignLong : openedShort ? alignShort : 0
+sigGrade   = (adxVal >= 25 and aligned >= 6) ? "A" : (adxVal >= 18 and aligned >= 4) ? "B" : "C"
+gradeCol   = sigGrade == "A" ? color.new(color.teal, 0) : sigGrade == "B" ? color.new(color.orange, 0) : color.new(color.gray, 0)
+if showSig and vizOK and (openedLong or openedShort) and barstate.isconfirmed
+    label.new(bar_index, openedLong ? low : high, sigGrade, yloc = yloc.price,
+              style = openedLong ? label.style_label_up : label.style_label_down,
+              color = color.new(color.black, 100), textcolor = gradeCol, size = size.small)
 
 var table mt = table.new(f_pos(mtfPosIn), 2, 11, border_width = 1)
 if showMTF and barstate.islast
