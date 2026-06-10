@@ -487,29 +487,32 @@ plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(c
 var table rec = table.new(f_pos(recPosIn), 2, 9, border_width = 1)
 if showRec and barstate.islast
     recProf  = f_regimeRec(adxVal)
-    // Verdict is COVERAGE-based, NOT live-backtest-driven (lock: live = descriptive, OOS/coverage = authoritative).
-    // The live PF stays in the Backtest panel as descriptive context only; it does NOT gate the verdict
-    // (a regime-lucky PF>1 is not an edge, and "Backtest<1 -> WAIT" wrongly implies ">1 -> GO").
-    // Tier-A carries no validated edge BY DESIGN — the validated edge lives in the standalone module indicators.
-    _isFx    = syminfo.type == "forex"
-    verdict  = _isFx ? "Edge-Modul: PaceAlgo FX" : "Tool-only - kein validierter Edge"
-    volState = atrPctl > 0.90 ? "High" : atrPctl < 0.20 ? "Low" : "Normal"
-    recCol   = _isFx ? color.new(color.teal, 0) : color.new(color.orange, 0)
-    matchTxt = profile == recProf ? profile + " (regime-match)" : profile
+    // Two SEPARATE axes (lock: live = descriptive, OOS/coverage = authoritative):
+    //  - Verdict = REGIME (forward-looking): "is this chart in a tradeable regime NOW?" Ranging -> WAIT;
+    //    trend -> regime-based profile guide. f_regimeRec is regime-derived, NOT fitted to past P/L (picking
+    //    the best live-PF profile would be an in-sample optimizer = locked-forbidden, + 3x backtest ops).
+    //  - Coverage = the separate row below: where validated edge lives (module pointer) vs tool-only.
+    //  Live backtest PF stays descriptive in the Backtest panel; it drives NEITHER axis.
+    _isFx     = syminfo.type == "forex"
+    isRanging = adxVal < 18
+    verdict   = isRanging ? "WAIT - kein klarer Trend" : "Regime-Guide: " + recProf
+    volState  = atrPctl > 0.90 ? "High" : atrPctl < 0.20 ? "Low" : "Normal"
+    recCol    = isRanging ? color.new(color.orange, 0) : color.new(color.teal, 0)
+    matchTxt  = profile == recProf ? profile + " (regime-match)" : profile
     table.cell(rec, 0, 0, "Recommended", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
     table.cell(rec, 1, 0, "PaceAlgo",    text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)
     f_btCell(rec, 1, "Trend (ADX)", str.tostring(adxVal, "#.0") + (adxVal >= 18 ? " trending" : " ranging"))
     f_btCell(rec, 2, "Volatility",  volState)
-    table.cell(rec, 0, 3, "Verdict",  text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
+    table.cell(rec, 0, 3, "Verdict (Regime)", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
     table.cell(rec, 1, 3, verdict,    text_color = color.white, bgcolor = recCol,                    text_size = tsz)
     f_btCell(rec, 4, "RR (regime-guide)",   f_rrRec(adxVal))
     f_btCell(rec, 5, "Sens (regime-guide)", f_sensRec(adxVal))
     f_btCell(rec, 6, "Your profile",   matchTxt)
     // Edge-module discoverability bridge (display-only; validated edge lives in standalone module indicators):
-    fxHint = _isFx ? "FX-Chart -> 'PaceAlgo FX' dazuladen" : "FX-Majors -> 'PaceAlgo FX'"
-    fxCol  = _isFx ? color.new(color.teal, 0) : color.new(color.gray, 12)
-    table.cell(rec, 0, 7, "Edge-Modul", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
-    table.cell(rec, 1, 7, fxHint,       text_color = color.white, bgcolor = fxCol,                     text_size = tsz)
+    covTxt = _isFx ? "Edge-Modul: 'PaceAlgo FX' dazuladen" : "Tool-only - kein validierter Edge"
+    covCol = _isFx ? color.new(color.teal, 0) : color.new(color.gray, 12)
+    table.cell(rec, 0, 7, "Coverage", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
+    table.cell(rec, 1, 7, covTxt,     text_color = color.white, bgcolor = covCol,                     text_size = tsz)
     table.cell(rec, 0, 8, "Regime/Backtest = deskriptiv - validierter Edge nur in Modulen", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 20), text_size = size.tiny)
     table.cell(rec, 1, 8, "", bgcolor = color.new(color.gray, 20))
 
