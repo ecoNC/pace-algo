@@ -83,7 +83,7 @@ runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Ex
 layout    = input.string("Desktop", "Layout", options = ["Desktop", "Mobile", "Minimal"], group = "Display", tooltip = "Desktop = three full panels. Mobile = one compact combined panel that fits a phone screen. Minimal = signals and levels only, no panels (clean charts / screenshots).")
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
 quietOnWait = input.bool(false, "Quiet when conditions aren't aligned", group = "Display", tooltip = "Opt-in, default off. On: when the chart is ranging, new signals / levels / zones are hidden for a calmer chart. Panels and backtest are unaffected — purely visual.")
-showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
+showLvls  = input.bool(false, "Show Entry / SL / TP lines",  group = "Display", tooltip = "Thin price-level lines for the running trade. Off by default — the filled TP/SL zone boxes + price tags already show the levels; the lines just double up. Turn on if you prefer line markers.")
 showZones = input.bool(true,  "Show TP/SL zones (boxes)",    group = "Display")
 showPrices = input.bool(true, "Show SL/TP price tags",       group = "Display", tooltip = "Prints the exact SL and TP2 price next to each trade's zone. Visual only - does not affect signals or backtest.")
 showTrend = input.bool(true,  "Show trend baseline",         group = "Display")
@@ -111,7 +111,8 @@ isMinLayout  = layout == "Minimal"
 eShowMTF    = isDeskLayout and showMTF
 eShowBT     = isDeskLayout and showBT
 eShowRec    = isDeskLayout and showRec
-eShowZones  = showZones and not isMinLayout          // zones = part of "levels"; off in Minimal screenshots
+eShowZones  = showZones                              // filled zone boxes = primary trade visual; shown in all layouts
+eShowLvls   = showLvls and not isMinLayout           // thin Entry/SL/TP lines: never in Minimal (clean screenshots)
 eShowPrices = showPrices and isDeskLayout            // price tags: desktop only (mobile/minimal stay clean)
 eShowHist   = showHist and isDeskLayout
 
@@ -525,10 +526,10 @@ if posDir != 0 and not na(tp1Lbl)
 plotshape(showSig and openedLong  and vizOK, title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(BRAND_BULL, 0), text = "BUY",  textcolor = color.white, size = size.small)
 plotshape(showSig and openedShort and vizOK, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(BRAND_BEAR, 0),  text = "SELL", textcolor = color.white, size = size.small)
 
-plot(showLvls and posDir != 0 and vizOK ? entryP : na, "Entry", color = color.new(BRAND_ACCENT, 0),  style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 and vizOK ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(BRAND_BEAR, 0), style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 and vizOK and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(BRAND_BULL, 50), style = plot.style_linebr, linewidth = 1)
-plot(showLvls and posDir != 0 and vizOK ? tp2P   : na, "TP2",   color = color.new(BRAND_BULL, 0), style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK ? entryP : na, "Entry", color = color.new(BRAND_ACCENT, 0),  style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(BRAND_BEAR, 0), style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(BRAND_BULL, 50), style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK ? tp2P   : na, "TP2",   color = color.new(BRAND_BULL, 0), style = plot.style_linebr, linewidth = 1)
 plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(BRAND_BULL, 40) : color.new(BRAND_BEAR, 40), linewidth = 2)
 
 // =============================================================================
@@ -625,6 +626,8 @@ if eShowBT and barstate.islast
 var table mob = table.new(f_pos(mtfPosIn), 2, 8, border_width = 1)
 if isMobLayout and barstate.islast
     mPf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+    mTot   = wins + losses
+    mWr    = mTot > 0 ? 100.0 * wins / mTot : 0.0
     mRange = adxVal < 18
     mProf  = f_regimeRec(adxVal)
     mCond  = mRange ? "Stay out" : "Aligned — " + mProf
@@ -639,8 +642,8 @@ if isMobLayout and barstate.islast
     table.cell(mob, 1, 5, mCond,        text_color = BRAND_TEXT,     bgcolor = mCol,          text_size = size.tiny)
     table.cell(mob, 0, 6, "Net PF",     text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
     table.cell(mob, 1, 6, mPf >= 999 ? "inf" : str.tostring(mPf, "#.00"), text_color = BRAND_TEXT, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
-    table.cell(mob, 0, 7, "TP2/Tr/BE/L", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
-    table.cell(mob, 1, 7, str.tostring(nTP2) + "/" + str.tostring(nTrail) + "/" + str.tostring(nBE) + "/" + str.tostring(nLoss), text_color = BRAND_TEXT, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 0, 7, "Win Rate", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 1, 7, str.tostring(mWr, "#.0") + "%", text_color = BRAND_TEXT, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
 
 // =============================================================================
 // ALERTS
