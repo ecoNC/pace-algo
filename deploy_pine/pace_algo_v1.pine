@@ -51,7 +51,7 @@ color PANEL_FLAT_BG = color.new(BRAND_NEUTRAL, 25)
 // =============================================================================
 // INPUTS  (whitelist: profile / style / display / bounded risk only)
 // =============================================================================
-profile   = input.string("Balanced", "Profile (signal selectivity)", options = ["Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Selectivity of the signal engine. Aggressive = looser trend filter, more signals. Balanced = stricter + higher-timeframe agreement. Conservative = strictest trend + volatility gate.")
+profile   = input.string("Auto", "Profile (signal selectivity)", options = ["Auto", "Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Selectivity of the signal engine. Auto picks a sensible default from the asset class — you can override it anytime. Aggressive = looser trend filter, more signals. Balanced = stricter + higher-timeframe agreement. Conservative = strictest trend + volatility gate.")
 sens      = input.int(0, "Sensitivity (+ more / − fewer signals)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Fine-tunes selectivity on top of the profile. + = looser gates = more, but noisier signals. − = stricter = fewer, cleaner signals. 0 = pure profile. More signals does not mean more profit — this is a frequency preference, not edge.")
 // Module DE-EXPOSED (MR research concluded over v1/v2/v3, 2026-06-03): MR is reliably good ONLY on
 // genuinely-ranging assets (GBPUSD 1h consistently 1.31->2.61->4.33) and no global range-gate
@@ -131,7 +131,11 @@ styleLb   = style == "Scalp" ? 5   : style == "Intraday" ? 10  : 20    // pullba
 atrFloor  = style == "Scalp" ? 0.5 : style == "Intraday" ? 0.8 : 1.5   // min SL distance in ATR
 atrCap    = style == "Scalp" ? 1.5 : style == "Intraday" ? 3.0 : 5.0   // max SL distance in ATR
 
-profileEff = profile   // (WS4 will make this asset-class aware; here = the raw profile)
+// Auto-profile per asset class (WS4): a sensible default by syminfo.type; user override wins.
+// Class-level + principle-based, NOT a per-asset fit. Crypto is noisier / trend-fragile ->
+// Conservative; everything else -> Balanced. (Changes the default backtest on crypto only.)
+autoProfile = syminfo.type == "crypto" ? "Conservative" : "Balanced"
+profileEff  = profile == "Auto" ? autoProfile : profile
 
 baseMult  = profileEff == "Aggressive" ? 2.0  : profileEff == "Balanced" ? 2.5  : 3.0
 adxMin    = profileEff == "Aggressive" ? 18.0 : profileEff == "Balanced" ? 22.0 : 28.0
@@ -553,6 +557,10 @@ if eShowRec and barstate.islast
     f_btCell(rec, 4, "Suggested RR",  f_rrRec(adxVal))
     f_btCell(rec, 5, "Sensitivity",   f_sensRec(adxVal))
     f_btCell(rec, 6, "Profile",       matchTxt)
+    // WS4 TF-guard: calm steering line on sub-5m charts (no block, no warning red)
+    if timeframe.in_seconds() < 300
+        table.cell(rec, 0, 7, "Note", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+        table.cell(rec, 1, 7, "Best results on 15m+ timeframes", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
 
 // =============================================================================
 // LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
@@ -586,12 +594,16 @@ if eShowMTF and barstate.islast
 // =============================================================================
 // LAYER 3 — LIVE BACKTEST PANEL (PF is the headline; outcomes split honestly)
 // =============================================================================
-var table bt = table.new(f_pos(btPosIn), 2, 10, border_width = 1)
+var table bt = table.new(f_pos(btPosIn), 2, 11, border_width = 1)
 if eShowBT and barstate.islast
     total = wins + losses
     pf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
     wr    = total > 0 ? 100.0 * wins / total : 0.0
     avgR  = total > 0 ? equityR / total : 0.0
+    // TP1-inclusive hit rate (WS4 outcome-framing): share of trades that banked at least
+    // the TP1 half (TP2 + runner-trail + break-even). Multi-TP legitimately produces many
+    // partial wins — this makes that visible. PF stays the headline.
+    hitRate = total > 0 ? 100.0 * (nTP2 + nTrail + nBE) / total : 0.0
     table.cell(bt, 0, 0, "Backtest", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
     table.cell(bt, 1, 0, profileEff + " / " + style + (sens != 0 ? " / S" + str.tostring(sens) : ""), text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
     f_btCell(bt, 1, "Net PF",      pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
@@ -599,10 +611,11 @@ if eShowBT and barstate.islast
     f_btCell(bt, 3, "Trades",      str.tostring(total))
     f_btCell(bt, 4, "TP2 / Trail", str.tostring(nTP2) + " / " + str.tostring(nTrail))
     f_btCell(bt, 5, "BE / Loss",   str.tostring(nBE) + " / " + str.tostring(nLoss))
-    f_btCell(bt, 6, "Win Rate",    str.tostring(wr, "#.0") + "%")
-    f_btCell(bt, 7, "Total R",     str.tostring(equityR, "#.0"))
-    f_btCell(bt, 8, "Max DD (R)",  str.tostring(maxDDR, "#.0"))
-    f_btCell(bt, 9, "In Trade",    posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
+    f_btCell(bt, 6, "Hit Rate (TP1+)", str.tostring(hitRate, "#.0") + "%")
+    f_btCell(bt, 7, "Win Rate",    str.tostring(wr, "#.0") + "%")
+    f_btCell(bt, 8, "Total R",     str.tostring(equityR, "#.0"))
+    f_btCell(bt, 9, "Max DD (R)",  str.tostring(maxDDR, "#.0"))
+    f_btCell(bt, 10, "In Trade",   posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
 
 // =============================================================================
 // MOBILE — one combined compact panel (WS3): 4 MTF rows + condition + 2 backtest rows.
