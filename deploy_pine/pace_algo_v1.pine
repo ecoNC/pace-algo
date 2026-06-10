@@ -524,21 +524,6 @@ tW   = f_tfTrend("W")
 tM   = f_tfTrend("M")
 mtfCons = t1 + t5 + t15 + t30 + t60 + t240 + tD + tW + tM
 
-// =============================================================================
-// SIGNAL GRADE A/B/C (backlog a) — regime strength (ADX) + MTF confluence.
-// DESCRIPTIVE conviction tag, NOT a win-probability claim (honesty floor). Ops-cheap:
-// reuses adxVal + the t1..tM trends already computed above; no new request.security.
-// =============================================================================
-alignLong  = (t1>0?1:0)+(t5>0?1:0)+(t15>0?1:0)+(t30>0?1:0)+(t60>0?1:0)+(t240>0?1:0)+(tD>0?1:0)+(tW>0?1:0)+(tM>0?1:0)
-alignShort = (t1<0?1:0)+(t5<0?1:0)+(t15<0?1:0)+(t30<0?1:0)+(t60<0?1:0)+(t240<0?1:0)+(tD<0?1:0)+(tW<0?1:0)+(tM<0?1:0)
-aligned    = openedLong ? alignLong : openedShort ? alignShort : 0
-sigGrade   = (adxVal >= 25 and aligned >= 6) ? "A" : (adxVal >= 18 and aligned >= 4) ? "B" : "C"
-gradeCol   = sigGrade == "A" ? color.new(color.teal, 0) : sigGrade == "B" ? color.new(color.orange, 0) : color.new(color.gray, 0)
-if showSig and vizOK and (openedLong or openedShort) and barstate.isconfirmed
-    label.new(bar_index, openedLong ? low : high, sigGrade, yloc = yloc.price,
-              style = openedLong ? label.style_label_up : label.style_label_down,
-              color = color.new(color.black, 100), textcolor = gradeCol, size = size.small)
-
 var table mt = table.new(f_pos(mtfPosIn), 2, 11, border_width = 1)
 if showMTF and barstate.islast
     table.cell(mt, 0, 0, "MTF Trend", text_color = color.white, bgcolor = color.new(color.blue, 30), text_size = tsz)

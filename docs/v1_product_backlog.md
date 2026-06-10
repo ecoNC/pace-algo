@@ -13,15 +13,19 @@ Alle Schätzungen unten sind grob + VOR Build per Draft-Probe zu bestätigen. **
 
 ## Priorität 1
 
-### (a) Signal-Grading A/B/C je Signal
-**Was:** Jedes Buy/Sell-Signal bekommt eine Güte-Note (A/B/C) aus **Regime-Stärke (ADX) + MTF-Confluence**
-(wie viele TFs im Dashboard stimmen mit der Signalrichtung). Anzeige als Suffix am Label („BUY A" / „SELL C").
-**Ops-Schätzung:** sehr billig — reine Vergleiche auf **schon berechneten Serien** (adxVal, MTF-Trends, ATR-Pctile),
-keine neuen `request.security`. ~+30–80 ops (~1–2% Budget). Vor Build proben.
-**Effekt auf Messlatte:** HOCH. Trennt A-Setups (klarer Trend + Confluence) sichtbar von C-Setups (Chop) →
-WR-Optik ↑, Plausibilität ↑, DD-Gefühl ↑ (User filtert auf A). **Adressiert direkt den BTC-1m-Befund:**
-Verlust-Signale im Chop sind dann sichtbar C-grade, nicht ununterscheidbar von echten Trend-Setups.
-**Guardrail:** Grade ist regime-/confluence-abgeleitet (deskriptiv), KEIN Win-Prob-Claim.
+### ~~(a) Signal-Grading A/B/C~~ — VERWORFEN (Nico, 2026-06-10)
+Keine A/B/C-Notation. Die Selektivität läuft über die **Profile** (Aggressive/Balanced/Conservative) =
+„nur gute Signale" vs „viele, evtl. schlechtere". Ein zweites Güte-Label daneben ist redundant + clutter.
+Gebaut + wieder revertiert. Selektivitäts-Arbeit = (NEU) unten.
+
+### (NEU) Live-Performance / WR breit heben — über Profile + Engine-Selektivität (cross-asset)
+**Ziel:** Mehr Signale gewinnen (WR-Optik ↑), OHNE PF unter ~1.0 breit auszubluten, OHNE In-Sample-Fit.
+**Hebel:** (1) Profile-Gates schärfen (Conservative = strengste Regime/HTF/Session-Bedingungen → höchste WR);
+(2) Entry-Qualität (Pullback-Tiefe, HTF-Alignment, Low-ADX-Ausschluss) verbessern; (3) Multi-TP-Default (d).
+**Methode (Pflicht):** Cross-Asset-Sweep (FX/Index/Crypto/Metall × 5m/15m/1h × 3 Profile) → WR+PF+DD je Kombi
+messen → nur Änderungen behalten, die WR breit heben und PF ≥ ~1.0 halten. Was nur auf einem Asset glänzt = raus.
+**Ehrliche Decke:** Ein Trend-Pullback-System lebt bei ~45–60% WR mit R>1; „die meisten Signale gewinnen immer"
+ist ohne Curve-Fit nicht haltbar. Wir heben WR über **Selektivität** (weniger, bessere), nicht über getunte Targets.
 
 ### (d) Multi-TP-Default-Frage neu bewerten
 **Was:** Unter der neuen Messlatte (DD/WR-Optik zählt) neu entscheiden: `useMTP` (TP1@1R + BE + Trail) vs Single-TP
