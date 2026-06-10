@@ -33,16 +33,18 @@ indicator("PaceAlgo V1", overlay = true, max_boxes_count = 500, max_labels_count
 //   real palette lands: dark-premium defaults (anthracite BG, one accent,
 //   muted bull/bear — no TradingView-default neon).
 // =============================================================================
-color BRAND_BG       = #11151C   // panel background — dark anthracite
-color BRAND_ACCENT   = #5B8CFF   // single brand accent (headers, aligned state, entry)
-color BRAND_BULL     = #3FB68B   // muted premium green
-color BRAND_BEAR     = #E0625A   // muted premium red
-color BRAND_NEUTRAL  = #8A93A6   // slate — "stay out" / flat (NOT warning red)
-color BRAND_TEXT     = #E8EBF2   // primary text
-color BRAND_TEXT_DIM = #9AA3B5   // secondary / muted text
+// Palette sourced from pacealgo.com (2026-06-10): purple brand accent on near-black.
+color BRAND_BG         = #0B0C10   // background — near-black dark anthracite
+color BRAND_ACCENT     = #6F00FF   // core brand accent (aligned state, entry, highlights)
+color BRAND_ACCENT_DIM = #8543F8   // softer/darker accent (panel headers, borders)
+color BRAND_BULL       = #3FB68B   // muted premium green
+color BRAND_BEAR       = #E0625A   // muted premium red
+color BRAND_NEUTRAL    = #8A93A6   // slate — "stay out" / flat (NOT warning red)
+color BRAND_TEXT       = #FFFFFF   // primary text (white)
+color BRAND_TEXT_DIM   = #9AA3B5   // secondary / muted text
 
 // derived panel styling — identical header / cell logic across ALL panels
-color PANEL_HEAD_BG = color.new(BRAND_ACCENT, 78)   // header row tint
+color PANEL_HEAD_BG = color.new(BRAND_ACCENT_DIM, 72)   // header row tint (softer accent)
 color PANEL_CELL_BG = color.new(BRAND_BG, 8)        // body cell
 color PANEL_BULL_BG = color.new(BRAND_BULL, 12)
 color PANEL_BEAR_BG = color.new(BRAND_BEAR, 12)
