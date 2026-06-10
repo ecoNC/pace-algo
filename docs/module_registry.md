@@ -9,6 +9,10 @@ positiv) · netto (Spread/Fees + next-bar-open) · kein Leak · Pine-bit-exact v
 
 ---
 
+> **🔱 PIVOT 2026-06-10:** Die validierten Module unten sind **geparktes IP** (für spätere eigene Trading-Software /
+> Premium-Tier), NICHT das aktuelle Produkt. Produkt = EIN universeller Indikator `pace_algo_v1`. Validierungs-Status
+> bleibt verbucht, nichts gelöscht. Siehe `roadmap_2026-06-01.md` §PIVOT.
+
 ## ✅ MODULE (bestanden, gelockt)
 
 | Modul | Universum | TF | Long | Short | Kennzahlen | Quelle |

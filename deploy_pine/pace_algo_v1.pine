@@ -59,7 +59,7 @@ runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Ex
 // results/benchmark_runs/2026-06-03_ANN024-router-ER_input1_verdict.md.
 
 showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
-quietOnWait = input.bool(false, "Quiet on WAIT (Signale ausblenden wo Verdict=WAIT)", group = "Display", tooltip = "An: auf einem Chart mit WAIT-Verdict (ADX<18 ranging ODER Backtest-PF<1 bei ≥10 Trades) werden KEINE neuen Signale/Level/Zonen mehr gezeichnet — der Indikator bleibt still statt verlustreiche Setups zu zeigen (die Marke spürbar). Der Backtest + das Verdict-Panel rechnen unverändert weiter (ehrlich). Rein visuell.")
+quietOnWait = input.bool(false, "Quiet on WAIT (optional: Signale ausblenden wo Verdict=WAIT)", group = "Display", tooltip = "OPT-IN, Default AUS (Pivot 2026-06-10: Ehrlichkeit über Disclosure, nicht Unterdrückung — Signale werden überall gezeigt, das Panel sagt ehrlich Regime + dass der Backtest deskriptiv ist). An: auf WAIT-Charts (ADX<18 ranging) werden neue Signale/Level/Zonen ausgeblendet, falls du einen ruhigeren Chart willst. Backtest + Panels rechnen unverändert. Rein visuell.")
 showLvls  = input.bool(true,  "Show Entry / SL / TP lines",  group = "Display")
 showZones = input.bool(true,  "Show TP/SL zones (boxes)",    group = "Display")
 showPrices = input.bool(true, "Show SL/TP price tags",       group = "Display", tooltip = "Prints the exact SL and TP2 price next to each trade's zone. Visual only - does not affect signals or backtest.")
@@ -491,9 +491,8 @@ if showRec and barstate.islast
     //  - Verdict = REGIME (forward-looking): "is this chart in a tradeable regime NOW?" Ranging -> WAIT;
     //    trend -> regime-based profile guide. f_regimeRec is regime-derived, NOT fitted to past P/L (picking
     //    the best live-PF profile would be an in-sample optimizer = locked-forbidden, + 3x backtest ops).
-    //  - Coverage = the separate row below: where validated edge lives (module pointer) vs tool-only.
-    //  Live backtest PF stays descriptive in the Backtest panel; it drives NEITHER axis.
-    _isFx     = syminfo.type == "forex"
+    //  - Edge-Status = the row below: honest transparency that the live backtest is DESCRIPTIVE only,
+    //    no validated edge-claim (PIVOT 2026-06-10: edge modules parked as IP; V1 = one universal tool).
     isRanging = adxVal < 18
     verdict   = isRanging ? "WAIT - kein klarer Trend" : "Regime-Guide: " + recProf
     volState  = atrPctl > 0.90 ? "High" : atrPctl < 0.20 ? "Low" : "Normal"
@@ -508,11 +507,11 @@ if showRec and barstate.islast
     f_btCell(rec, 4, "RR (regime-guide)",   f_rrRec(adxVal))
     f_btCell(rec, 5, "Sens (regime-guide)", f_sensRec(adxVal))
     f_btCell(rec, 6, "Your profile",   matchTxt)
-    // Edge-module discoverability bridge (display-only; validated edge lives in standalone module indicators):
-    covTxt = _isFx ? "Edge-Modul: 'PaceAlgo FX' dazuladen" : "Tool-only - kein validierter Edge"
-    covCol = _isFx ? color.new(color.teal, 0) : color.new(color.gray, 12)
-    table.cell(rec, 0, 7, "Coverage", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
-    table.cell(rec, 1, 7, covTxt,     text_color = color.white, bgcolor = covCol,                     text_size = tsz)
+    // Honest edge-status (PIVOT 2026-06-10: edge modules parked; no module pointer). Live backtest is
+    // descriptive only -- never an edge-claim (honesty floor). Class-awareness is a backlog item, not here.
+    covTxt = "Live-Backtest deskriptiv - kein validierter Edge-Claim"
+    table.cell(rec, 0, 7, "Edge-Status", text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
+    table.cell(rec, 1, 7, covTxt,        text_color = color.white, bgcolor = color.new(color.gray, 12), text_size = tsz)
     table.cell(rec, 0, 8, "Regime/Backtest = deskriptiv - validierter Edge nur in Modulen", text_color = color.new(color.gray, 20), bgcolor = color.new(color.gray, 20), text_size = size.tiny)
     table.cell(rec, 1, 8, "", bgcolor = color.new(color.gray, 20))
 

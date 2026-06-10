@@ -4,6 +4,11 @@
 NACH dieser Tabelle — nie umgekehrt. Dies ist die Launch-Glaubwürdigkeits-Grundlage (Daten, kein Bauchgefühl).
 **Version:** 2026-06-09 (FX-NY-ML → **Edge-Validated (live)**: alle 3 Live-Gates zu, per-Symbol-Roster verbucht). Vorher 2026-06-03 (H-EXIT/H-REGIME/Router-Sweeps; harte Signifikanz-Regel).
 
+> **🔱 PIVOT 2026-06-10:** Dieses Dokument ist ab jetzt ein **Research-/IP-Asset**, NICHT mehr der Live-Produkt-Treiber.
+> Das Produkt ist EIN universeller Indikator (`pace_algo_v1`). Die validierten Edge-Module (FX-NY-ML edge-validated,
+> INDEX-DIPBUY, METAL) sind **geparktes IP** für eine spätere eigene Trading-Software / Premium-Tier. Die Einträge
+> unten bleiben als verbuchte Validierungs-Wahrheit erhalten (nichts gelöscht). Siehe `roadmap_2026-06-01.md` §PIVOT.
+
 ## Stati + HARTE Status-Regel (Nico-locked 2026-06-03)
 
 - **`Edge-Validated`** — NUR wenn ALLE drei gelten: (1) **OOS**-Beleg (nie In-Sample),

@@ -1,5 +1,10 @@
 # PaceAlgo — FX Module LOCK (2026-06-01)
 
+> **🔱 PIVOT 2026-06-10:** FX-NY-ML ist **Edge-Validated (live)** — alle 3 Live-Gates zu (whole-chain bit-exact ·
+> Non-Repaint · OOS-Reval per-Symbol/Jahr). Jetzt **GEPARKT als validiertes IP** (Ship-Form `deploy_pine/pace_algo_fx.pine`
+> bleibt). Kein Teil des aktuellen Produkts (= ein universeller `pace_algo_v1`). Reaktivierung für eigene Trading-Software /
+> Premium-Tier. NICHTS löschen. Siehe `roadmap_2026-06-01.md` §PIVOT.
+
 **STATUS: LOCKED.** First validated AI module. Robustness verified (`phase7_fx_lock.py`,
 spec: `results/model_validation/phase7_fx_lock_*/fx_lock.json`). Pine export pending
 (after crypto module per Nico). Commit family: phase3 `9c3a386` → phase4 `615464d` → this.
