@@ -594,7 +594,10 @@ tW   = f_tfTrend("W")
 tM   = f_tfTrend("M")
 mtfCons = t1 + t5 + t15 + t30 + t60 + t240 + tD + tW + tM
 
-var table mt = table.new(f_pos(mtfPosIn), 2, 11, border_width = 1)
+// Created ONLY on Desktop: the mobile compact panel shares this anchor (mtfPosIn), and TV
+// displays just the last-created table per position — an unconditional empty `mob` was
+// silently displacing this panel since WS3 (the "MTF dashboard missing" bug).
+var table mt = isDeskLayout ? table.new(f_pos(mtfPosIn), 2, 11, border_width = 1) : na
 if eShowMTF and barstate.islast
     table.cell(mt, 0, 0, "MTF Trend", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
     table.cell(mt, 1, 0, "PaceAlgo",  text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
@@ -640,7 +643,7 @@ if eShowBT and barstate.islast
 //   Active only when Layout = Mobile. Single slot (uses the MTF-panel position).
 //   Tiny text; price tags + history are already suppressed by the layout gates above.
 // =============================================================================
-var table mob = table.new(f_pos(mtfPosIn), 2, 8, border_width = 1)
+var table mob = isMobLayout ? table.new(f_pos(mtfPosIn), 2, 8, border_width = 1) : na
 if isMobLayout and barstate.islast
     mPf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
     mTot   = wins + losses
