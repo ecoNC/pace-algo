@@ -44,7 +44,7 @@ color BRAND_TEXT       = #FFFFFF   // primary text (white)
 color BRAND_TEXT_DIM   = #9AA3B5   // secondary / muted text
 
 // derived panel styling — identical header / cell logic across ALL panels
-color PANEL_HEAD_BG = color.new(BRAND_ACCENT_DIM, 72)   // header row tint (softer accent)
+color PANEL_HEAD_BG = color.new(BRAND_ACCENT, 72)       // header row tint (PRIMARY accent per brand spec 2026-06-10)
 color PANEL_CELL_BG = color.new(BRAND_BG, 8)        // body cell
 color PANEL_BULL_BG = color.new(BRAND_BULL, 12)
 color PANEL_BEAR_BG = color.new(BRAND_BEAR, 12)
@@ -408,7 +408,7 @@ if posDir != 0 and barstate.isconfirmed
         if not na(tp1Lbl)
             label.delete(tp1Lbl)
         if showSig and vizOK
-            label.new(bar_index, posDir == 1 ? low : high, oTxt, style = posDir == 1 ? label.style_label_up : label.style_label_down, color = color.new(oCol, 15), textcolor = color.white, size = size.tiny)
+            label.new(bar_index, posDir == 1 ? low : high, oTxt, style = posDir == 1 ? label.style_label_up : label.style_label_down, color = color.new(oCol, 15), textcolor = BRAND_TEXT, size = size.tiny)
         tpBox  := na
         slBox  := na
         slLbl  := na
@@ -438,11 +438,11 @@ if posDir == 0 and barstate.isconfirmed
             if not na(tp2P)
                 tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = color.new(BRAND_BULL, 50), border_width = 1, bgcolor = color.new(BRAND_BULL, 82))
         if eShowPrices and vizOK
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),   textcolor = color.white, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),   textcolor = BRAND_TEXT, size = size.small)
             if not na(tp2P)
-                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 10), textcolor = color.white, size = size.small)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 10), textcolor = BRAND_TEXT, size = size.small)
         if showTP1 and mtpOn and vizOK
-            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 45), textcolor = color.white, size = size.small)
+            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 45), textcolor = BRAND_TEXT, size = size.small)
     else if sellSig
         structD  = pbHigh - close
         slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
@@ -461,11 +461,11 @@ if posDir == 0 and barstate.isconfirmed
             if not na(tp2P)
                 tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = color.new(BRAND_BULL, 50), border_width = 1, bgcolor = color.new(BRAND_BULL, 82))
         if eShowPrices and vizOK
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),   textcolor = color.white, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),   textcolor = BRAND_TEXT, size = size.small)
             if not na(tp2P)
-                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_BULL, 10), textcolor = color.white, size = size.small)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_BULL, 10), textcolor = BRAND_TEXT, size = size.small)
         if showTP1 and mtpOn and vizOK
-            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_up, color = color.new(BRAND_BULL, 45), textcolor = color.white, size = size.small)
+            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_up, color = color.new(BRAND_BULL, 45), textcolor = BRAND_TEXT, size = size.small)
     else if mrLong
         openedLong := true
         posDir   := 1
@@ -479,10 +479,10 @@ if posDir == 0 and barstate.isconfirmed
         entryBar := bar_index
         if eShowZones and vizOK
             slBox := box.new(entryBar, entryP, bar_index, slP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
-            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT, 82))
+            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT_DIM, 82))
         if eShowPrices and vizOK
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),  textcolor = color.white, size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_ACCENT, 10), textcolor = color.white, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),  textcolor = BRAND_TEXT, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_ACCENT, 10), textcolor = BRAND_TEXT, size = size.small)
     else if mrShort
         openedShort := true
         posDir   := -1
@@ -496,10 +496,10 @@ if posDir == 0 and barstate.isconfirmed
         entryBar := bar_index
         if eShowZones and vizOK
             slBox := box.new(entryBar, slP, bar_index, entryP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
-            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT, 82))
+            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT_DIM, 82))
         if eShowPrices and vizOK
-            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),  textcolor = color.white, size = size.small)
-            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_ACCENT, 10), textcolor = color.white, size = size.small)
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),  textcolor = BRAND_TEXT, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_ACCENT, 10), textcolor = BRAND_TEXT, size = size.small)
 
 // --- while in trade: extend zone boxes -------------------------------------
 if posDir != 0 and eShowZones
@@ -525,8 +525,8 @@ if posDir != 0 and not na(tp1Lbl)
 // =============================================================================
 // PLOTTING
 // =============================================================================
-plotshape(showSig and openedLong  and vizOK, title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(BRAND_BULL, 0), text = "BUY",  textcolor = color.white, size = size.small)
-plotshape(showSig and openedShort and vizOK, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(BRAND_BEAR, 0),  text = "SELL", textcolor = color.white, size = size.small)
+plotshape(showSig and openedLong  and vizOK, title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(BRAND_BULL, 0), text = "BUY",  textcolor = BRAND_TEXT, size = size.small)
+plotshape(showSig and openedShort and vizOK, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(BRAND_BEAR, 0),  text = "SELL", textcolor = BRAND_TEXT, size = size.small)
 
 plot(eShowLvls and posDir != 0 and vizOK ? entryP : na, "Entry", color = color.new(BRAND_ACCENT, 0),  style = plot.style_linebr, linewidth = 1)
 plot(eShowLvls and posDir != 0 and vizOK ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(BRAND_BEAR, 0), style = plot.style_linebr, linewidth = 1)
