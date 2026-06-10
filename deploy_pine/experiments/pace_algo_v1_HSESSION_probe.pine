@@ -1,0 +1,792 @@
+//@version=6
+// =============================================================================
+// PaceAlgo V1 — Rule-Based Adaptive Trend Core
+// (c) 2026 ecoNC. Proprietary. All rights reserved.
+//
+//  SIGNAL PHILOSOPHY (honest, no curve-fitting):
+//   The tool is SELECTIVE. It only fires when 3 conditions align:
+//    1. Regime is trending      -> ADX above a profile threshold (skip chop)
+//    2. Higher-TF trend agrees  -> trade only WITH the dominant direction
+//                                  (TRUE higher resolution via request.security,
+//                                  lookahead_off + [1] = non-repaint, replay-verified)
+//    3. Pullback continuation   -> enter on a retracement inside the trend
+//
+//  EXIT MODEL (Multi-TP, CEO-locked 2026-06-02):
+//   TP1 fixed at 1R (NEVER tighter — sub-1R token targets are win-rate inflation
+//   and are rejected, HANDOFF §15). At TP1: bank half, stop to break-even (toggle
+//   tp1ToBE: off keeps the stop at the original SL, decoupled from BE), runner
+//   trails (SuperTrend ratchet) to TP2 = RR x SL. Runner cap is regime-routed
+//   (ANN-024): Capped is the only live behaviour; Extended/Free branches stay in
+//   code for the H-REGIME router (H-EXIT 2026-06-03 proved the cap is regime-dependent,
+//   NOT a safe user toggle). Outcomes are reported SPLIT (TP2/Trail/BE/Loss);
+//   PF / expectancy is the headline metric, win rate is derived. Multi-TP improves
+//   the payoff DISTRIBUTION — it does not create edge and is not marketed as such.
+//   SL = pullback structure, clamped to a style-dependent ATR band.
+//   Scale-invariant by construction; commits on confirmed bars only.
+// =============================================================================
+indicator("PaceAlgo HSESSION Probe", overlay = true, max_boxes_count = 500, max_labels_count = 500, max_lines_count = 500)
+// ============================================================================
+// H-SESSION PROBE (ANN-027, research-only — do NOT paste into production v1).
+// Splits the IDENTICAL signal stream into two buckets by the ENTRY bar's UTC
+// time-of-day: IN vs OUT of the asset class's pre-registered main session.
+// No signal gating; engine byte-identical to pace_algo_v1 → production panel
+// numbers unchanged. Adds one read-only "H-SESSION" table (IN vs OUT).
+// Pre-registered UTC windows (minutes-of-day), fixed BEFORE seeing results:
+//   FX (London+NY)         08:00-21:00  [480-1260]
+//   Idx US500/NAS100 (RTH) 14:30-21:00  [870-1260]
+//   Idx GER40 (Xetra)      08:00-16:30  [480- 990]
+//   Idx JPN225 (Tokyo)     00:00-06:00  [  0- 360]
+//   Metal GOLD/SILVER (US) 13:00-21:00  [780-1260]
+//   Crypto (CONTROL, US eq)13:00-21:00  [780-1260]  expect weakest effect
+// Fixed UTC (no DST shift) by design = no per-period fitting. Daily TFs N/A.
+// ============================================================================
+
+// =============================================================================
+// BRAND TOKENS — single source of visual truth (match pacealgo.com)
+//   Nico swaps these hex values for the exact Framer palette; everything below
+//   references ONLY these tokens (no scattered color.blue/gray/teal). Until the
+//   real palette lands: dark-premium defaults (anthracite BG, one accent,
+//   muted bull/bear — no TradingView-default neon).
+// =============================================================================
+// Palette sourced from pacealgo.com (2026-06-10): purple brand accent on near-black.
+color BRAND_BG         = #0B0C10   // background — near-black dark anthracite
+color BRAND_ACCENT     = #6F00FF   // core brand accent (aligned state, entry, highlights)
+color BRAND_ACCENT_DIM = #8543F8   // softer/darker accent (panel headers, borders)
+color BRAND_BULL       = #3FB68B   // muted premium green
+color BRAND_BEAR       = #E0625A   // muted premium red
+color BRAND_NEUTRAL    = #8A93A6   // slate — "stay out" / flat (NOT warning red)
+color BRAND_TEXT       = #FFFFFF   // primary text (white)
+color BRAND_TEXT_DIM   = #9AA3B5   // secondary / muted text
+
+// derived panel styling — identical header / cell logic across ALL panels
+color PANEL_HEAD_BG = color.new(BRAND_ACCENT, 72)       // header row tint (PRIMARY accent per brand spec 2026-06-10)
+color PANEL_CELL_BG = color.new(BRAND_BG, 8)        // body cell
+color PANEL_BULL_BG = color.new(BRAND_BULL, 12)
+color PANEL_BEAR_BG = color.new(BRAND_BEAR, 12)
+color PANEL_FLAT_BG = color.new(BRAND_NEUTRAL, 25)
+
+// =============================================================================
+// INPUTS  (whitelist: profile / style / display / bounded risk only)
+// =============================================================================
+profile   = input.string("Auto", "Profile (signal selectivity)", options = ["Auto", "Aggressive", "Balanced", "Conservative"], group = "Strategy", tooltip = "Selectivity of the signal engine. Auto = Balanced (the standard default) — you can override it anytime. Aggressive = looser trend filter, more signals. Balanced = stricter + higher-timeframe agreement. Conservative = strictest trend + volatility gate, fewer but cleaner signals.")
+sens      = input.int(0, "Sensitivity (+ more / − fewer signals)", minval = -2, maxval = 2, group = "Strategy", tooltip = "Fine-tunes selectivity on top of the profile. + = looser gates = more, but noisier signals. − = stricter = fewer, cleaner signals. 0 = pure profile. More signals does not mean more profit — this is a frequency preference, not edge.")
+// Module DE-EXPOSED (MR research concluded over v1/v2/v3, 2026-06-03): MR is reliably good ONLY on
+// genuinely-ranging assets (GBPUSD 1h consistently 1.31->2.61->4.33) and no global range-gate
+// (ADX<18 / +htfFlat / +basisFlat) keeps it out of trend-fades on trending assets (BTC/EURUSD/NAS100).
+// The wall is range-DETECTION (same unsolved H-REGIME problem), not filter tuning. MR logic kept;
+// re-enable only with a real range-detector or per-validated-class routing. See ANN-025, MR validation doc.
+moduleSel = "Trend-Core"   // research/router-driven; values: "Trend-Core" | "Mean-Reversion" | "Both"
+style     = input.string("Intraday", "Trading Style (trade horizon)", options = ["Scalp", "Intraday", "Swing"], group = "Risk", tooltip = "Scales stop/target distances to your holding style. Scalp = tight stops, quick resolutions. Swing = wider structure stops, larger targets, longer trades. Does NOT change which signals fire.")
+rrRatio   = input.float(1.2, "Risk / Reward Ratio (TP2)", minval = 1.0, maxval = 2.5, step = 0.1, group = "Risk", tooltip = "Final target distance as a multiple of the Stop-Loss distance. With Multi-TP on, this is the runner's target (TP2).")
+slMult    = input.float(1.0, "Stop-Loss Width", minval = 0.5, maxval = 1.5, step = 0.1, group = "Risk", tooltip = "Scales the structure-based stop. Higher = wider stop, fewer noise stop-outs.")
+useMTP    = input.bool(true, "Multi-TP (TP1 @1R + Break-Even + Trail)", group = "Risk", tooltip = "Banks half the position at exactly 1R, moves the stop to break-even and lets the runner trail toward TP2. Improves the payoff distribution; profit factor is the headline metric. TP1 is fixed at 1R by design - tighter token targets would inflate the win rate and are rejected.")
+tp1ToBE   = input.bool(true, "Move stop to break-even at TP1", group = "Risk", tooltip = "On (default): at TP1 half the position is banked and the stop moves to entry (break-even). Off: TP1 still banks half but the stop stays at the original SL — fewer break-even whipsaws, more runner risk. Changes the backtest when off.")
+showTP1   = input.bool(false, "Show TP1 price (live trade)", group = "Risk", tooltip = "Shows the TP1 level (1R) with a price tag for the running trade, until TP1 is reached.")
+// Runner cap is REGIME-ROUTED (ANN-024), NOT a user toggle. H-EXIT (2026-06-03) proved the
+// best runner cap is regime-dependent: smooth trend wants to run (US500 D PF 1.38->3.13),
+// chop wants to cap (NAS100 4h 1.38->0.55). A naked "bigger gains" switch is a footgun that
+// turns a profitable system into a losing one in the wrong regime — the exact opposite of the
+// brand. The Extended 3R / Free trail branches below STAY in code, to be flipped by the
+// H-REGIME router (Trend -> Extended/Free, Chop/Range -> Capped). Until that ships, Capped is
+// the only live behaviour. See ANN-024, roadmap §7, results/.../2026-06-03_H-EXIT_sweep_verdict.md
+runnerMode = "Capped @ RR"   // router-driven later; values: "Capped @ RR" | "Extended 3R" | "Free trail"
+// Exit/regime-knob track CLOSED 2026-06-03 after 3 negatives (H-EXIT, H-REGIME-ER, ANN-024
+// router input #1 = ER-runner-routing). ER routing fails the gate even scoped per class (index +
+// metal class-medians both regress at the principled quantile); daily samples too thin to validate
+// exit-routing, intraday routing hurts. Trend-Core sits at its honest PF ceiling. ER + classSel
+// scaffolding preserved in git commit 5ec23ae for the Confluence/MR router input. See
+// results/benchmark_runs/2026-06-03_ANN024-router-ER_input1_verdict.md.
+
+layout    = input.string("Desktop", "Layout", options = ["Desktop", "Mobile", "Minimal"], group = "Display", tooltip = "Desktop = three full panels. Mobile = one compact combined panel that fits a phone screen. Minimal = signals and levels only, no panels (clean charts / screenshots).")
+showSig   = input.bool(true,  "Show Buy/Sell labels",        group = "Display")
+quietOnWait = input.bool(false, "Quiet when conditions aren't aligned", group = "Display", tooltip = "Opt-in, default off. On: when the chart is ranging, new signals / levels / zones are hidden for a calmer chart. Panels and backtest are unaffected — purely visual.")
+showLvls  = input.bool(false, "Show Entry / SL / TP lines",  group = "Display", tooltip = "Thin price-level lines for the running trade. Off by default — the filled TP/SL zone boxes + price tags already show the levels; the lines just double up. Turn on if you prefer line markers.")
+showZones = input.bool(true,  "Show TP/SL zones (boxes)",    group = "Display")
+showPrices = input.bool(true, "Show SL/TP price tags",       group = "Display", tooltip = "Prints the exact SL and TP2 price next to each trade's zone. Visual only - does not affect signals or backtest.")
+showTrend = input.bool(true,  "Show trend baseline",         group = "Display")
+showMTF   = input.bool(true,  "Show MTF trend dashboard",    group = "Display")
+showBT    = input.bool(true,  "Show backtest panel",         group = "Display")
+showRec   = input.bool(true,  "Show market condition panel",  group = "Display")
+showHist  = input.bool(false, "History: keep price tags on past trades", group = "Display", tooltip = "Past trades always show their TP/SL zone boxes plus an outcome label (TP / SL / BE). Off (default): without price tags — cleaner, especially on mobile. On: also freezes the SL/TP price tags per trade.")
+txtSize   = input.string("Small", "Panel text size", options = ["Tiny", "Small", "Normal"], group = "Display", tooltip = "Tiny for small screens / mobile.")
+
+statsFrom = input.time(timestamp("2024-01-01T00:00:00"), "Backtest stats from date", group = "Panels", tooltip = "The backtest panel counts only trades that close on or after this date. Set it to your out-of-sample start (e.g. 2026-01-01) to read that block. Metric only — does not change which signals fire.")
+recPosIn  = input.string("Bottom Left",  "Market condition panel position", options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+mtfPosIn  = input.string("Top Right",    "MTF dashboard position",     options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+btPosIn   = input.string("Bottom Right", "Backtest panel position",    options = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"], group = "Panels")
+
+// panel text size (mobile lever) — referenced by the table helpers below
+tsz = txtSize == "Tiny" ? size.tiny : txtSize == "Normal" ? size.normal : size.small
+
+// layout presets (WS3): Pine can't read screen size -> the user picks. Desktop = three
+// panels; Mobile = one combined compact panel; Minimal = chart-only (signals + levels).
+isDeskLayout = layout == "Desktop"
+isMobLayout  = layout == "Mobile"
+isMinLayout  = layout == "Minimal"
+
+// effective display gates (raw per-panel toggles still respected on Desktop)
+eShowMTF    = isDeskLayout and showMTF
+eShowBT     = isDeskLayout and showBT
+eShowRec    = isDeskLayout and showRec
+eShowZones  = showZones                              // filled zone boxes = primary trade visual; shown in all layouts
+eShowLvls   = showLvls and not isMinLayout           // thin Entry/SL/TP lines: never in Minimal (clean screenshots)
+eShowPrices = showPrices and isDeskLayout            // price tags: desktop only (mobile/minimal stay clean)
+eShowHist   = showHist and isDeskLayout
+
+// =============================================================================
+// PROFILE / STYLE -> internal parameters (fixed; no free curve-fitting inputs)
+// =============================================================================
+baseLen   = 50
+fastLen   = 10            // fast EMA for pullback detection
+atrLen    = 14
+adxLen    = 14
+volLook   = 100
+slopeLen  = 5
+volSens   = 0.6
+
+// trading style -> structure lookback + SL clamp band (bounded presets, no free fit)
+styleLb   = style == "Scalp" ? 5   : style == "Intraday" ? 10  : 20    // pullback structure window
+atrFloor  = style == "Scalp" ? 0.5 : style == "Intraday" ? 0.8 : 1.5   // min SL distance in ATR
+atrCap    = style == "Scalp" ? 1.5 : style == "Intraday" ? 3.0 : 5.0   // max SL distance in ATR
+
+// Auto-profile (CEO decision 2026-06-10): uniform Balanced default for ALL classes — the crypto->
+// Conservative special case is removed (pivot logic: lively + disclosure over suppression; the
+// regression showed no dominance case; the protection job belongs to the caution row + verdict,
+// not the default). User override wins; Conservative remains fully selectable.
+profileEff  = profile == "Auto" ? "Balanced" : profile
+
+baseMult  = profileEff == "Aggressive" ? 2.0  : profileEff == "Balanced" ? 2.5  : 3.0
+adxMin    = profileEff == "Aggressive" ? 18.0 : profileEff == "Balanced" ? 22.0 : 28.0
+useHTF    = profileEff != "Aggressive"
+useVolGate= profileEff == "Conservative"
+
+// Sensitivity fine-tune (user frequency axis on top of the profile; 0 = pure profile = baseline).
+// Higher = looser gates = more (noisier) signals. NOT a profit lever — a frequency preference.
+adxMinEff  = math.max(10.0, math.min(40.0, adxMin  - sens * 2.0))
+baseMultE  = math.max(1.5,  math.min(3.5,  baseMult - sens * 0.2))
+fastLenEff = int(math.max(5, math.min(15, fastLen - sens)))
+
+// multi-TP active only when TP2 is meaningfully beyond TP1 (1R)
+mtpOn     = useMTP and rrRatio > 1.05
+
+// =============================================================================
+// GLOBAL HELPER FUNCTIONS
+// =============================================================================
+f_pos(s) =>
+    s == "Top Left" ? position.top_left : s == "Top Right" ? position.top_right : s == "Middle Left" ? position.middle_left : s == "Middle Right" ? position.middle_right : s == "Bottom Left" ? position.bottom_left : position.bottom_right
+
+f_tfTrend(tf) =>
+    e1 = request.security(syminfo.tickerid, tf, ta.ema(close, 20)[1], lookahead = barmerge.lookahead_off)
+    e2 = request.security(syminfo.tickerid, tf, ta.ema(close, 50)[1], lookahead = barmerge.lookahead_off)
+    e1 > e2 ? 1 : e1 < e2 ? -1 : 0
+
+f_mtfCell(_t, _r, _lbl, _v) =>
+    txt = _v > 0 ? "Bull" : _v < 0 ? "Bear" : "Flat"
+    col = _v > 0 ? PANEL_BULL_BG : _v < 0 ? PANEL_BEAR_BG : PANEL_FLAT_BG
+    table.cell(_t, 0, _r, _lbl, text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+    table.cell(_t, 1, _r, txt,  text_color = BRAND_TEXT,     bgcolor = col,           text_size = tsz)
+
+// tiny-text MTF cell (mobile combined panel forces size.tiny regardless of txtSize)
+f_mtfCellT(_t, _r, _lbl, _v) =>
+    txt = _v > 0 ? "Bull" : _v < 0 ? "Bear" : "Flat"
+    col = _v > 0 ? PANEL_BULL_BG : _v < 0 ? PANEL_BEAR_BG : PANEL_FLAT_BG
+    table.cell(_t, 0, _r, _lbl, text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(_t, 1, _r, txt,  text_color = BRAND_TEXT,     bgcolor = col,           text_size = size.tiny)
+
+f_btCell(_t, _r, _lbl, _val) =>
+    table.cell(_t, 0, _r, _lbl, text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+    table.cell(_t, 1, _r, _val, text_color = BRAND_TEXT,     bgcolor = PANEL_CELL_BG, text_size = tsz)
+
+// regime-based profile recommendation (forward-looking; NOT fitted to past P/L)
+f_regimeRec(_adx) =>
+    _adx < 18 ? "Stay out" : _adx < 22 ? "Aggressive" : _adx < 28 ? "Balanced" : "Conservative"
+
+// regime-based RR suggestion: strong trend carries further -> higher RR pays;
+// weaker trend -> lower RR = structurally higher win rate. Forward-looking only.
+f_rrRec(_adx) =>
+    _adx < 18 ? "-" : _adx < 22 ? "1.0 (max WR)" : _adx < 28 ? "1.2" : "1.5 (strong trend)"
+
+// regime-based sensitivity suggestion (sweep 2026-06-03: chop wants strict/-, clean trend tolerates +)
+f_sensRec(_adx) =>
+    _adx < 18 ? "-2 (Range)" : _adx < 22 ? "-1" : _adx < 28 ? "0" : "+1 (Trend)"
+
+// =============================================================================
+// LAYER 1 — SELECTIVE TREND ENGINE (regime gate + HTF + pullback entries)
+// =============================================================================
+atr       = ta.atr(atrLen)
+baseline  = ta.ema(close, baseLen)
+fastEma   = ta.ema(close, fastLenEff)
+atrPctl   = ta.percentrank(atr, volLook) / 100.0
+[diP, diM, adxVal] = ta.dmi(adxLen, adxLen)
+
+// --- directional regime via adaptive SuperTrend trailing -------------------
+adaptiveMult = baseMultE * (1.0 + volSens * (atrPctl - 0.5))
+upperBasic = baseline + adaptiveMult * atr
+lowerBasic = baseline - adaptiveMult * atr
+var float upper = na
+var float lower = na
+var int   dir   = 1
+upper := na(upper[1]) ? upperBasic : (upperBasic < upper[1] or close[1] > upper[1] ? upperBasic : upper[1])
+lower := na(lower[1]) ? lowerBasic : (lowerBasic > lower[1] or close[1] < lower[1] ? lowerBasic : lower[1])
+dir   := na(dir[1]) ? 1 : (dir[1] == -1 and close > upper[1] ? 1 : (dir[1] == 1 and close < lower[1] ? -1 : dir[1]))
+float trail = dir == 1 ? lower : upper
+
+// --- gates -----------------------------------------------------------------
+// TRUE higher-timeframe gate (non-repaint: [1] + lookahead_off; replay-verified)
+htfRes    = timeframe.in_seconds() <= 900 ? "240" : timeframe.in_seconds() <= 14400 ? "D" : "W"
+htfDir    = f_tfTrend(htfRes)
+htfEma    = ta.ema(close, baseLen * 4)
+htfBull   = close > htfEma and htfEma > htfEma[slopeLen] and htfDir > 0
+htfBear   = close < htfEma and htfEma < htfEma[slopeLen] and htfDir < 0
+// ADX persistence: threshold must hold 3 consecutive bars (suppresses blips)
+trendRaw  = adxVal > adxMinEff
+trending  = trendRaw and trendRaw[1] and trendRaw[2]
+volOK     = atrPctl > 0.20 and atrPctl < 0.90
+
+// --- pullback continuation entries -----------------------------------------
+crossUp   = ta.crossover(close, fastEma)     // resumption after a dip
+crossDn   = ta.crossunder(close, fastEma)    // resumption after a pop
+
+longOK  = dir == 1  and trending and (not useHTF or htfBull) and (not useVolGate or volOK)
+shortOK = dir == -1 and trending and (not useHTF or htfBear) and (not useVolGate or volOK)
+
+trendOn   = moduleSel == "Trend-Core" or moduleSel == "Both"
+mrOn      = moduleSel == "Mean-Reversion" or moduleSel == "Both"
+buySig    = trendOn and longOK  and crossUp and barstate.isconfirmed
+sellSig   = trendOn and shortOK and crossDn and barstate.isconfirmed
+
+// --- Mean-Reversion module (ANN-025): Bollinger band-fade, RANGE regimes only ---
+bbBasis   = ta.sma(close, 20)
+bbDev     = 2.0 * ta.stdev(close, 20)
+bbUpper   = bbBasis + bbDev
+bbLower   = bbBasis - bbDev
+// MR v3 range confirmation: htfFlat only (v2's basisFlat made it too strict, n=4-7). htfFlat
+// (no dominant higher-TF trend to fade into) is the key anti-trend-fade guard from the v2 sweep.
+htfFlat   = not htfBull and not htfBear
+rangeOK   = (not trending) and adxVal < 18.0 and htfFlat
+// close must be on the correct side of the middle so the target (basis) lies in the PROFIT
+// direction — guards against impulse bars that gap from beyond the band to past the middle
+// (those produced mislabeled instant-loss "TP2" exits in v1/v2).
+mrLong    = mrOn and rangeOK and ta.crossover(close, bbLower)  and close < bbBasis and barstate.isconfirmed
+mrShort   = mrOn and rangeOK and ta.crossunder(close, bbUpper) and close > bbBasis and barstate.isconfirmed
+
+// =============================================================================
+// TRADE STATE + LEVELS  (one position at a time; multi-TP exit model)
+// =============================================================================
+var int    posDir   = 0
+var int    posKind  = 0        // 0 = Trend-Core trade, 1 = Mean-Reversion trade (ANN-025)
+var float  entryP   = na
+var float  slP      = na
+var float  tp1P     = na
+var float  tp2P     = na
+var float  runStop  = na       // runner stop after TP1 (break-even, then trails)
+var float  capRv    = na       // runner TP2 cap in R at entry (mode-dependent); na = free trail
+var bool   tp1Hit   = false
+var float  slDistV  = na
+var int    entryBar = na
+var box    tpBox    = na
+var box    slBox    = na
+var label  slLbl    = na       // price tag at the (effective) stop
+var label  tpLbl    = na       // price tag at TP2
+var label  tp1Lbl   = na       // optional price tag at TP1 (live trade, pre-TP1)
+
+var float  grossWin = 0.0
+var float  grossLos = 0.0
+var int    wins     = 0
+var int    losses   = 0
+var int    nTP2     = 0
+var int    nTrail   = 0
+var int    nBE      = 0
+var int    nLoss    = 0
+var float  equityR  = 0.0
+var float  peakR    = 0.0
+var float  maxDDR   = 0.0
+
+// === H-SESSION PROBE accumulators (IN = entry inside class session, OUT = outside) ===
+var float hsGwIn  = 0.0
+var float hsGlIn  = 0.0
+var int   hsWIn   = 0
+var int   hsLIn   = 0
+var float hsEqIn  = 0.0
+var float hsPkIn  = 0.0
+var float hsDDIn  = 0.0
+var float hsGwOut = 0.0
+var float hsGlOut = 0.0
+var int   hsWOut  = 0
+var int   hsLOut  = 0
+var float hsEqOut = 0.0
+var float hsPkOut = 0.0
+var float hsDDOut = 0.0
+var bool  hsEntryIn = false   // captured at each entry, read at the matching close
+
+// --- class detection (syminfo + ticker string) + pre-registered UTC window ---
+hsTod  = hour(time, "UTC") * 60 + minute(time, "UTC")   // minutes-of-day, UTC, current bar
+hsTick = syminfo.ticker
+bool hsIsCrypto = syminfo.type == "crypto"
+bool hsIsMetal  = str.contains(hsTick, "XAU") or str.contains(hsTick, "XAG") or str.contains(hsTick, "GOLD") or str.contains(hsTick, "SILVER")
+bool hsIsUS     = str.contains(hsTick, "US500") or str.contains(hsTick, "NAS100") or str.contains(hsTick, "US100") or str.contains(hsTick, "SPX") or str.contains(hsTick, "NDX") or str.contains(hsTick, "US30") or str.contains(hsTick, "US2000")
+bool hsIsDE     = str.contains(hsTick, "GER40") or str.contains(hsTick, "DAX") or str.contains(hsTick, "DE40")
+bool hsIsJP     = str.contains(hsTick, "JPN225") or str.contains(hsTick, "JP225") or str.contains(hsTick, "NI225") or str.contains(hsTick, "NKY")
+string hsClass = "FX"
+int    hsStart = 480
+int    hsEnd   = 1260
+if hsIsCrypto
+    hsClass := "Crypto"
+    hsStart := 780
+    hsEnd   := 1260
+else if hsIsMetal
+    hsClass := "Metal"
+    hsStart := 780
+    hsEnd   := 1260
+else if hsIsJP
+    hsClass := "Idx-JP"
+    hsStart := 0
+    hsEnd   := 360
+else if hsIsDE
+    hsClass := "Idx-DE"
+    hsStart := 480
+    hsEnd   := 990
+else if hsIsUS or syminfo.type == "index"
+    hsClass := "Idx-US"
+    hsStart := 870
+    hsEnd   := 1260
+bool hsInSessNow = hsTod >= hsStart and hsTod < hsEnd
+
+// recent pullback structure for the stop (window scales with trading style)
+pbLow  = ta.lowest(low,  styleLb)
+pbHigh = ta.highest(high, styleLb)
+
+// signals that actually OPEN a trade this bar (no ghost labels in open trades)
+bool openedLong  = false
+bool openedShort = false
+
+// --- Quiet-on-WAIT: hide signal VISUALS where the chart is in WAIT territory (uses prior-bar
+//     accumulators; the backtest math below is UNCHANGED — panel/verdict stay honest) ---
+runTot    = wins + losses
+runPF     = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+chartWait = adxVal < 18.0 or (runTot >= 10 and runPF < 1.0)
+vizOK     = not (quietOnWait and chartWait)
+
+// --- close logic (confirmed bars). Conservative ordering: SL before TP; on the
+// --- bar TP1 triggers, no second event; runner exits use the PRIOR stop level.
+float closedR = na
+string outcome = na
+if posDir != 0 and barstate.isconfirmed
+    if posKind == 1
+        // --- Mean-Reversion close: single TP at band middle, SL beyond band (ANN-025) ---
+        if posDir == 1
+            if low <= slP
+                closedR := -1.0
+                outcome := "LOSS"
+            else if high >= tp2P
+                closedR := (tp2P - entryP) / slDistV
+                outcome := "TP2"
+        else
+            if high >= slP
+                closedR := -1.0
+                outcome := "LOSS"
+            else if low <= tp2P
+                closedR := (entryP - tp2P) / slDistV
+                outcome := "TP2"
+    else
+        if posDir == 1
+            if not tp1Hit
+                if low <= slP
+                    closedR := -1.0
+                    outcome := "LOSS"
+                else if mtpOn and high >= tp1P
+                    tp1Hit  := true
+                    runStop := tp1ToBE ? entryP : slP
+                else if not mtpOn and high >= tp2P
+                    closedR := rrRatio
+                    outcome := "TP2"
+            else
+                if low <= runStop
+                    runnerR = (runStop - entryP) / slDistV
+                    closedR := 0.5 * 1.0 + 0.5 * runnerR
+                    outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+                else if not na(tp2P) and high >= tp2P
+                    closedR := 0.5 * (1.0 + capRv)
+                    outcome := "TP2"
+                else
+                    runStop := math.max(runStop, trail)   // ratchet AFTER exit checks
+        else
+            if not tp1Hit
+                if high >= slP
+                    closedR := -1.0
+                    outcome := "LOSS"
+                else if mtpOn and low <= tp1P
+                    tp1Hit  := true
+                    runStop := tp1ToBE ? entryP : slP
+                else if not mtpOn and low <= tp2P
+                    closedR := rrRatio
+                    outcome := "TP2"
+            else
+                if high >= runStop
+                    runnerR = (entryP - runStop) / slDistV
+                    closedR := 0.5 * 1.0 + 0.5 * runnerR
+                    outcome := runnerR > 0.001 ? "TRAIL" : "BE"
+                else if not na(tp2P) and low <= tp2P
+                    closedR := 0.5 * (1.0 + capRv)
+                    outcome := "TP2"
+                else
+                    runStop := math.min(runStop, trail)   // ratchet AFTER exit checks
+    if not na(closedR)
+        // OOS-Split: only trades closing on/after statsFrom enter the scorecard.
+        // Trade state (posDir reset, box freeze) runs regardless — see below.
+        if time >= statsFrom
+            if closedR > 0
+                grossWin += closedR
+                wins     += 1
+            else
+                grossLos += math.abs(closedR)
+                losses   += 1
+            nTP2   += outcome == "TP2"   ? 1 : 0
+            nTrail += outcome == "TRAIL" ? 1 : 0
+            nBE    += outcome == "BE"    ? 1 : 0
+            nLoss  += outcome == "LOSS"  ? 1 : 0
+            equityR += closedR
+            peakR   := math.max(peakR, equityR)
+            maxDDR  := math.max(maxDDR, peakR - equityR)
+            // H-SESSION: route this trade's R into IN/OUT by its ENTRY session membership
+            if hsEntryIn
+                if closedR > 0
+                    hsGwIn += closedR
+                    hsWIn  += 1
+                else
+                    hsGlIn += math.abs(closedR)
+                    hsLIn  += 1
+                hsEqIn += closedR
+                hsPkIn := math.max(hsPkIn, hsEqIn)
+                hsDDIn := math.max(hsDDIn, hsPkIn - hsEqIn)
+            else
+                if closedR > 0
+                    hsGwOut += closedR
+                    hsWOut  += 1
+                else
+                    hsGlOut += math.abs(closedR)
+                    hsLOut  += 1
+                hsEqOut += closedR
+                hsPkOut := math.max(hsPkOut, hsEqOut)
+                hsDDOut := math.max(hsDDOut, hsPkOut - hsEqOut)
+        // --- past-trade rendering: declutter to a single outcome label, unless showHist ---
+        oTxt = (posDir == 1 ? "BUY " : "SELL ") + (outcome == "LOSS" ? "SL" : outcome == "BE" ? "BE" : "TP")
+        oCol = outcome == "LOSS" ? BRAND_BEAR : outcome == "BE" ? BRAND_NEUTRAL : BRAND_BULL
+        if eShowHist
+            if not na(tpBox)
+                box.set_right(tpBox, bar_index)
+            if not na(slBox)
+                box.set_right(slBox, bar_index)
+            if not na(slLbl)
+                label.set_x(slLbl, bar_index)
+            if not na(tpLbl)
+                label.set_x(tpLbl, bar_index)
+        else
+            // keep the TP/SL zone boxes (freeze them), drop only the price tags + keep the outcome label
+            if not na(tpBox)
+                box.set_right(tpBox, bar_index)
+            if not na(slBox)
+                box.set_right(slBox, bar_index)
+            if not na(slLbl)
+                label.delete(slLbl)
+            if not na(tpLbl)
+                label.delete(tpLbl)
+        if not na(tp1Lbl)
+            label.delete(tp1Lbl)
+        if showSig and vizOK
+            label.new(bar_index, posDir == 1 ? low : high, oTxt, style = posDir == 1 ? label.style_label_up : label.style_label_down, color = color.new(oCol, 15), textcolor = BRAND_TEXT, size = size.tiny)
+        tpBox  := na
+        slBox  := na
+        slLbl  := na
+        tpLbl  := na
+        tp1Lbl := na
+        posDir := 0
+        posKind := 0
+        tp1Hit := false
+
+// --- open logic on confirmed bars (only when flat) -------------------------
+if posDir == 0 and barstate.isconfirmed
+    if buySig
+        structD  = close - pbLow
+        slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
+        openedLong := true
+        posDir   := 1
+        posKind  := 0
+        entryP   := close
+        slDistV  := slDist
+        slP      := entryP - slDist
+        tp1P     := entryP + 1.0 * slDist
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
+        tp2P     := na(capRv) ? na : entryP + capRv * slDist
+        entryBar := bar_index
+        if eShowZones and vizOK
+            slBox := box.new(entryBar, entryP, bar_index, slP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
+            if not na(tp2P)
+                tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = color.new(BRAND_BULL, 50), border_width = 1, bgcolor = color.new(BRAND_BULL, 82))
+        if eShowPrices and vizOK
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),   textcolor = BRAND_TEXT, size = size.small)
+            if not na(tp2P)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 10), textcolor = BRAND_TEXT, size = size.small)
+        if showTP1 and mtpOn and vizOK
+            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_down, color = color.new(BRAND_BULL, 45), textcolor = BRAND_TEXT, size = size.small)
+    else if sellSig
+        structD  = pbHigh - close
+        slDist   = math.min(math.max(structD, atrFloor * atr), atrCap * atr) * slMult
+        openedShort := true
+        posDir   := -1
+        posKind  := 0
+        entryP   := close
+        slDistV  := slDist
+        slP      := entryP + slDist
+        tp1P     := entryP - 1.0 * slDist
+        capRv    := not mtpOn ? rrRatio : (runnerMode == "Free trail" ? na : runnerMode == "Extended 3R" ? 3.0 : rrRatio)
+        tp2P     := na(capRv) ? na : entryP - capRv * slDist
+        entryBar := bar_index
+        if eShowZones and vizOK
+            slBox := box.new(entryBar, slP, bar_index, entryP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
+            if not na(tp2P)
+                tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = color.new(BRAND_BULL, 50), border_width = 1, bgcolor = color.new(BRAND_BULL, 82))
+        if eShowPrices and vizOK
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),   textcolor = BRAND_TEXT, size = size.small)
+            if not na(tp2P)
+                tpLbl := label.new(bar_index, tp2P, "TP " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_BULL, 10), textcolor = BRAND_TEXT, size = size.small)
+        if showTP1 and mtpOn and vizOK
+            tp1Lbl := label.new(bar_index, tp1P, "TP1 " + str.tostring(tp1P, format.mintick), style = label.style_label_up, color = color.new(BRAND_BULL, 45), textcolor = BRAND_TEXT, size = size.small)
+    else if mrLong
+        openedLong := true
+        posDir   := 1
+        posKind  := 1
+        entryP   := close
+        slP      := bbLower - 0.5 * atr
+        slDistV  := entryP - slP
+        tp2P     := bbBasis
+        tp1P     := na
+        capRv    := na
+        entryBar := bar_index
+        if eShowZones and vizOK
+            slBox := box.new(entryBar, entryP, bar_index, slP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
+            tpBox := box.new(entryBar, tp2P, bar_index, entryP, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT_DIM, 82))
+        if eShowPrices and vizOK
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_up,   color = color.new(BRAND_BEAR, 10),  textcolor = BRAND_TEXT, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_down, color = color.new(BRAND_ACCENT, 10), textcolor = BRAND_TEXT, size = size.small)
+    else if mrShort
+        openedShort := true
+        posDir   := -1
+        posKind  := 1
+        entryP   := close
+        slP      := bbUpper + 0.5 * atr
+        slDistV  := slP - entryP
+        tp2P     := bbBasis
+        tp1P     := na
+        capRv    := na
+        entryBar := bar_index
+        if eShowZones and vizOK
+            slBox := box.new(entryBar, slP, bar_index, entryP, border_color = color.new(BRAND_BEAR, 50), border_width = 1, bgcolor = color.new(BRAND_BEAR, 82))
+            tpBox := box.new(entryBar, entryP, bar_index, tp2P, border_color = color.new(BRAND_ACCENT, 50), border_width = 1, bgcolor = color.new(BRAND_ACCENT_DIM, 82))
+        if eShowPrices and vizOK
+            slLbl := label.new(bar_index, slP,  "SL " + str.tostring(slP, format.mintick),  style = label.style_label_down, color = color.new(BRAND_BEAR, 10),  textcolor = BRAND_TEXT, size = size.small)
+            tpLbl := label.new(bar_index, tp2P, "MR " + str.tostring(tp2P, format.mintick), style = label.style_label_up,   color = color.new(BRAND_ACCENT, 10), textcolor = BRAND_TEXT, size = size.small)
+
+// H-SESSION: stamp the entry bar's session membership (read later at this trade's close)
+if openedLong or openedShort
+    hsEntryIn := hsInSessNow
+
+// --- while in trade: extend zone boxes -------------------------------------
+if posDir != 0 and eShowZones
+    if not na(tpBox)
+        box.set_right(tpBox, bar_index)
+    if not na(slBox)
+        box.set_right(slBox, bar_index)
+if posDir != 0 and eShowPrices
+    effSL = tp1Hit ? runStop : slP
+    if not na(slLbl)
+        label.set_xy(slLbl, bar_index, effSL)
+        label.set_text(slLbl, (tp1Hit ? "STOP " : "SL ") + str.tostring(effSL, format.mintick))
+    if not na(tpLbl)
+        label.set_x(tpLbl, bar_index)
+// TP1 price tag (live only, until TP1 is hit) — independent of showPrices
+if posDir != 0 and not na(tp1Lbl)
+    if tp1Hit
+        label.delete(tp1Lbl)
+        tp1Lbl := na
+    else
+        label.set_x(tp1Lbl, bar_index)
+
+// =============================================================================
+// PLOTTING
+// =============================================================================
+plotshape(showSig and openedLong  and vizOK, title = "Buy",  style = shape.labelup,   location = location.belowbar, color = color.new(BRAND_BULL, 0), text = "BUY",  textcolor = BRAND_TEXT, size = size.small)
+plotshape(showSig and openedShort and vizOK, title = "Sell", style = shape.labeldown, location = location.abovebar, color = color.new(BRAND_BEAR, 0),  text = "SELL", textcolor = BRAND_TEXT, size = size.small)
+
+plot(eShowLvls and posDir != 0 and vizOK ? entryP : na, "Entry", color = color.new(BRAND_ACCENT, 0),  style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK ? (tp1Hit ? runStop : slP) : na, "SL / BE", color = color.new(BRAND_BEAR, 0), style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK and mtpOn and not tp1Hit ? tp1P : na, "TP1", color = color.new(BRAND_BULL, 50), style = plot.style_linebr, linewidth = 1)
+plot(eShowLvls and posDir != 0 and vizOK ? tp2P   : na, "TP2",   color = color.new(BRAND_BULL, 0), style = plot.style_linebr, linewidth = 1)
+plot(showTrend ? baseline : na, "Trend Baseline", color = dir == 1 ? color.new(BRAND_BULL, 40) : color.new(BRAND_BEAR, 40), linewidth = 2)
+
+// =============================================================================
+// MARKET CONDITION PANEL — regime-based read (position user-configurable)
+//   Condition = REGIME (forward-looking): "is this chart in a tradeable regime now?"
+//   Ranging -> stay out (neutral). Trending -> "Trend regime active" + regime-based guide
+//   (state description, not an implied buy recommendation). Caution row below is DESCRIPTIVE
+//   disclosure only (gates nothing, hides nothing, changes no default) — verdict itself stays
+//   regime-driven; backtest-driven WAIT is locked-forbidden (implies ">1 = GO").
+//   f_regimeRec is regime-derived, NOT fitted to past P/L (that would be an in-sample
+//   optimizer = locked-forbidden). Mirrors the website copy ("when staying out is the
+//   better decision"). No methodology row in the product — that lives in code comments.
+// =============================================================================
+// Caution-row thresholds (constants by design, no input): only speak up when the sample is
+// meaningful (>=20 trades) AND clearly underwater (PF < 0.9) — not at every wobble around 1.0.
+int   CAUTION_MIN_TRADES = 20
+float CAUTION_PF         = 0.9
+
+var table rec = table.new(f_pos(recPosIn), 2, 10, border_width = 1)
+if eShowRec and barstate.islast
+    recProf   = f_regimeRec(adxVal)
+    isRanging = adxVal < 18
+    aligned   = not isRanging
+    verdict   = aligned ? "Trend regime active — " + recProf : "Conditions not aligned — stay out"
+    volState  = atrPctl > 0.90 ? "High" : atrPctl < 0.20 ? "Low" : "Normal"
+    condCol   = aligned ? color.new(BRAND_ACCENT, 0) : color.new(BRAND_NEUTRAL, 0)
+    matchTxt  = profileEff == recProf ? profileEff + " (recommended)" : profileEff
+    table.cell(rec, 0, 0, "Market Condition", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    table.cell(rec, 1, 0, "PaceAlgo",         text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    f_btCell(rec, 1, "Trend (ADX)", str.tostring(adxVal, "#.0") + (adxVal >= 18 ? " trending" : " ranging"))
+    f_btCell(rec, 2, "Volatility",  volState)
+    table.cell(rec, 0, 3, "Condition", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+    table.cell(rec, 1, 3, verdict,     text_color = BRAND_TEXT,     bgcolor = condCol,       text_size = tsz)
+    f_btCell(rec, 4, "Suggested RR",  f_rrRec(adxVal))
+    f_btCell(rec, 5, "Sensitivity",   f_sensRec(adxVal))
+    f_btCell(rec, 6, "Profile",       matchTxt)
+    // WS4 TF-guard: calm steering line on sub-5m charts (no block, no warning red)
+    if timeframe.in_seconds() < 300
+        table.cell(rec, 0, 7, "Note", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+        table.cell(rec, 1, 7, "Best results on 15m+ timeframes", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = tsz)
+    // Performance caution (disclosure over suppression): descriptive only — gates no signals,
+    // hides nothing, changes no defaults. Same sample as the backtest panel (statsFrom-filtered).
+    cTot = wins + losses
+    cPf  = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+    if cTot >= CAUTION_MIN_TRADES and cPf < CAUTION_PF
+        table.cell(rec, 0, 8, "Caution", text_color = BRAND_TEXT, bgcolor = color.new(BRAND_BEAR, 70), text_size = tsz)
+        table.cell(rec, 1, 8, "⚠ Recent signals underperforming here (PF " + str.tostring(cPf, "#.00") + " / " + str.tostring(cTot) + " trades)", text_color = BRAND_TEXT, bgcolor = color.new(BRAND_BEAR, 70), text_size = tsz)
+    // Transparent spacer: lifts the panel content above TradingView's own bottom-left logo
+    // (a fixed UI element that otherwise covers the last row). Invisible at other positions.
+    table.cell(rec, 0, 9, " ", text_color = color.new(BRAND_BG, 100), bgcolor = color.new(BRAND_BG, 100), text_size = tsz)
+
+// =============================================================================
+// LAYER 2 — MTF TREND DASHBOARD (position user-configurable)
+// =============================================================================
+t1   = f_tfTrend("1")
+t5   = f_tfTrend("5")
+t15  = f_tfTrend("15")
+t30  = f_tfTrend("30")
+t60  = f_tfTrend("60")
+t240 = f_tfTrend("240")
+tD   = f_tfTrend("D")
+tW   = f_tfTrend("W")
+tM   = f_tfTrend("M")
+mtfCons = t1 + t5 + t15 + t30 + t60 + t240 + tD + tW + tM
+
+// Created ONLY on Desktop: the mobile compact panel shares this anchor (mtfPosIn), and TV
+// displays just the last-created table per position — an unconditional empty `mob` was
+// silently displacing this panel since WS3 (the "MTF dashboard missing" bug).
+var table mt = isDeskLayout ? table.new(f_pos(mtfPosIn), 2, 11, border_width = 1) : na
+if eShowMTF and barstate.islast
+    table.cell(mt, 0, 0, "MTF Trend", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    table.cell(mt, 1, 0, "PaceAlgo",  text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    f_mtfCell(mt, 1,  "1m",  t1)
+    f_mtfCell(mt, 2,  "5m",  t5)
+    f_mtfCell(mt, 3,  "15m", t15)
+    f_mtfCell(mt, 4,  "30m", t30)
+    f_mtfCell(mt, 5,  "1H",  t60)
+    f_mtfCell(mt, 6,  "4H",  t240)
+    f_mtfCell(mt, 7,  "1D",  tD)
+    f_mtfCell(mt, 8,  "1W",  tW)
+    f_mtfCell(mt, 9,  "1M",  tM)
+    f_mtfCell(mt, 10, "Consensus", mtfCons > 0 ? 1 : mtfCons < 0 ? -1 : 0)
+
+// =============================================================================
+// LAYER 3 — LIVE BACKTEST PANEL (PF is the headline; outcomes split honestly)
+// =============================================================================
+var table bt = table.new(f_pos(btPosIn), 2, 12, border_width = 1)
+if eShowBT and barstate.islast
+    total = wins + losses
+    pf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+    wr    = total > 0 ? 100.0 * wins / total : 0.0
+    avgR  = total > 0 ? equityR / total : 0.0
+    // WS4 outcome-framing: full-target rate = how often the runner reaches TP2, distinct
+    // from the TP1-inclusive Win Rate below (which credits every TP1 bank, incl. break-even).
+    // Multi-TP legitimately produces many wins — the two figures together make that legible.
+    tp2Rate = total > 0 ? 100.0 * nTP2 / total : 0.0
+    table.cell(bt, 0, 0, "Backtest", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    table.cell(bt, 1, 0, profileEff + " / " + style + (sens != 0 ? " / S" + str.tostring(sens) : ""), text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    f_btCell(bt, 1, "Net PF",        pf >= 999 ? "inf" : str.tostring(pf, "#.00"))
+    f_btCell(bt, 2, "Avg R",         str.tostring(avgR, "#.00"))
+    f_btCell(bt, 3, "Trades",        str.tostring(total))
+    f_btCell(bt, 4, "TP2 / Trail",   str.tostring(nTP2) + " / " + str.tostring(nTrail))
+    f_btCell(bt, 5, "BE / Loss",     str.tostring(nBE) + " / " + str.tostring(nLoss))
+    f_btCell(bt, 6, "Full-Target (TP2)", str.tostring(tp2Rate, "#.0") + "%")
+    f_btCell(bt, 7, "Win Rate (TP1+)",   str.tostring(wr, "#.0") + "%")
+    f_btCell(bt, 8, "Total R",       str.tostring(equityR, "#.0"))
+    f_btCell(bt, 9, "Max DD (R)",    str.tostring(maxDDR, "#.0"))
+    f_btCell(bt, 10, "In Trade",     posDir == 1 ? "LONG" : posDir == -1 ? "SHORT" : "-")
+    // Spacer (see Market-Condition panel): keeps the last row clear of TV's corner UI widgets.
+    table.cell(bt, 0, 11, " ", text_color = color.new(BRAND_BG, 100), bgcolor = color.new(BRAND_BG, 100), text_size = tsz)
+
+// =============================================================================
+// MOBILE — one combined compact panel (WS3): 4 MTF rows + condition + 2 backtest rows.
+//   Active only when Layout = Mobile. Single slot (uses the MTF-panel position).
+//   Tiny text; price tags + history are already suppressed by the layout gates above.
+// =============================================================================
+var table mob = isMobLayout ? table.new(f_pos(mtfPosIn), 2, 8, border_width = 1) : na
+if isMobLayout and barstate.islast
+    mPf    = grossLos > 0 ? grossWin / grossLos : (grossWin > 0 ? 999.0 : 0.0)
+    mTot   = wins + losses
+    mWr    = mTot > 0 ? 100.0 * wins / mTot : 0.0
+    mRange = adxVal < 18
+    mProf  = f_regimeRec(adxVal)
+    mCond  = mRange ? "Stay out" : "Trend active — " + mProf
+    mCol   = mRange ? color.new(BRAND_NEUTRAL, 0) : color.new(BRAND_ACCENT, 0)
+    table.cell(mob, 0, 0, "PaceAlgo",      text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = size.tiny)
+    table.cell(mob, 1, 0, syminfo.ticker,  text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = size.tiny)
+    f_mtfCellT(mob, 1, "15m", t15)
+    f_mtfCellT(mob, 2, "1H",  t60)
+    f_mtfCellT(mob, 3, "4H",  t240)
+    f_mtfCellT(mob, 4, "1D",  tD)
+    table.cell(mob, 0, 5, "Condition",  text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 1, 5, mCond,        text_color = BRAND_TEXT,     bgcolor = mCol,          text_size = size.tiny)
+    table.cell(mob, 0, 6, "Net PF",     text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 1, 6, mPf >= 999 ? "inf" : str.tostring(mPf, "#.00"), text_color = BRAND_TEXT, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 0, 7, "Win Rate", text_color = BRAND_TEXT_DIM, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+    table.cell(mob, 1, 7, str.tostring(mWr, "#.0") + "%", text_color = BRAND_TEXT, bgcolor = PANEL_CELL_BG, text_size = size.tiny)
+
+// =============================================================================
+// H-SESSION PROBE PANEL — IN vs OUT of class session (ANN-027, read via MCP).
+//   ALL n MUST equal the Backtest panel's Trades (every closed trade lands in
+//   exactly one bucket) — that equality is the wiring sanity check.
+// =============================================================================
+var table hsT = table.new(position.middle_right, 2, 8, border_width = 1)
+if barstate.islast
+    hsTotIn  = hsWIn  + hsLIn
+    hsTotOut = hsWOut + hsLOut
+    hsPfIn   = hsGlIn  > 0 ? hsGwIn  / hsGlIn  : (hsGwIn  > 0 ? 999.0 : 0.0)
+    hsPfOut  = hsGlOut > 0 ? hsGwOut / hsGlOut : (hsGwOut > 0 ? 999.0 : 0.0)
+    hsWrIn   = hsTotIn  > 0 ? 100.0 * hsWIn  / hsTotIn  : 0.0
+    hsWrOut  = hsTotOut > 0 ? 100.0 * hsWOut / hsTotOut : 0.0
+    hsArIn   = hsTotIn  > 0 ? hsEqIn  / hsTotIn  : 0.0
+    hsArOut  = hsTotOut > 0 ? hsEqOut / hsTotOut : 0.0
+    table.cell(hsT, 0, 0, "H-SESSION", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    table.cell(hsT, 1, 0, hsClass + " " + str.tostring(hsStart / 60.0, "#.0") + "-" + str.tostring(hsEnd / 60.0, "#.0") + " UTC", text_color = BRAND_TEXT, bgcolor = PANEL_HEAD_BG, text_size = tsz)
+    f_btCell(hsT, 1, "IN PF",        hsPfIn  >= 999 ? "inf" : str.tostring(hsPfIn,  "#.00"))
+    f_btCell(hsT, 2, "IN n/WR",      str.tostring(hsTotIn)  + " / " + str.tostring(hsWrIn,  "#.0") + "%")
+    f_btCell(hsT, 3, "IN AvgR/DD",   str.tostring(hsArIn,  "#.00") + " / " + str.tostring(hsDDIn,  "#.0"))
+    f_btCell(hsT, 4, "OUT PF",       hsPfOut >= 999 ? "inf" : str.tostring(hsPfOut, "#.00"))
+    f_btCell(hsT, 5, "OUT n/WR",     str.tostring(hsTotOut) + " / " + str.tostring(hsWrOut, "#.0") + "%")
+    f_btCell(hsT, 6, "OUT AvgR/DD",  str.tostring(hsArOut, "#.00") + " / " + str.tostring(hsDDOut, "#.0"))
+    f_btCell(hsT, 7, "ALL n (=Trades)", str.tostring(hsTotIn + hsTotOut))
+
+// =============================================================================
+// ALERTS
+// =============================================================================
+alertcondition(buySig,  title = "PaceAlgo BUY",  message = "PaceAlgo BUY signal on {{ticker}} {{interval}}")
+alertcondition(sellSig, title = "PaceAlgo SELL", message = "PaceAlgo SELL signal on {{ticker}} {{interval}}")
