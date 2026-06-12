@@ -53,9 +53,13 @@ Benchmark-Suite (`docs/BENCHMARK_SUITE.md`), sauber dokumentiert, bei Fail ehrli
   Metal 0/2 positiv). Crypto gemischt/flach. **Kein Engulfing-Nachschub (Spec-Lock), kein Round 2
   (gut gepowerte Punkte eindeutig, keine Starvation-Maskierung).** Beleg:
   `results/benchmark_runs/2026-06-10_h-trigger.md`, Probe `…/experiments/pace_algo_v1_HTRIGGER_probe.pine`.
+- **Kurzform (gelockt):** widerlegt — invertiert auf gepowerten Punkten; **CONF verliert PF UND WR**
+  → keine Geometrie, Extension-Mechanismus plausibel; **GER40-Einzelpunkt kein Override.**
 - **Post-hoc-Beobachtung (NICHT verifiziert, NICHT als H-TRIGGER-Rebrand verfolgt):** „ruhiger
   Pullback-Entry nahe EMA schlägt decisive-bar-Entry" — plausibel (Momentum-Bar = Preis extended).
-  Höchstens eigene, neu pre-registrierte Hypothese am Queue-Ende, niedrige Prio.
+  Höchstens eigene, neu pre-registrierte Hypothese am Queue-Ende, niedrige Prio — und dann **als
+  Grade-Faktor-Kandidat interessanter denn als Gate** (ruhige Entry-Bar = höheres Grade), gleiche
+  Schublade wie der Session-Faktor aus H-SESSION.
 
 ### H-TIMESTOP — Zeit-Stop (neue Achse: tote Trades schneiden)
 - **Achse:** Trades, die nach N Bars weder TP1 noch strukturellen Fortschritt zeigen, zu Markt
