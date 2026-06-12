@@ -1,6 +1,6 @@
 # Benchmark Run — H-TIMESTOP (ANN-027, Hypothese 3/3, letzte)
 
-**Datum:** 2026-06-10 (UTC) · **Workstation:** arbeits-pc · **Status:** PRE-REGISTRATION — Spec-N-Lock ausstehend, Sweep wartet auf CEO-Lock
+**Datum:** 2026-06-10 (UTC) · **Workstation:** arbeits-pc · **Status:** SPEC GELOCKT (N normalisiert, k=2) — Probe gebaut, Sweep nach TV-Paste
 
 ## Hypothese — wörtlich aus ANN-027 zitiert (keine Umdeutung)
 
@@ -12,25 +12,31 @@
 Schwelle **N ist in ANN-027 offen** → 3 threshold-saubere Kandidaten unten, **EINER wird gelockt**,
 kein Grid.
 
-## Spec (Definition fix, nur N offen) — ⚠ N-LOCK AUSSTEHEND
+## Spec — ✅ GELOCKT 2026-06-10: N **normalisiert** je Punkt (k=2 fix, einziger Parameter)
 
-**Zeit-Stop-Regel:** an jedem confirmed Bar mit offener Position: wenn `bar_index − entryBar ≥ N`
-**UND TP1 noch nicht erreicht** (`tp1Hit == false`) → Position **zu Markt** (current close) schließen,
-realisiertes R buchen. Ist TP1 bereits erreicht (Runner aktiv = struktureller Fortschritt da), greift
-der Zeit-Stop NICHT — normaler Trail/TP2/BE managt weiter.
+**Zeit-Stop-Regel:** an jedem confirmed Bar mit offener Position: wenn `bar_index − entryBar ≥ N_punkt`
+**UND TP1 noch nicht erreicht** (`tp1Hit == false`) → Position **zu Markt** (current close) schließen.
+Ist TP1 erreicht (Runner aktiv = Fortschritt da), greift der Zeit-Stop NICHT.
 
-„Struktureller Fortschritt" = TP1 (1R) erreicht. Bewusst an den bestehenden TP1-Marker gebunden
-(kein zweiter Tuning-Parameter). **N ist der EINZIGE Parameter, vorab fix, kein Nachtunen.**
+**N_punkt = round( 2 × Median-Bars-bis-TP1 der Baseline-TP1-Gewinner DIESES Punkts ).**
+Rohe Bar-Zahlen wären über die Suite ungleiche ökonomische Horizonte (N=24 = 2 h auf 5m, ~5 Wo auf
+Daily) → die 16 Punkte testeten nicht dieselbe Hypothese. Normalisierung macht „N" überall zur
+**selben Intervention** (= erst dadurch ist der TF-agnostik-Bonus valide).
 
-### N-Kandidaten (einer zu locken) — N in Bars (TF-relativ, kein Per-Asset-Fit)
+**k = 2 der einzige freie Parameter, vorab fix, Begründung rein mechanistisch:** k=1 köpft normal
+reifende Trades (am Median); k=3 feuert zu selten; k=2 = „doppelt so lange wie ein typischer Gewinner,
+ohne TP1" = ehrliche „steckt fest"-Definition. **Das 2× ersetzt die „struktureller-Fortschritt"-
+Klausel** aus dem ANN-027-Wortlaut (großzügiger Horizont = Nachsicht ggü. normalen Trades) → bleibt
+EIN Parameter; die Fortschritts-Klausel ist konservativ aufgeschoben (mögliche Zukunfts-Verfeinerung).
 
-| Kandidat | N | Charakter | real (5m / 1h / 4h / D) |
-|---|---|---|---|
-| A | 12 | aggressiv — schneidet früh | 1 h / 12 h / 2 T / 12 T |
-| B | 24 | moderat | 2 h / 24 h / 4 T / 24 T |
-| C | 36 | locker — nur echte Hängepartien | 3 h / 36 h / 6 T / 36 T |
+**Guard 1 (kein Outcome-Fitting):** Median ausschließlich aus Baseline-Trades, unabhängig vom
+Time-Stop-PnL. **Guard 2 (Stabilität):** ein Punkt braucht **≥ 10 Baseline-TP1-Gewinner**, sonst ist
+N nicht stabil ableitbar → Punkt **nicht-verwertbar** (Starvation-Klasse), nicht raten.
 
-Bars als Einheit ist die natürliche, fit-freie Wahl für einen bar-basierten Indikator (TF-relativ).
+**Implementierung (1 Pass, kausal):** Probe führt einen **laufenden Median** der bisherigen
+Baseline-Gewinner-Dauern (`array.median`) und aktiviert den Time-Stop erst ab ≥10 Gewinnern (vorher
+inaktiv = konservativ, kein Look-ahead). Der finale Voll-Sample-N_punkt + Gewinnerzahl werden je
+Punkt gedruckt (Normalisierung nachprüfbar).
 
 ## Methode — gepaarter A/B (KEINE Partition — Trades ändern sich)
 
