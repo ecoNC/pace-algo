@@ -40,11 +40,22 @@ Benchmark-Suite (`docs/BENCHMARK_SUITE.md`), sauber dokumentiert, bei Fail ehrli
   → **Klein-Sample-GRÜNs bleiben verboten** (min-Bucket-n-Schwelle + Einzelpunkt-Rausrechen-Check
   sind Pflicht in jeder Hypothese-Runde).
 
-### H-TRIGGER — Entry-Trigger-Qualität (neue Achse: WO einsteigen, nicht OB)
+### H-TRIGGER — Entry-Trigger-Qualität (neue Achse: WO einsteigen, nicht OB) — ❌ GESCHLOSSEN/WIDERLEGT 2026-06-10
 - **Achse:** Entry-Location am Pullback-Ende — Momentum-/Engulfing-Bar-Bestätigung statt erstem Touch
   (`ta.crossover(close, fastEma)`).
 - **These:** bessere Entry-Location → engerer struktureller SL → mehr TP1-Hits bei gleichem Setup →
   hebt WR + PF über **Geometrie** statt Selektion. Nie getestet.
+- **VERDIKT (gelockt 2026-06-10, Spec A = einzige Definition, 1 Runde statsFrom=2025):** **WIDERLEGT
+  — invers.** Momentum-Confirmation (Body ≥ 50 %) hebt PF/WR NICHT; auf gut gepowerten FX- und
+  Metall-Punkten sind die **NONCONF-Entries (ruhige Crossover-Bars) systematisch besser** (SILVER
+  −0.86, GOLD −0.50, GBP −0.23 CONF−NONCONF PF, jeweils auch höhere WR). Einziger Positiver GER40 1h
+  (+0.32) → trägt den „Effekt" allein → (b) verfehlt. Kriterium (a) klar nicht erfüllt (FX 0/2,
+  Metal 0/2 positiv). Crypto gemischt/flach. **Kein Engulfing-Nachschub (Spec-Lock), kein Round 2
+  (gut gepowerte Punkte eindeutig, keine Starvation-Maskierung).** Beleg:
+  `results/benchmark_runs/2026-06-10_h-trigger.md`, Probe `…/experiments/pace_algo_v1_HTRIGGER_probe.pine`.
+- **Post-hoc-Beobachtung (NICHT verifiziert, NICHT als H-TRIGGER-Rebrand verfolgt):** „ruhiger
+  Pullback-Entry nahe EMA schlägt decisive-bar-Entry" — plausibel (Momentum-Bar = Preis extended).
+  Höchstens eigene, neu pre-registrierte Hypothese am Queue-Ende, niedrige Prio.
 
 ### H-TIMESTOP — Zeit-Stop (neue Achse: tote Trades schneiden)
 - **Achse:** Trades, die nach N Bars weder TP1 noch strukturellen Fortschritt zeigen, zu Markt
@@ -67,7 +78,8 @@ Achse in den Pine-Core nur nach bestandenem Gate; sonst ehrlicher Close als ANN-
 
 - Keine Code-Änderung am V1-Core durch dieses ADR (reiner Decision-Record).
 - ~~Nächster Forschungs-Schritt nach dem CEO-UI-Pivot: **H-SESSION** zuerst (höchster Prior).~~
-  → H-SESSION ✅ geschlossen 2026-06-10 (moderater Qualitäts-Faktor, kein Hard-Gate). **Aktiv: H-TRIGGER** (Hyp 2/3).
+  → H-SESSION ✅ geschlossen 2026-06-10 (moderater Qualitäts-Faktor, kein Hard-Gate).
+  → H-TRIGGER ❌ geschlossen/widerlegt 2026-06-10 (Momentum-Confirmation invers). **Aktiv: H-TIMESTOP** (Hyp 3/3, letzte).
 - Parallel, eigene fokussierte Session: FX-Overlay „Pace AI" (Site verspricht es wörtlich) —
   Gates unverändert (50t/100t-Reconcile zuerst, bit-exact = harter Ship-Gate, OOS-PF des tatsächlich
   geshippten Modells oder kein Ship). UI-Label „Pace AI — signal quality scoring", aktiv auf FX-Majors.
