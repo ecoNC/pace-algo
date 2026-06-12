@@ -63,6 +63,21 @@ Einbau einzeln proben** (Nico-Lock).
 **Guardrail (kritisch):** NUR **Klassen-Ebene** + destillierte Research-Priors, über diverse Assets gegen-gecheckt.
 KEIN per-Asset-Tuning, KEIN In-Sample-Optimizer. Wo eine Heuristik nicht breit hält → raus, kein Forcieren.
 
+### (e) Zeit-Stop — Opt-in-Toggle (Default AUS) [aus ANN-027 H-TIMESTOP, 2026-06-10]
+**Was:** „Dead-Trade"-Zeit-Stop: schließt eine Position zu Markt, wenn `N_punkt` Bars seit Entry
+vergangen und TP1 nicht erreicht (N_punkt = round(2 × Median-Bars-bis-TP1 der Gewinner)).
+**Status:** **validiert** (16-Punkte-A/B, OOS 2025) — `results/benchmark_runs/2026-06-10_h-timestop.md`.
+Kein broad-GRÜN (Metal 0/2), daher **KEIN Default und KEIN klassen-bedingter Auto-Schnitt** (wäre
+post-hoc Klassen-Schnitzen). **Default AUS, User-Opt-in.**
+**Label (ehrlich, Disclosure — kein Edge-Claim):** „validiert DD-senkend auf trendenden Indizes,
+neutral sonst". Befund: DD stark↓ wo positiv (GER40 MaxDD 19.1→10.2, NAS100 4.7→3.0), AvgLossR
+1.00→0.68–0.84, **null Frequenz-Kosten** (Entries unverändert); neutral Metal, flach Crypto.
+**Ops-Schätzung:** niedrig (bars-since-entry-Check + TP1-Status; N-Median via array über History).
+**Effekt:** MITTEL als UX/„Feel"-Feature (DD-Glättung) für Nutzer, die es einschalten. Kein
+PF-Versprechen breit.
+**Guardrail:** Toggle ändert Exit-Verhalten, nicht verkaufte Performance; Tooltip ehrlich
+(„senkt Drawdown auf trendenden Märkten, kostet auf manchen Märkten minimal PF").
+
 ---
 
 ## Reihenfolge-Empfehlung

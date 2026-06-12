@@ -1,6 +1,6 @@
 # ANN-027 — Research Queue: Three Orthogonal, Untested Axes
 
-**Status:** Active (queue defined; experiments not yet run)
+**Status:** CLOSED 2026-06-10 (alle 3 Achsen getestet — H-SESSION moderater Qualitäts-Faktor · H-TRIGGER widerlegt · H-TIMESTOP WAIT/teil-positiv). `pace_algo_v1` über alle drei unberührt.
 **Datum:** 2026-06-10 (UTC)
 **Locked-By:** Robustness-First Mantra ([ANN-006](ANN-006-robustness-first-mantra.md)); Promotion-Gate unverändert (kein Feature ohne ≥ +0.05 PF OOS-Lift; Walk-Forward; VAL-Cutoffs only)
 **Related:** [ANN-022](ANN-022-rule-based-selective-trend-core-v1.md) (Trend-Core), [ANN-023](ANN-023-exit-model-and-win-accounting.md) (Exit-Modell), [ANN-024](ANN-024-two-routing-dimensions-regime-router.md) (Regime-Router, CLOSED), [ANN-025](ANN-025-mr-module-v1-build-spec.md) (MR, parked)
@@ -68,16 +68,19 @@ Benchmark-Suite (`docs/BENCHMARK_SUITE.md`), sauber dokumentiert, bei Fail ehrli
 - **Spec (gelockt):** N_punkt = round(2 × Median-Bars-bis-TP1 der Baseline-TP1-Gewinner), k=2 fix
   (ersetzt „struktureller Fortschritt"); Guards: Median nur Baseline, ≥10 Gewinner sonst nicht-
   verwertbar. Dual-Engine-A/B-Probe (kausaler laufender Median), 1 Runde statsFrom=2025.
-- **VERDIKT (gelockt 2026-06-10): WAIT — kein breites GRÜN, aber stärkste der 3 Achsen.** Strikte
-  Kriterien gerissen: **Metal scheitert (a)** (GOLD4h −0.04, SILVER1h −0.04 → 0/2); nur **Index**
-  räumt das +0.05-Gate (NAS100 4h +0.58, GER40 1h +0.25, beide WR↑), **FX** positiv aber sub-
-  threshold (+0.02…+0.05), Crypto flach (Kontrolle ok; positive Crypto-Lifts durch große Entry-
-  Deltas confounded). **Mechanismus real wo positiv** (AvgLossR 1.00→0.68–0.84, Dauer↓, **DD stark↓:
-  GER40 19.1→10.2**) bei **null Frequenz-Kosten**. Kein Round 2 (entscheidende Klassen gut gepowert).
-  Beleg: `results/benchmark_runs/2026-06-10_h-timestop.md`, Probe `…/pace_algo_v1_HTIMESTOP_probe.pine`.
-- **Folge-Kandidat (NICHT jetzt, kein Rebrand):** „Zeit-Stop nur Index/FX, DD-fokussiert" als eigene
-  neu pre-registrierte Hypothese — der no-cost-DD-Effekt rechtfertigt das, aber nicht als Override
-  des gerissenen broad-Kriteriums.
+- **VERDIKT (gelockt 2026-06-10): WAIT, kein broad-v1-Default.** Wortlaut: „kein breites GRÜN (Metal
+  0/2 reißt Kriterium (a)) — aber mechanistisch der **sauberste Befund der drei Achsen**: AvgLossR
+  1.00→0.68–0.84, Dauer↓, DD stark↓ wo positiv (GER40 19.1→10.2), **null Frequenz-Kosten**. Klassen-
+  ungleich: stark Index, mild FX, neutral Metal, flach Crypto (Entry-Delta-confounded)." Beleg:
+  `results/benchmark_runs/2026-06-10_h-timestop.md`, Probe `…/pace_algo_v1_HTIMESTOP_probe.pine`.
+- **Disziplin-Notiz (kein Präzedenz):** Das Verdikt ruht auf den **committeten Kriterien** (Metal-Fail
+  bei (a)), NICHT auf dem +0.05-Magnitude-Gate — letzteres war deskriptive Farbe, kein vorab fixiertes
+  Kriterium. **Nicht als Präzedenz für künftige Magnitude-Schwellen** verbuchen (sonst schleicht sich
+  ein post-hoc-Gate ein).
+- **Umsetzung (gelockt): KEIN klassen-bedingter Default** (= post-hoc Klassen-Schnitzen, verboten).
+  Stattdessen ehrlicher **Opt-in-Toggle im v1-Produkt-Backlog, Default AUS**, gelabelt „validiert DD-
+  senkend auf trendenden Indizes, neutral sonst" = Disclosure, kein behaupteter Edge. Keine frische
+  Hypothese nötig. Siehe `docs/v1_product_backlog.md` (e).
 
 ## Experiment (Gate, unverändert)
 
