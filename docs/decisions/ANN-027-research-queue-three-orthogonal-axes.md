@@ -61,10 +61,23 @@ Benchmark-Suite (`docs/BENCHMARK_SUITE.md`), sauber dokumentiert, bei Fail ehrli
   Grade-Faktor-Kandidat interessanter denn als Gate** (ruhige Entry-Bar = höheres Grade), gleiche
   Schublade wie der Session-Faktor aus H-SESSION.
 
-### H-TIMESTOP — Zeit-Stop (neue Achse: tote Trades schneiden)
+### H-TIMESTOP — Zeit-Stop (neue Achse: tote Trades schneiden) — ⏸ GESCHLOSSEN/WAIT 2026-06-10 (teil-positiv)
 - **Achse:** Trades, die nach N Bars weder TP1 noch strukturellen Fortschritt zeigen, zu Markt
   schließen. Orthogonal zu allen getesteten preis-basierten Exits.
 - **These:** senkt Loss-Größe + Hängepartien (Feel-Faktor). Prior moderat.
+- **Spec (gelockt):** N_punkt = round(2 × Median-Bars-bis-TP1 der Baseline-TP1-Gewinner), k=2 fix
+  (ersetzt „struktureller Fortschritt"); Guards: Median nur Baseline, ≥10 Gewinner sonst nicht-
+  verwertbar. Dual-Engine-A/B-Probe (kausaler laufender Median), 1 Runde statsFrom=2025.
+- **VERDIKT (gelockt 2026-06-10): WAIT — kein breites GRÜN, aber stärkste der 3 Achsen.** Strikte
+  Kriterien gerissen: **Metal scheitert (a)** (GOLD4h −0.04, SILVER1h −0.04 → 0/2); nur **Index**
+  räumt das +0.05-Gate (NAS100 4h +0.58, GER40 1h +0.25, beide WR↑), **FX** positiv aber sub-
+  threshold (+0.02…+0.05), Crypto flach (Kontrolle ok; positive Crypto-Lifts durch große Entry-
+  Deltas confounded). **Mechanismus real wo positiv** (AvgLossR 1.00→0.68–0.84, Dauer↓, **DD stark↓:
+  GER40 19.1→10.2**) bei **null Frequenz-Kosten**. Kein Round 2 (entscheidende Klassen gut gepowert).
+  Beleg: `results/benchmark_runs/2026-06-10_h-timestop.md`, Probe `…/pace_algo_v1_HTIMESTOP_probe.pine`.
+- **Folge-Kandidat (NICHT jetzt, kein Rebrand):** „Zeit-Stop nur Index/FX, DD-fokussiert" als eigene
+  neu pre-registrierte Hypothese — der no-cost-DD-Effekt rechtfertigt das, aber nicht als Override
+  des gerissenen broad-Kriteriums.
 
 ## Experiment (Gate, unverändert)
 
@@ -83,7 +96,9 @@ Achse in den Pine-Core nur nach bestandenem Gate; sonst ehrlicher Close als ANN-
 - Keine Code-Änderung am V1-Core durch dieses ADR (reiner Decision-Record).
 - ~~Nächster Forschungs-Schritt nach dem CEO-UI-Pivot: **H-SESSION** zuerst (höchster Prior).~~
   → H-SESSION ✅ geschlossen 2026-06-10 (moderater Qualitäts-Faktor, kein Hard-Gate).
-  → H-TRIGGER ❌ geschlossen/widerlegt 2026-06-10 (Momentum-Confirmation invers). **Aktiv: H-TIMESTOP** (Hyp 3/3, letzte).
+  → H-TRIGGER ❌ geschlossen/widerlegt 2026-06-10 (Momentum-Confirmation invers).
+  → H-TIMESTOP ⏸ WAIT/teil-positiv 2026-06-10 (kein broad GRÜN; realer no-cost DD-Effekt Index/FX).
+  **ANN-027-Queue ERSCHÖPFT** — alle 3 orthogonalen Achsen getestet. Status: Active → abgearbeitet.
 - Parallel, eigene fokussierte Session: FX-Overlay „Pace AI" (Site verspricht es wörtlich) —
   Gates unverändert (50t/100t-Reconcile zuerst, bit-exact = harter Ship-Gate, OOS-PF des tatsächlich
   geshippten Modells oder kein Ship). UI-Label „Pace AI — signal quality scoring", aktiv auf FX-Majors.
